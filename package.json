@@ -1,0 +1,15 @@
+{
+  "name": "agent-trust-registry",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Lightweight trust scoring service for AI agents and tools.",
+  "type": "module",
+  "scripts": {
+    "dev": "node --watch src/server.js",
+    "start": "node src/server.js",
+    "test": "node --test"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}
