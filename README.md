@@ -102,7 +102,13 @@ Export policy decisions (score checks + ClawCredit preflight outcomes) for compl
 
 `GET /v1/audit/decisions?format=csv&limit=200`
 
-### 4) Webhooks (Starter/Pro)
+### 4) Usage Snapshot
+
+Get current month usage, plan limits, and remaining quota.
+
+`GET /v1/usage`
+
+### 5) Webhooks (Starter/Pro)
 
 Register score-drop alerts (fires when score crosses down below threshold).
 
@@ -138,7 +144,7 @@ Headers:
 - `x-trust-signature`: HMAC-SHA256 hex of raw JSON body using webhook `secret`
 - `x-trust-webhook-id`: webhook id
 
-### 5) Get plan limits
+### 6) Get plan limits
 
 `GET /v1/plans`
 
@@ -276,3 +282,11 @@ Copy `.env.example` and set:
 - `PORT` (default: `8080`)
 - `DATA_DIR` (default: `./data`)
 - `TRUST_API_KEYS` format: `api_key:tier,api_key:tier`
+
+
+### Check usage and remaining limits
+
+```bash
+curl "http://localhost:8080/v1/usage" \
+  -H "x-api-key: demo_starter_key"
+```

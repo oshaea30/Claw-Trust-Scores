@@ -10,6 +10,7 @@ import { PLANS } from "./config.js";
 import { flushStoreToDisk, loadStoreFromDisk } from "./persistence.js";
 import { getScore, postEvent } from "./service.js";
 import { handleCreateUser, handleUpgrade, handleStripeWebhook } from "./selfserve.js";
+import { getUsageSnapshot } from "./usage.js";
 import { createWebhook, deleteWebhook, getWebhooks } from "./webhooks.js";
 
 const PORT = Number(process.env.PORT ?? 8080);
@@ -283,6 +284,12 @@ const server = http.createServer(async (request, response) => {
       }
       return sendJson(response, 400, { error: "Invalid JSON body." });
     }
+  }
+
+  // --- Usage snapshot ---
+  if (request.method === "GET" && url.pathname === "/v1/usage") {
+    const result = getUsageSnapshot({ account });
+    return sendJson(response, result.status, result.body);
   }
 
   // --- Decision audit export ---
