@@ -76,6 +76,7 @@ function sendHtmlFile(response, absolutePath) {
 
 function mimeTypeForPath(absolutePath) {
   const ext = path.extname(absolutePath).toLowerCase();
+  if (ext === ".html") return "text/html; charset=utf-8";
   if (ext === ".mp4") return "video/mp4";
   if (ext === ".webm") return "video/webm";
   if (ext === ".png") return "image/png";

@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Claw Trust Scores - API Docs</title>
+  <style>
+    body { font-family: ui-sans-serif, system-ui, -apple-system, sans-serif; margin: 0; background: #f7f4f1; color: #1f1a16; }
+    .wrap { max-width: 860px; margin: 0 auto; padding: 28px 20px 56px; }
+    a { color: #d4532a; text-decoration: none; }
+    .card { background: #fff; border: 1px solid #e7ddd4; border-radius: 12px; padding: 16px; margin: 12px 0; }
+    code { background: #f3ece6; padding: 2px 6px; border-radius: 6px; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
+    pre { background: #12100e; color: #f9f4ee; padding: 12px; border-radius: 10px; overflow: auto; }
+    h1, h2 { margin: 0 0 10px; }
+    .muted { color: #6f6257; }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <p><a href="/">← Back to home</a></p>
+    <h1>API Docs</h1>
+    <p class="muted">Base URL: <code>https://claw-trust-scores-production.up.railway.app</code></p>
+
+    <div class="card">
+      <h2>Auth</h2>
+      <p>Send <code>x-api-key</code> on protected endpoints.</p>
+    </div>
+
+    <div class="card">
+      <h2>Core Endpoints</h2>
+      <p><code>POST /v1/events</code> log trust events</p>
+      <p><code>GET /v1/score?agentId=...</code> read trust score</p>
+      <p><code>POST /v1/integrations/clawcredit/preflight</code> policy decision</p>
+      <p><code>GET /v1/usage</code> limits and monthly usage</p>
+      <p><code>GET /v1/audit/decisions?format=json|csv</code> export decision logs</p>
+      <p><code>GET /v1/plans</code> public plan limits</p>
+      <p><code>GET /health</code> service status</p>
+    </div>
+
+    <div class="card">
+      <h2>Quick Example</h2>
+      <pre><code>curl "https://claw-trust-scores-production.up.railway.app/v1/score?agentId=agent:demo:vendor-1" \
+  -H "x-api-key: YOUR_KEY"</code></pre>
+    </div>
+
+    <div class="card">
+      <h2>Full Guides</h2>
+      <p><a href="https://github.com/oshaea30/Claw-Trust-Scores/blob/main/USER_GUIDE.md" target="_blank" rel="noopener noreferrer">User Guide</a></p>
+      <p><a href="https://github.com/oshaea30/Claw-Trust-Scores/blob/main/README.md" target="_blank" rel="noopener noreferrer">README</a></p>
+      <p><a href="https://github.com/oshaea30/Claw-Trust-Scores/blob/main/TECHNICAL_DOCUMENTATION.md" target="_blank" rel="noopener noreferrer">Technical Documentation</a></p>
+    </div>
+  </div>
+</body>
+</html>

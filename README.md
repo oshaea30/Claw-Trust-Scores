@@ -2,6 +2,12 @@
 
 Small service that returns a 0-100 trust score and short history for any AI agent/tool ID.
 
+## Start Here
+
+- End-user/API onboarding: `USER_GUIDE.md`
+- Self-serve billing + infra setup: `SELFSERVE-SETUP.md`
+- Full implementation details: `TECHNICAL_DOCUMENTATION.md`
+
 ## Why it exists
 
 Before sending money, sharing API keys, hiring humans, or executing risky actions, callers need a fast trust check on the counterparty agent.
