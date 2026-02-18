@@ -1,3 +1,4 @@
+import { logDecision } from "./audit.js";
 import { getAgentEvents } from "./store.js";
 import { scoreAgent } from "./scoring.js";
 
@@ -22,7 +23,7 @@ function riskFromPayload(payload) {
   return Math.min(risk, 60);
 }
 
-export function clawCreditPreflight({ payload }) {
+export function clawCreditPreflight({ payload, account }) {
   const agentId = String(payload.agentId ?? "").trim().toLowerCase();
   if (!agentId) {
     return { status: 400, body: { error: "agentId is required." } };
@@ -41,6 +42,23 @@ export function clawCreditPreflight({ payload }) {
   } else if (adjustedScore < 55) {
     decision = "review";
     reason = `Manual review required: adjusted score ${adjustedScore} is in caution band.`;
+  }
+
+  if (account) {
+    logDecision({
+      account,
+      action: "clawcredit_preflight",
+      agentId,
+      outcome: decision,
+      score: adjustedScore,
+      reason,
+      metadata: {
+        trustScore: trust.score,
+        amountUsd: Number(payload.amountUsd ?? 0),
+        newPayee: payload.newPayee === true,
+        firstTimeCounterparty: payload.firstTimeCounterparty === true,
+      },
+    });
   }
 
   return {

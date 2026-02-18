@@ -1,3 +1,5 @@
+import crypto from "node:crypto";
+
 export const store = {
   eventsByAgentId: new Map(),
   usageByMonthAndApiKey: new Map(),
@@ -7,6 +9,7 @@ export const store = {
   webhookDeliveries: new Map(),
   webhookSuppression: new Map(),
   users: new Map(),
+  decisionLogsByApiKey: new Map(),
 };
 
 export function resetStore() {
@@ -18,6 +21,7 @@ export function resetStore() {
   store.webhookDeliveries = new Map();
   store.webhookSuppression = new Map();
   store.users = new Map();
+  store.decisionLogsByApiKey = new Map();
 }
 
 export function getMonthKey(now = new Date()) {
@@ -62,4 +66,20 @@ export function appendWebhookDelivery(webhookId, delivery) {
   const existing = store.webhookDeliveries.get(webhookId) ?? [];
   existing.unshift(delivery);
   store.webhookDeliveries.set(webhookId, existing.slice(0, 20));
+}
+
+export function appendDecisionLog(apiKey, entry, maxItems = 5000) {
+  const existing = store.decisionLogsByApiKey.get(apiKey) ?? [];
+  const enriched = {
+    id: crypto.randomUUID(),
+    timestamp: new Date().toISOString(),
+    ...entry,
+  };
+  existing.unshift(enriched);
+  store.decisionLogsByApiKey.set(apiKey, existing.slice(0, maxItems));
+  return enriched;
+}
+
+export function listDecisionLogs(apiKey) {
+  return store.decisionLogsByApiKey.get(apiKey) ?? [];
 }

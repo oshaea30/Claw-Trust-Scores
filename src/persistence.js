@@ -63,6 +63,9 @@ export function loadStoreFromDisk() {
 
     // Self-serve users (added in v0.2)
     store.users = loadObjectMap(parsed.users);
+
+    // Decision logs (added in v0.3)
+    store.decisionLogsByApiKey = loadObjectMap(parsed.decisionLogsByApiKey);
   } catch {
     // Ignore broken state and start fresh.
   }
@@ -91,6 +94,7 @@ export function flushStoreToDisk() {
       webhookDeliveries: toObjectMap(store.webhookDeliveries),
       webhookSuppression: toObjectMap(store.webhookSuppression),
       users: toObjectMap(store.users ?? new Map()),
+      decisionLogsByApiKey: toObjectMap(store.decisionLogsByApiKey ?? new Map()),
     };
 
     fs.writeFileSync(statePath, JSON.stringify(payload), "utf8");

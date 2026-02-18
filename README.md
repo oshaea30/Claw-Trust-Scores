@@ -94,7 +94,15 @@ Example response:
 }
 ```
 
-### 3) Webhooks (Starter/Pro)
+### 3) Decision Audit Export
+
+Export policy decisions (score checks + ClawCredit preflight outcomes) for compliance and reviews.
+
+`GET /v1/audit/decisions?format=json&limit=200`
+
+`GET /v1/audit/decisions?format=csv&limit=200`
+
+### 4) Webhooks (Starter/Pro)
 
 Register score-drop alerts (fires when score crosses down below threshold).
 
@@ -130,7 +138,7 @@ Headers:
 - `x-trust-signature`: HMAC-SHA256 hex of raw JSON body using webhook `secret`
 - `x-trust-webhook-id`: webhook id
 
-### 4) Get plan limits
+### 5) Get plan limits
 
 `GET /v1/plans`
 
@@ -189,7 +197,7 @@ Explanation text is generated automatically, for example:
 ## Quick start
 
 ```bash
-cd /Users/oshaealexis/Documents/New\ project/agent-trust-registry
+cd /Users/oshaealexis/Projects/agent-trust-registry
 npm run start
 ```
 
@@ -228,6 +236,18 @@ curl -X POST http://localhost:8080/v1/integrations/clawcredit/preflight \
     "highPrivilegeAction":false,
     "exposesApiKeys":false
   }'
+```
+
+### Export decision audit logs
+
+```bash
+curl "http://localhost:8080/v1/audit/decisions?format=json&limit=50" \
+  -H "x-api-key: demo_starter_key"
+```
+
+```bash
+curl "http://localhost:8080/v1/audit/decisions?format=csv&limit=50" \
+  -H "x-api-key: demo_starter_key"
 ```
 
 ## 5-minute integration snippet (Node)

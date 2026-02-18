@@ -4,6 +4,7 @@ import http from "node:http";
 import { URL } from "node:url";
 
 import { authenticate } from "./auth.js";
+import { getDecisionLogs, logDecision } from "./audit.js";
 import { clawCreditPreflight } from "./clawcredit.js";
 import { PLANS } from "./config.js";
 import { flushStoreToDisk, loadStoreFromDisk } from "./persistence.js";
@@ -42,6 +43,16 @@ function sendJson(response, statusCode, body) {
     ...CORS_HEADERS,
   });
   response.end(JSON.stringify(body));
+}
+
+function sendTyped(response, statusCode, type, body, extraHeaders = {}) {
+  response.writeHead(statusCode, {
+    "content-type": type,
+    ...SAFE_HEADERS,
+    ...CORS_HEADERS,
+    ...extraHeaders,
+  });
+  response.end(body);
 }
 
 function sendHtmlFile(response, absolutePath) {
@@ -240,10 +251,20 @@ const server = http.createServer(async (request, response) => {
 
   // --- GET /v1/score ---
   if (request.method === "GET" && url.pathname === "/v1/score") {
-    const result = getScore({
-      account,
-      agentId: url.searchParams.get("agentId"),
-    });
+    const agentId = url.searchParams.get("agentId");
+    const result = getScore({ account, agentId });
+
+    if (result.status === 200 && result.body?.agentId) {
+      logDecision({
+        account,
+        action: "score_check",
+        agentId: result.body.agentId,
+        outcome: "scored",
+        score: result.body.score,
+        reason: result.body.explanation,
+      });
+    }
+
     return sendJson(response, result.status, result.body);
   }
 
@@ -254,7 +275,7 @@ const server = http.createServer(async (request, response) => {
   ) {
     try {
       const payload = await readJsonBody(request);
-      const result = clawCreditPreflight({ payload });
+      const result = clawCreditPreflight({ payload, account });
       return sendJson(response, result.status, result.body);
     } catch (error) {
       if (error instanceof Error && error.message === "Payload too large") {
@@ -262,6 +283,19 @@ const server = http.createServer(async (request, response) => {
       }
       return sendJson(response, 400, { error: "Invalid JSON body." });
     }
+  }
+
+  // --- Decision audit export ---
+  if (request.method === "GET" && url.pathname === "/v1/audit/decisions") {
+    const result = getDecisionLogs({ account, query: Object.fromEntries(url.searchParams.entries()) });
+
+    if (result.type === "text/csv; charset=utf-8") {
+      return sendTyped(response, result.status, result.type, result.body, {
+        "content-disposition": `attachment; filename="${result.filename}"`,
+      });
+    }
+
+    return sendJson(response, result.status, result.body);
   }
 
   // --- Webhooks CRUD ---
