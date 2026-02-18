@@ -13,7 +13,7 @@
       --bg: #070a11;
       --card: #10192b;
       --card-2: #0c1423;
-      --line: #263551;
+      --line: #24324f;
       --text: #e8effb;
       --muted: #92a3c7;
       --accent: #ff6f4f;
@@ -23,369 +23,110 @@
       --mono: "IBM Plex Mono", monospace;
       --sans: "Space Grotesk", sans-serif;
     }
-
     * { box-sizing: border-box; }
     html, body { margin: 0; padding: 0; }
-    body {
-      font-family: var(--sans);
-      color: var(--text);
-      background: var(--bg);
-      line-height: 1.5;
-    }
+    body { font-family: var(--sans); color: var(--text); background: var(--bg); line-height: 1.5; }
 
     .grid-overlay {
-      position: fixed;
-      inset: 0;
-      pointer-events: none;
-      opacity: 0.14;
+      position: fixed; inset: 0; pointer-events: none; opacity: 0.15; z-index: 1;
       background-image:
-        linear-gradient(to right, rgba(146, 169, 220, 0.16) 1px, transparent 1px),
-        linear-gradient(to bottom, rgba(146, 169, 220, 0.16) 1px, transparent 1px);
+        linear-gradient(to right, rgba(146,169,220,0.15) 1px, transparent 1px),
+        linear-gradient(to bottom, rgba(146,169,220,0.15) 1px, transparent 1px);
       background-size: 42px 42px;
-      mask-image: linear-gradient(to bottom, #000 0%, #000 58%, transparent 100%);
-      z-index: 3;
+      mask-image: linear-gradient(to bottom, #000 0%, #000 60%, transparent 100%);
     }
 
-    .wrap { width: min(1120px, 92vw); margin: 0 auto; }
+    .wrap { width: min(1120px, 92vw); margin: 0 auto; position: relative; z-index: 2; }
 
     nav {
-      position: sticky;
-      top: 0;
-      z-index: 30;
+      position: sticky; top: 0; z-index: 20;
       backdrop-filter: blur(8px);
-      background: rgba(7, 10, 17, 0.84);
-      border-bottom: 1px solid rgba(132, 154, 201, 0.22);
+      background: rgba(7,10,17,0.86);
+      border-bottom: 1px solid rgba(132,154,201,0.22);
     }
-    .nav-inner {
-      height: 66px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-    }
-    .brand {
-      font-size: 1.02rem;
-      font-weight: 700;
-      color: var(--text);
-      text-decoration: none;
-      letter-spacing: 0.2px;
-    }
+    .nav-inner { height: 66px; display: flex; align-items: center; justify-content: space-between; }
+    .brand { font-size: 1.02rem; font-weight: 700; color: var(--text); text-decoration: none; letter-spacing: 0.2px; }
     .brand span { color: var(--accent); }
-
-    .nav-links {
-      display: flex;
-      gap: 1.2rem;
-      align-items: center;
-    }
-    .nav-links a {
-      color: var(--muted);
-      text-decoration: none;
-      font-size: 0.93rem;
-      font-weight: 500;
-    }
+    .nav-links { display: flex; gap: 1.2rem; }
+    .nav-links a { color: var(--muted); text-decoration: none; font-size: 0.93rem; font-weight: 500; }
     .nav-links a:hover { color: var(--text); }
 
-    .hero {
-      position: relative;
-      min-height: min(78vh, 760px);
-      display: grid;
-      align-items: center;
-      margin-top: 18px;
-      border: 1px solid var(--line);
-      border-radius: 20px;
-      overflow: hidden;
-      isolation: isolate;
-    }
-
-    .hero-media {
-      position: absolute;
-      inset: 0;
-      z-index: 0;
-    }
-    .hero-media video {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-      filter: saturate(0.86) contrast(0.92) brightness(0.55);
-      transform: scale(1.02);
-    }
-
-    .hero-dim {
-      position: absolute;
-      inset: 0;
-      z-index: 1;
-      background:
-        linear-gradient(to bottom, rgba(6, 9, 15, 0.46), rgba(6, 9, 15, 0.72)),
-        linear-gradient(to right, rgba(6, 9, 15, 0.68) 0%, rgba(6, 9, 15, 0.34) 58%, rgba(6, 9, 15, 0.76) 100%);
-    }
-
-    .hero-content {
-      position: relative;
-      z-index: 4;
-      width: min(880px, 94%);
-      margin-left: clamp(12px, 4vw, 42px);
-      margin-right: auto;
-      border: 1px solid rgba(154, 180, 230, 0.24);
-      background: rgba(10, 16, 29, 0.52);
-      backdrop-filter: blur(10px) saturate(110%);
-      -webkit-backdrop-filter: blur(10px) saturate(110%);
-      border-radius: 16px;
-      padding: clamp(18px, 2.6vw, 32px);
-      box-shadow: 0 14px 36px rgba(0, 0, 0, 0.36);
-    }
-
+    .hero { padding: 80px 0 34px; display: grid; gap: 16px; }
     .kicker {
-      width: fit-content;
-      border: 1px solid rgba(24, 201, 186, 0.36);
-      background: rgba(24, 201, 186, 0.08);
-      color: var(--accent-2);
-      border-radius: 999px;
-      padding: 7px 12px;
-      font-family: var(--mono);
-      font-size: 0.76rem;
-      text-transform: uppercase;
-      letter-spacing: 1.2px;
-      margin-bottom: 14px;
+      width: fit-content; border: 1px solid rgba(24,201,186,0.35); background: rgba(24,201,186,0.08);
+      color: var(--accent-2); border-radius: 999px; padding: 7px 12px;
+      font-family: var(--mono); font-size: 0.76rem; letter-spacing: 1.2px; text-transform: uppercase;
     }
-
-    h1 {
-      margin: 0;
-      font-size: clamp(2rem, 5.5vw, 4.6rem);
-      line-height: 1.02;
-      letter-spacing: -1.3px;
-      max-width: 820px;
-    }
+    h1 { margin: 0; font-size: clamp(2rem, 6vw, 4.6rem); line-height: 1.02; letter-spacing: -1.3px; }
     h1 .accent { color: var(--accent); }
-
-    .hero-sub {
-      margin: 14px 0 0;
-      max-width: 760px;
-      color: #b9c8e7;
-      font-size: clamp(0.98rem, 1.35vw, 1.14rem);
-    }
+    .hero-sub { margin: 0; max-width: 760px; color: var(--muted); font-size: clamp(0.98rem, 1.4vw, 1.14rem); }
 
     .hero-action {
-      margin-top: 16px;
-      border: 1px solid rgba(154, 180, 230, 0.18);
-      background: rgba(8, 13, 23, 0.52);
-      border-radius: 13px;
-      padding: 11px;
-      width: min(720px, 100%);
+      margin-top: 8px; width: min(760px, 100%);
+      border: 1px solid var(--line); border-radius: 13px;
+      background: rgba(10,16,29,0.72); padding: 11px;
     }
-
-    .hero-form {
-      display: flex;
-      gap: 10px;
-      flex-wrap: wrap;
-    }
+    .hero-form { display: flex; gap: 10px; flex-wrap: wrap; }
     .hero-form input[type="email"] {
-      flex: 1;
-      min-width: 240px;
-      border: 1px solid var(--line);
-      background: #0a1221;
-      color: var(--text);
-      border-radius: 10px;
-      padding: 12px 12px;
-      font-family: var(--sans);
-      font-size: 0.95rem;
+      flex: 1; min-width: 240px; border: 1px solid var(--line);
+      background: #0a1221; color: var(--text); border-radius: 10px;
+      padding: 12px 12px; font-family: var(--sans); font-size: 0.95rem;
     }
-
     .btn {
-      border: 1px solid transparent;
-      border-radius: 10px;
-      padding: 11px 15px;
-      text-decoration: none;
-      font-weight: 600;
-      cursor: pointer;
-      font-family: var(--sans);
-      font-size: 0.95rem;
-      transition: 160ms ease;
-      white-space: nowrap;
+      border: 1px solid transparent; border-radius: 10px; padding: 11px 15px;
+      text-decoration: none; font-weight: 600; cursor: pointer; font-family: var(--sans); font-size: 0.95rem;
+      transition: 160ms ease; white-space: nowrap;
     }
-    .btn.primary {
-      background: var(--accent);
-      color: #1f1411;
-    }
+    .btn.primary { background: var(--accent); color: #1f1411; }
     .btn.primary:hover { background: #ff7d62; transform: translateY(-1px); }
-    .btn.secondary {
-      background: rgba(20, 29, 48, 0.75);
-      border-color: var(--line);
-      color: var(--text);
-    }
+    .btn.secondary { background: rgba(20,29,48,0.75); border-color: var(--line); color: var(--text); }
 
     .hero-mini {
-      margin-top: 8px;
-      display: flex;
-      justify-content: space-between;
-      gap: 10px;
-      align-items: center;
-      flex-wrap: wrap;
-      font-size: 0.8rem;
-      color: #b4c4e4;
+      margin-top: 8px; display: flex; justify-content: space-between; gap: 10px;
+      flex-wrap: wrap; font-size: 0.8rem; color: #b4c4e4;
     }
-
-    .result {
-      margin-top: 8px;
-      font-family: var(--mono);
-      font-size: 0.83rem;
-      min-height: 1.1rem;
-    }
+    .result { margin-top: 8px; font-family: var(--mono); font-size: 0.83rem; min-height: 1.1rem; }
     .result.ok { color: var(--ok); }
     .result.bad { color: var(--danger); }
 
-    .hero-panels {
-      margin-top: 12px;
-      display: grid;
-      grid-template-columns: 1.2fr 0.8fr;
-      gap: 12px;
-    }
-    .panel {
-      border: 1px solid var(--line);
-      background: var(--card-2);
-      border-radius: 15px;
-      padding: 16px;
-    }
-    .panel h3 {
-      margin: 0 0 8px;
-      font-size: 0.96rem;
-      color: #d4e1ff;
-      font-weight: 600;
-    }
+    .hero-panels { margin-top: 8px; display: grid; grid-template-columns: 1.2fr 0.8fr; gap: 12px; }
+    .panel { border: 1px solid var(--line); background: var(--card-2); border-radius: 15px; padding: 16px; }
+    .panel h3 { margin: 0 0 8px; font-size: 0.96rem; color: #d4e1ff; font-weight: 600; }
     .mono { font-family: var(--mono); }
 
-    .metric-grid {
-      display: grid;
-      grid-template-columns: repeat(3, minmax(0, 1fr));
-      gap: 9px;
-      margin-top: 11px;
-    }
-    .metric {
-      border: 1px solid var(--line);
-      border-radius: 10px;
-      background: rgba(255,255,255,0.015);
-      padding: 9px 10px;
-    }
+    .metric-grid { display: grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap: 9px; margin-top: 11px; }
+    .metric { border: 1px solid var(--line); border-radius: 10px; background: rgba(255,255,255,0.015); padding: 9px 10px; }
     .metric .val { font-size: 1.1rem; font-weight: 700; }
     .metric .lbl { font-size: 0.78rem; color: var(--muted); }
 
     section { padding: 62px 0; }
-    .sec-head {
-      display: flex;
-      justify-content: space-between;
-      align-items: baseline;
-      gap: 12px;
-      margin-bottom: 17px;
-    }
-    .sec-head h2 {
-      margin: 0;
-      font-size: clamp(1.4rem, 3vw, 2rem);
-      letter-spacing: -0.5px;
-    }
+    .sec-head { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; margin-bottom: 17px; }
+    .sec-head h2 { margin: 0; font-size: clamp(1.4rem, 3vw, 2rem); letter-spacing: -0.5px; }
     .sec-head p { margin: 0; color: var(--muted); }
 
-    .cards {
-      display: grid;
-      grid-template-columns: repeat(3, minmax(0, 1fr));
-      gap: 11px;
-    }
-    .card {
-      border: 1px solid var(--line);
-      background: var(--card);
-      border-radius: 14px;
-      padding: 16px;
-    }
+    .cards, .pricing { display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); gap: 11px; }
+    .card, .tier { border: 1px solid var(--line); background: var(--card); border-radius: 14px; padding: 16px; }
     .card h3 { margin: 0 0 8px; font-size: 1.02rem; }
     .card p { margin: 0; color: var(--muted); font-size: 0.95rem; }
 
-    .pricing {
-      display: grid;
-      grid-template-columns: repeat(3, minmax(0, 1fr));
-      gap: 12px;
-    }
-    .tier {
-      border: 1px solid var(--line);
-      border-radius: 15px;
-      padding: 18px;
-      background: var(--card);
-    }
-    .tier.featured {
-      border-color: rgba(255, 111, 79, 0.7);
-      box-shadow: 0 0 0 1px rgba(255, 111, 79, 0.2);
-    }
+    .tier.featured { border-color: rgba(255,111,79,0.7); box-shadow: 0 0 0 1px rgba(255,111,79,0.2); }
     .tier h3 { margin: 0; }
-    .tier .price {
-      margin: 8px 0 14px;
-      font-weight: 700;
-      font-size: 2rem;
-      letter-spacing: -1px;
-    }
+    .tier .price { margin: 8px 0 14px; font-weight: 700; font-size: 2rem; letter-spacing: -1px; }
     .tier .price span { font-size: 0.95rem; color: var(--muted); }
-    .tier ul {
-      margin: 0;
-      padding: 0;
-      list-style: none;
-      display: grid;
-      gap: 7px;
-      color: #cdd8ef;
-      font-size: 0.92rem;
-    }
+    .tier ul { margin: 0; padding: 0; list-style: none; display: grid; gap: 7px; color: #cdd8ef; font-size: 0.92rem; }
 
-    .next {
-      border: 1px solid var(--line);
-      border-radius: 15px;
-      background: var(--card-2);
-      padding: 17px;
-    }
-    .steps {
-      display: grid;
-      grid-template-columns: repeat(3, minmax(0, 1fr));
-      gap: 10px;
-      margin-top: 11px;
-    }
-    .step {
-      border: 1px solid var(--line);
-      border-radius: 11px;
-      padding: 11px;
-      background: rgba(255,255,255,0.01);
-    }
-    .step .n {
-      font-family: var(--mono);
-      font-size: 0.78rem;
-      color: var(--accent-2);
-      margin-bottom: 4px;
-    }
-
-    footer {
-      border-top: 1px solid var(--line);
-      padding: 24px 0 32px;
-      color: var(--muted);
-      font-size: 0.88rem;
-    }
+    footer { border-top: 1px solid var(--line); padding: 24px 0 32px; color: var(--muted); font-size: 0.88rem; }
 
     @media (max-width: 980px) {
       .hero-panels { grid-template-columns: 1fr; }
       .cards, .pricing { grid-template-columns: 1fr 1fr; }
-      .steps { grid-template-columns: 1fr; }
     }
     @media (max-width: 700px) {
       .nav-links { display: none; }
       .cards, .pricing { grid-template-columns: 1fr; }
-      .hero {
-        min-height: auto;
-        margin-top: 10px;
-      }
-      .hero-content {
-        margin: 12px;
-        width: calc(100% - 24px);
-      }
+      .hero { padding-top: 62px; }
       .hero-form { flex-direction: column; }
       .hero-form .btn { width: 100%; }
-    }
-
-    @media (prefers-reduced-motion: reduce) {
-      .hero-media video { display: none; }
-      .hero {
-        background: #0c1423;
-      }
     }
   </style>
 </head>
@@ -405,33 +146,24 @@
 
   <main class="wrap">
     <section class="hero" id="signup">
-      <div class="hero-media">
-        <video autoplay muted loop playsinline preload="metadata" poster="">
-          <source src="/hero-lobsters.mp4" type="video/mp4" />
-        </video>
-      </div>
-      <div class="hero-dim"></div>
+      <div class="kicker">Know your agent before you execute</div>
+      <h1>Don’t get pinched.<br /><span class="accent">Know who to trust.</span></h1>
+      <p class="hero-sub">
+        Claw Trust Scores gives every agent and tool a decayed, explainable trust score from 0-100 so payment systems,
+        hiring flows, and multi-agent orchestration can block risky counterparts before damage happens.
+      </p>
 
-      <div class="hero-content">
-        <div class="kicker">Know your agent before you execute</div>
-        <h1>Don’t get pinched.<br /><span class="accent">Know who to trust.</span></h1>
-        <p class="hero-sub">
-          Claw Trust Scores gives every agent and tool a decayed, explainable trust score from 0-100 so payment systems,
-          hiring flows, and multi-agent orchestration can block risky counterparts before damage happens.
-        </p>
-
-        <div class="hero-action">
-          <form id="heroSignupForm" class="hero-form">
-            <input id="heroEmail" type="email" required placeholder="Enter your email" autocomplete="email" />
-            <button id="heroSubmitBtn" class="btn primary" type="submit">Get Free API Key</button>
-            <a class="btn secondary" href="#api">See API Flow</a>
-          </form>
-          <div class="hero-mini">
-            <span>Free tier: 5 agents, 100 events, 200 checks per month.</span>
-            <span>No credit card required.</span>
-          </div>
-          <div id="heroResult" class="result"></div>
+      <div class="hero-action">
+        <form id="heroSignupForm" class="hero-form">
+          <input id="heroEmail" type="email" required placeholder="Enter your email" autocomplete="email" />
+          <button id="heroSubmitBtn" class="btn primary" type="submit">Get Free API Key</button>
+          <a class="btn secondary" href="#api">See API Flow</a>
+        </form>
+        <div class="hero-mini">
+          <span>Free tier: 5 agents, 100 events, 200 checks per month.</span>
+          <span>No credit card required.</span>
         </div>
+        <div id="heroResult" class="result"></div>
       </div>
     </section>
 
@@ -516,20 +248,6 @@ x-api-key: claw_xxx
             <li>Priority support + export path</li>
           </ul>
         </article>
-      </div>
-    </section>
-
-    <section>
-      <div class="sec-head">
-        <h2>What happens after signup</h2>
-        <p>No hidden setup. Three steps.</p>
-      </div>
-      <div class="next">
-        <div class="steps">
-          <div class="step"><div class="n">01</div><strong>Get your key</strong><div style="color:var(--muted);font-size:.9rem;">We create a free key and email onboarding details.</div></div>
-          <div class="step"><div class="n">02</div><strong>Add one trust call</strong><div style="color:var(--muted);font-size:.9rem;">Check trust before sending money, keys, or risky tasks.</div></div>
-          <div class="step"><div class="n">03</div><strong>Upgrade when needed</strong><div style="color:var(--muted);font-size:.9rem;">Hit free limits in production, then move to Starter or Pro.</div></div>
-        </div>
       </div>
     </section>
   </main>
