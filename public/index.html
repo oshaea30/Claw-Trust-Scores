@@ -7,270 +7,1039 @@
   <meta name="description" content="Trust infrastructure for autonomous agents. Score unknown counterparts before payments, key sharing, or delegated execution." />
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
   <style>
     :root {
-      --bg: #070a11;
-      --card: #10192b;
-      --card-2: #0c1423;
-      --line: #24324f;
-      --text: #e8effb;
-      --muted: #92a3c7;
-      --accent: #ff6f4f;
-      --accent-2: #18c9ba;
-      --ok: #83e6a7;
-      --danger: #ff8d9b;
+      --bg: #faf9f7;
+      --bg-warm: #f5f0eb;
+      --card: #ffffff;
+      --card-border: #e8e2da;
+      --card-border-dashed: #d4cdc4;
+      --text: #1a1612;
+      --text-secondary: #6b6058;
+      --text-muted: #9a8f83;
+      --coral: #d4532a;
+      --coral-light: #e8663e;
+      --coral-bg: rgba(212,83,42,0.08);
+      --coral-glow: rgba(212,83,42,0.15);
+      --teal: #0ea88f;
+      --teal-bg: rgba(14,168,143,0.08);
+      --green: #2d8a56;
+      --green-bg: rgba(45,138,86,0.1);
+      --danger: #c43333;
       --mono: "IBM Plex Mono", monospace;
-      --sans: "Space Grotesk", sans-serif;
-    }
-    * { box-sizing: border-box; }
-    html, body { margin: 0; padding: 0; }
-    body { font-family: var(--sans); color: var(--text); background: var(--bg); line-height: 1.5; }
-
-    .grid-overlay {
-      position: fixed; inset: 0; pointer-events: none; opacity: 0.15; z-index: 1;
-      background-image:
-        linear-gradient(to right, rgba(146,169,220,0.15) 1px, transparent 1px),
-        linear-gradient(to bottom, rgba(146,169,220,0.15) 1px, transparent 1px);
-      background-size: 42px 42px;
-      mask-image: linear-gradient(to bottom, #000 0%, #000 60%, transparent 100%);
+      --sans: "Plus Jakarta Sans", system-ui, sans-serif;
+      --radius: 16px;
+      --radius-sm: 10px;
+      --radius-pill: 999px;
     }
 
-    .wrap { width: min(1120px, 92vw); margin: 0 auto; position: relative; z-index: 2; }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+    body {
+      font-family: var(--sans); color: var(--text); background: var(--bg);
+      line-height: 1.55; -webkit-font-smoothing: antialiased;
+    }
 
+    .wrap { width: min(1160px, 90vw); margin: 0 auto; }
+
+    /* ── NAV ── */
     nav {
-      position: sticky; top: 0; z-index: 20;
-      backdrop-filter: blur(8px);
-      background: rgba(7,10,17,0.86);
-      border-bottom: 1px solid rgba(132,154,201,0.22);
+      position: fixed; top: 0; left: 0; right: 0; z-index: 50;
+      background: rgba(250,249,247,0.82);
+      backdrop-filter: blur(14px) saturate(1.3);
+      border-bottom: 1px solid rgba(0,0,0,0.06);
     }
-    .nav-inner { height: 66px; display: flex; align-items: center; justify-content: space-between; }
-    .brand { font-size: 1.02rem; font-weight: 700; color: var(--text); text-decoration: none; letter-spacing: 0.2px; }
-    .brand span { color: var(--accent); }
-    .nav-links { display: flex; gap: 1.2rem; }
-    .nav-links a { color: var(--muted); text-decoration: none; font-size: 0.93rem; font-weight: 500; }
+    .nav-inner {
+      height: 64px; display: flex; align-items: center; justify-content: space-between;
+    }
+    .brand { font-size: 1.05rem; font-weight: 800; color: var(--text); text-decoration: none; letter-spacing: -0.2px; }
+    .brand span { color: var(--coral); }
+    .nav-links { display: flex; align-items: center; gap: 2rem; }
+    .nav-links a {
+      color: var(--text-secondary); text-decoration: none; font-size: 0.92rem; font-weight: 500;
+      transition: color 0.15s;
+    }
     .nav-links a:hover { color: var(--text); }
-
-    .hero { padding: 80px 0 34px; display: grid; gap: 16px; }
-    .kicker {
-      width: fit-content; border: 1px solid rgba(24,201,186,0.35); background: rgba(24,201,186,0.08);
-      color: var(--accent-2); border-radius: 999px; padding: 7px 12px;
-      font-family: var(--mono); font-size: 0.76rem; letter-spacing: 1.2px; text-transform: uppercase;
+    .nav-links a.cta-link {
+      background: var(--text); color: #fff; padding: 9px 18px;
+      border-radius: var(--radius-pill); font-weight: 600; font-size: 0.88rem;
     }
-    h1 { margin: 0; font-size: clamp(2rem, 6vw, 4.6rem); line-height: 1.02; letter-spacing: -1.3px; }
-    h1 .accent { color: var(--accent); }
-    .hero-sub { margin: 0; max-width: 760px; color: var(--muted); font-size: clamp(0.98rem, 1.4vw, 1.14rem); }
+    .nav-links a.cta-link:hover { background: #333; color: #fff; }
 
-    .hero-action {
-      margin-top: 8px; width: min(760px, 100%);
-      border: 1px solid var(--line); border-radius: 13px;
-      background: rgba(10,16,29,0.72); padding: 11px;
+    /* ── HERO ── */
+    .hero-wrap {
+      position: relative; overflow: hidden;
+      margin-top: 64px;
+      border-radius: 0;
+      min-height: 680px;
+      border-bottom: 1px solid rgba(0,0,0,0.08);
     }
-    .hero-form { display: flex; gap: 10px; flex-wrap: wrap; }
-    .hero-form input[type="email"] {
-      flex: 1; min-width: 240px; border: 1px solid var(--line);
-      background: #0a1221; color: var(--text); border-radius: 10px;
-      padding: 12px 12px; font-family: var(--sans); font-size: 0.95rem;
+    .hero-video {
+      position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover;
+      z-index: 0;
+      opacity: 0.88;
+    }
+    .hero-frost {
+      position: absolute; inset: 0; z-index: 1;
+      backdrop-filter: blur(14px) saturate(1.06);
+      background: linear-gradient(
+        180deg,
+        rgba(250,249,247,0.46) 0%,
+        rgba(245,226,210,0.34) 40%,
+        rgba(222,140,100,0.24) 70%,
+        rgba(212,83,42,0.18) 100%
+      );
+    }
+    .hero {
+      position: relative; z-index: 2;
+      padding: 80px 0 52px;
+      display: flex; flex-direction: column; align-items: center; text-align: center;
+    }
+    .pill {
+      display: inline-flex; align-items: center; gap: 8px;
+      border: 1px solid var(--card-border); background: var(--card);
+      border-radius: var(--radius-pill); padding: 6px 16px 6px 8px;
+      font-size: 0.82rem; font-weight: 600; color: var(--text-secondary);
+      box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+    }
+    .pill-badge {
+      background: var(--coral); color: #fff; font-size: 0.7rem; font-weight: 700;
+      padding: 2px 8px; border-radius: var(--radius-pill); letter-spacing: 0.5px;
+    }
+    .hero h1 {
+      margin-top: 28px;
+      font-size: clamp(2.4rem, 5.8vw, 4.4rem); font-weight: 800;
+      line-height: 1.05; letter-spacing: -2px; max-width: 780px;
+    }
+    .hero h1 .accent { color: var(--coral); }
+    .hero-sub {
+      margin-top: 18px; max-width: 580px;
+      color: var(--text-secondary); font-size: clamp(0.95rem, 1.3vw, 1.08rem);
+      line-height: 1.6;
+    }
+    .trust-row {
+      margin-top: 22px; display: flex; gap: 24px; flex-wrap: wrap; justify-content: center;
+    }
+    .trust-item {
+      display: flex; align-items: center; gap: 7px;
+      font-size: 0.88rem; font-weight: 600; color: var(--text);
+    }
+    .trust-icon {
+      width: 22px; height: 22px; border-radius: 50%;
+      background: var(--green-bg); color: var(--green);
+      display: grid; place-items: center; font-size: 0.7rem;
+    }
+    .hero-form-box {
+      margin-top: 32px; display: flex; gap: 10px; flex-wrap: wrap; justify-content: center;
+    }
+    .hero-form-box input[type="email"] {
+      width: 320px; border: 1px solid var(--card-border); background: var(--card);
+      color: var(--text); border-radius: var(--radius-sm); padding: 14px 16px;
+      font-family: var(--sans); font-size: 0.95rem; outline: none;
+      transition: border-color 0.15s, box-shadow 0.15s;
+    }
+    .hero-form-box input:focus {
+      border-color: var(--coral); box-shadow: 0 0 0 3px var(--coral-glow);
     }
     .btn {
-      border: 1px solid transparent; border-radius: 10px; padding: 11px 15px;
-      text-decoration: none; font-weight: 600; cursor: pointer; font-family: var(--sans); font-size: 0.95rem;
-      transition: 160ms ease; white-space: nowrap;
+      border: none; border-radius: var(--radius-sm); padding: 14px 28px;
+      font-family: var(--sans); font-size: 0.95rem; font-weight: 700;
+      cursor: pointer; transition: transform 0.15s, box-shadow 0.15s, background 0.15s;
+      text-decoration: none; display: inline-flex; align-items: center; gap: 8px;
     }
-    .btn.primary { background: var(--accent); color: #1f1411; }
-    .btn.primary:hover { background: #ff7d62; transform: translateY(-1px); }
-    .btn.secondary { background: rgba(20,29,48,0.75); border-color: var(--line); color: var(--text); }
-
-    .hero-mini {
-      margin-top: 8px; display: flex; justify-content: space-between; gap: 10px;
-      flex-wrap: wrap; font-size: 0.8rem; color: #b4c4e4;
+    .btn-primary {
+      background: var(--text); color: #fff;
     }
-    .result { margin-top: 8px; font-family: var(--mono); font-size: 0.83rem; min-height: 1.1rem; }
-    .result.ok { color: var(--ok); }
-    .result.bad { color: var(--danger); }
+    .btn-primary:hover { transform: translateY(-1px); box-shadow: 0 6px 20px rgba(0,0,0,0.18); }
+    .hero-note {
+      margin-top: 12px; font-size: 0.82rem; color: var(--text-muted);
+    }
+    .hero-result {
+      margin-top: 8px; font-family: var(--mono); font-size: 0.85rem; min-height: 1.2rem;
+    }
+    .hero-result.ok { color: var(--green); }
+    .hero-result.bad { color: var(--danger); }
 
-    .hero-panels { margin-top: 8px; display: grid; grid-template-columns: 1.2fr 0.8fr; gap: 12px; }
-    .panel { border: 1px solid var(--line); background: var(--card-2); border-radius: 15px; padding: 16px; }
-    .panel h3 { margin: 0 0 8px; font-size: 0.96rem; color: #d4e1ff; font-weight: 600; }
-    .mono { font-family: var(--mono); }
+    /* Floating hero cards */
+    .hero-floats {
+      position: absolute; z-index: 3; inset: 0; pointer-events: none; overflow: hidden;
+    }
+    .float-card {
+      position: absolute; background: var(--card); border-radius: 14px;
+      border: 1px solid rgba(0,0,0,0.08);
+      box-shadow: 0 8px 32px rgba(0,0,0,0.10), 0 1px 4px rgba(0,0,0,0.06);
+      padding: 16px 18px; font-size: 0.78rem; color: var(--text);
+      min-width: 172px;
+      transform: rotate(var(--rot));
+      opacity: 0;
+      animation: floatIn 0.7s ease-out forwards, floatBob 7.5s ease-in-out infinite;
+    }
+    .float-card.left { left: 3.5%; top: 30%; --rot: -5deg; animation-delay: 0.2s, 1s; }
+    .float-card.right { right: 3.5%; top: 23%; --rot: 4deg; animation-delay: 0.4s, 1.3s; }
+    @keyframes floatIn {
+      from { opacity: 0; transform: rotate(var(--rot)) translateY(30px); }
+      to { opacity: 1; transform: rotate(var(--rot)) translateY(0); }
+    }
+    @keyframes floatBob {
+      0% { transform: rotate(var(--rot)) translateY(0); }
+      50% { transform: rotate(calc(var(--rot) + 0.8deg)) translateY(-14px); }
+      100% { transform: rotate(var(--rot)) translateY(0); }
+    }
+    .float-card.left {
+      animation: floatIn 0.7s ease-out forwards, floatBob 7.5s ease-in-out infinite, driftLeft 11s ease-in-out infinite;
+    }
+    .float-card.right {
+      animation: floatIn 0.7s ease-out forwards, floatBob 8.1s ease-in-out infinite, driftRight 12s ease-in-out infinite;
+    }
+    .float-card.left-mid {
+      left: 20%;
+      top: 58%;
+      --rot: -3deg;
+      animation: floatIn 0.7s ease-out forwards, floatBob 9.2s ease-in-out infinite;
+      animation-delay: 0.45s, 1.6s;
+    }
+    .float-card.right-mid {
+      right: 20%;
+      top: 55%;
+      --rot: 2.5deg;
+      animation: floatIn 0.7s ease-out forwards, floatBob 8.7s ease-in-out infinite;
+      animation-delay: 0.6s, 1.9s;
+    }
+    @keyframes driftLeft {
+      0% { left: 10%; }
+      50% { left: 11.8%; }
+      100% { left: 10%; }
+    }
+    @keyframes driftRight {
+      0% { right: 10%; }
+      50% { right: 11.8%; }
+      100% { right: 10%; }
+    }
+    .float-card .fc-label { font-size: 0.68rem; color: var(--text-muted); font-weight: 500; margin-bottom: 4px; }
+    .float-card .fc-score { font-size: 1.5rem; font-weight: 800; letter-spacing: -1px; }
+    .float-card .fc-score.high { color: var(--green); }
+    .float-card .fc-score.low { color: var(--danger); }
+    .fc-meta {
+      margin-top: 7px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      font-size: 0.66rem;
+      color: var(--text-muted);
+      letter-spacing: 0.15px;
+    }
+    .fc-badge {
+      display: inline-flex;
+      align-items: center;
+      padding: 2px 7px;
+      border-radius: 999px;
+      font-size: 0.64rem;
+      font-weight: 700;
+      line-height: 1.2;
+      border: 1px solid transparent;
+    }
+    .fc-badge.up {
+      color: #1f8f6d;
+      background: rgba(31,143,109,0.12);
+      border-color: rgba(31,143,109,0.28);
+    }
+    .fc-badge.down {
+      color: #b33838;
+      background: rgba(179,56,56,0.1);
+      border-color: rgba(179,56,56,0.25);
+    }
+    .fc-badge.warn {
+      color: #9a6510;
+      background: rgba(210,138,29,0.13);
+      border-color: rgba(210,138,29,0.3);
+    }
+    .float-card .fc-bar {
+      margin-top: 6px; height: 5px; border-radius: 99px; background: #eee; width: 100px;
+    }
+    .float-card .fc-bar-fill { height: 100%; border-radius: 99px; }
+    .fc-decision {
+      margin-top: 6px;
+      display: inline-block;
+      font-size: 0.66rem;
+      font-weight: 800;
+      letter-spacing: 0.3px;
+      padding: 4px 8px;
+      border-radius: 8px;
+      background: rgba(210,138,29,0.13);
+      color: #9a6510;
+      border: 1px solid rgba(210,138,29,0.3);
+      text-transform: uppercase;
+    }
 
-    .metric-grid { display: grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap: 9px; margin-top: 11px; }
-    .metric { border: 1px solid var(--line); border-radius: 10px; background: rgba(255,255,255,0.015); padding: 9px 10px; }
-    .metric .val { font-size: 1.1rem; font-weight: 700; }
-    .metric .lbl { font-size: 0.78rem; color: var(--muted); }
+    /* ── MARQUEE ── */
+    .marquee-section {
+      background: linear-gradient(180deg, rgba(212,83,42,0.12) 0%, var(--bg) 100%);
+      padding: 24px 0 40px; text-align: center; overflow: hidden;
+    }
+    .marquee-label { font-size: 0.82rem; color: var(--text-muted); font-weight: 500; margin-bottom: 16px; }
+    .marquee-row { margin-bottom: 10px; }
+    .marquee-row:last-child { margin-bottom: 0; }
+    .marquee-row-label {
+      display: inline-block;
+      margin-bottom: 10px;
+      padding: 4px 10px;
+      border: 1px solid var(--card-border);
+      border-radius: 999px;
+      background: rgba(255,255,255,0.6);
+      color: var(--text-secondary);
+      font-size: 0.74rem;
+      font-weight: 700;
+      letter-spacing: 0.2px;
+      text-transform: uppercase;
+    }
+    .marquee-row-label::before {
+      content: "";
+      display: inline-block;
+      width: 7px;
+      height: 7px;
+      margin-right: 7px;
+      border-radius: 50%;
+      background: var(--coral);
+      vertical-align: 1px;
+      animation: dotPulse 3.6s ease-in-out infinite;
+      box-shadow: 0 0 0 0 rgba(212,83,42,0.45);
+    }
+    @keyframes dotPulse {
+      0%, 100% {
+        opacity: 0.55;
+        transform: scale(1);
+        box-shadow: 0 0 0 0 rgba(212,83,42,0.35);
+      }
+      50% {
+        opacity: 1;
+        transform: scale(1.2);
+        box-shadow: 0 0 0 8px rgba(212,83,42,0);
+      }
+    }
+    .marquee-track {
+      display: flex;
+      align-items: center;
+      width: max-content;
+      animation: marquee 24s linear infinite;
+      will-change: transform;
+    }
+    .marquee-track.reverse {
+      animation-name: marqueeReverse;
+      animation-duration: 26s;
+    }
+    .marquee-group {
+      display: flex;
+      align-items: center;
+      gap: 64px;
+      flex-shrink: 0;
+      padding-right: 64px;
+    }
+    .marquee-track span {
+      font-size: 1.05rem; font-weight: 700; color: #74695f; white-space: nowrap;
+      opacity: 0.6; letter-spacing: -0.2px;
+    }
+    @keyframes marquee {
+      0% { transform: translateX(0); }
+      100% { transform: translateX(-50%); }
+    }
+    @keyframes marqueeReverse {
+      0% { transform: translateX(-50%); }
+      100% { transform: translateX(0); }
+    }
 
-    section { padding: 62px 0; }
-    .sec-head { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; margin-bottom: 17px; }
-    .sec-head h2 { margin: 0; font-size: clamp(1.4rem, 3vw, 2rem); letter-spacing: -0.5px; }
-    .sec-head p { margin: 0; color: var(--muted); }
+    /* ── SECTIONS ── */
+    .section { padding: 72px 0; }
+    .sec-pill {
+      display: inline-flex; align-items: center; gap: 6px;
+      border: 1px solid var(--card-border); background: var(--card);
+      border-radius: var(--radius-pill); padding: 6px 14px;
+      font-size: 0.78rem; font-weight: 600; color: var(--text-secondary);
+    }
+    .sec-pill .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--coral); }
+    .sec-head { text-align: center; margin-bottom: 42px; }
+    .sec-head h2 {
+      margin-top: 14px; font-size: clamp(1.6rem, 3.4vw, 2.6rem);
+      font-weight: 800; letter-spacing: -1px; line-height: 1.1;
+    }
+    .sec-head p { margin-top: 12px; color: var(--text-secondary); max-width: 560px; margin-left: auto; margin-right: auto; font-size: 0.98rem; }
 
-    .cards, .pricing { display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); gap: 11px; }
-    .card, .tier { border: 1px solid var(--line); background: var(--card); border-radius: 14px; padding: 16px; }
-    .card h3 { margin: 0 0 8px; font-size: 1.02rem; }
-    .card p { margin: 0; color: var(--muted); font-size: 0.95rem; }
+    /* ── BENTO FEATURES ── */
+    .bento {
+      display: grid; grid-template-columns: 1fr 1fr; gap: 14px;
+    }
+    .bento-card {
+      background: var(--card); border: 1px solid var(--card-border);
+      border-radius: var(--radius); padding: 24px; overflow: hidden;
+      transition: box-shadow 0.2s, transform 0.2s;
+    }
+    .bento-card:hover { box-shadow: 0 8px 30px rgba(0,0,0,0.06); transform: translateY(-2px); }
+    .bento-icon {
+      width: 44px; height: 44px; border-radius: 12px;
+      background: var(--coral-bg); color: var(--coral);
+      display: grid; place-items: center; font-size: 1.1rem; font-weight: 700;
+    }
+    .bento-card h3 { margin-top: 14px; font-size: 1.12rem; font-weight: 700; }
+    .bento-card > p { margin-top: 6px; color: var(--text-secondary); font-size: 0.92rem; line-height: 1.55; }
 
-    .tier.featured { border-color: rgba(255,111,79,0.7); box-shadow: 0 0 0 1px rgba(255,111,79,0.2); }
-    .tier h3 { margin: 0; }
-    .tier .price { margin: 8px 0 14px; font-weight: 700; font-size: 2rem; letter-spacing: -1px; }
-    .tier .price span { font-size: 0.95rem; color: var(--muted); }
-    .tier ul { margin: 0; padding: 0; list-style: none; display: grid; gap: 7px; color: #cdd8ef; font-size: 0.92rem; }
+    /* Mini fake UI panels inside bento cards */
+    .bento-preview {
+      margin-top: 18px; background: var(--bg-warm); border: 1px solid var(--card-border);
+      border-radius: 12px; padding: 16px; font-family: var(--mono); font-size: 0.75rem;
+      color: var(--text-secondary); line-height: 1.7; overflow: hidden;
+    }
+    .bento-preview .line { display: flex; justify-content: space-between; }
+    .bento-preview .val { color: var(--text); font-weight: 600; }
+    .bento-preview .val.green { color: var(--green); }
+    .bento-preview .val.coral { color: var(--coral); }
+    .bento-preview .bar-row { display: flex; gap: 3px; margin-top: 8px; }
+    .bento-preview .bar {
+      flex: 1; height: 24px; border-radius: 4px; background: var(--coral-bg);
+    }
+    .bento-preview .bar.active { background: var(--coral); }
+    .bento-preview .bar.green { background: var(--green-bg); }
+    .bento-preview .bar.green.active { background: var(--teal); }
 
-    footer { border-top: 1px solid var(--line); padding: 24px 0 32px; color: var(--muted); font-size: 0.88rem; }
+    .bento-wide { grid-column: 1 / -1; }
+    .bento-wide-inner { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; align-items: start; }
 
+    .bento-stat-row {
+      display: flex; gap: 12px; margin-top: 18px;
+    }
+    .bento-stat {
+      flex: 1; text-align: center; background: var(--bg-warm); border: 1px solid var(--card-border);
+      border-radius: 12px; padding: 14px 8px;
+    }
+    .bento-stat .num { font-size: 1.6rem; font-weight: 800; letter-spacing: -1px; }
+    .bento-stat .num.coral { color: var(--coral); }
+    .bento-stat .num.green { color: var(--teal); }
+    .bento-stat .lbl { font-size: 0.74rem; color: var(--text-muted); margin-top: 2px; }
+
+    /* ── VALUES GRID ── */
+    .values-grid {
+      display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px;
+    }
+    .value-card {
+      border: 1px dashed var(--card-border-dashed); background: var(--card);
+      border-radius: var(--radius); padding: 32px 24px; text-align: center;
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+    .value-card:hover { border-color: var(--coral); box-shadow: 0 4px 16px var(--coral-glow); }
+    .value-icon {
+      width: 48px; height: 48px; border-radius: 12px;
+      background: var(--coral); color: #fff;
+      display: inline-grid; place-items: center; font-size: 1.2rem;
+    }
+    .value-card h3 { margin-top: 16px; font-size: 1.02rem; font-weight: 700; }
+    .value-card p { margin-top: 8px; color: var(--text-secondary); font-size: 0.9rem; line-height: 1.55; }
+
+    /* ── PRICING ── */
+    .pricing-toggle {
+      display: inline-flex; background: var(--card); border: 1px solid var(--card-border);
+      border-radius: var(--radius-pill); padding: 4px; gap: 0;
+      margin: 0 auto 36px; font-size: 0.9rem;
+    }
+    .pricing-toggle button {
+      border: none; background: transparent; padding: 9px 22px;
+      border-radius: var(--radius-pill); font-family: var(--sans); font-weight: 600;
+      cursor: pointer; color: var(--text-secondary); transition: all 0.2s;
+    }
+    .pricing-toggle button.active { background: var(--coral); color: #fff; }
+    .pricing-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
+    .tier {
+      background: var(--card); border: 1px solid var(--card-border);
+      border-radius: var(--radius); padding: 28px 24px; display: flex; flex-direction: column;
+    }
+    .tier.featured {
+      border-color: var(--coral);
+      background: linear-gradient(175deg, rgba(212,83,42,0.06) 0%, var(--card) 40%);
+      box-shadow: 0 0 0 1px var(--coral-glow);
+    }
+    .tier-name { font-size: 0.88rem; font-weight: 500; color: var(--text-secondary); }
+    .tier-price {
+      margin-top: 8px; font-size: 2.8rem; font-weight: 800; letter-spacing: -2px;
+    }
+    .tier-price span { font-size: 0.95rem; font-weight: 500; color: var(--text-muted); letter-spacing: 0; }
+    .tier-divider { height: 1px; background: var(--card-border); margin: 20px 0; }
+    .tier-features { list-style: none; display: grid; gap: 10px; flex: 1; }
+    .tier-features li {
+      display: flex; align-items: center; gap: 10px;
+      font-size: 0.92rem; color: var(--text-secondary);
+    }
+    .tier-features .check {
+      width: 20px; height: 20px; border-radius: 50%;
+      background: var(--green-bg); color: var(--green);
+      display: grid; place-items: center; font-size: 0.7rem; flex-shrink: 0;
+    }
+    .tier .btn { margin-top: 24px; width: 100%; justify-content: center; }
+
+    /* ── FAQ ── */
+    .faq-list { max-width: 760px; margin: 0 auto; display: grid; gap: 10px; }
+    .faq-item {
+      border: 1px solid var(--card-border); background: var(--card);
+      border-radius: var(--radius); overflow: hidden;
+    }
+    .faq-q {
+      padding: 18px 22px; display: flex; justify-content: space-between; align-items: center;
+      cursor: pointer; font-weight: 600; font-size: 0.98rem; user-select: none;
+      transition: background 0.15s;
+    }
+    .faq-q:hover { background: var(--bg-warm); }
+    .faq-q .icon {
+      width: 28px; height: 28px; border-radius: 50%;
+      border: 1px solid var(--card-border); display: grid; place-items: center;
+      font-size: 1rem; color: var(--text-muted); transition: transform 0.25s;
+    }
+    .faq-item.open .faq-q .icon { transform: rotate(45deg); }
+    .faq-a {
+      max-height: 0; overflow: hidden; transition: max-height 0.3s ease, padding 0.3s;
+      padding: 0 22px; color: var(--text-secondary); font-size: 0.93rem; line-height: 1.65;
+    }
+    .faq-item.open .faq-a { max-height: 200px; padding: 0 22px 18px; }
+
+    /* ── BOTTOM CTA ── */
+    .cta-section {
+      position: relative; overflow: hidden; border-radius: 28px;
+      margin: 20px 0 60px;
+      min-height: 340px; display: flex; flex-direction: column; align-items: center;
+      justify-content: center; text-align: center; padding: 60px 24px;
+    }
+    .cta-video {
+      position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; z-index: 0;
+    }
+    .cta-frost {
+      position: absolute; inset: 0; z-index: 1;
+      backdrop-filter: blur(32px) saturate(1.3);
+      background: linear-gradient(
+        180deg,
+        rgba(245,230,215,0.65) 0%,
+        rgba(222,140,100,0.50) 50%,
+        rgba(212,83,42,0.35) 100%
+      );
+    }
+    .cta-section h2 {
+      position: relative; z-index: 2;
+      font-size: clamp(1.8rem, 4vw, 2.8rem); font-weight: 800; letter-spacing: -1px;
+      max-width: 600px; line-height: 1.1;
+    }
+    .cta-section p { position: relative; z-index: 2; margin-top: 14px; color: var(--text-secondary); }
+    .cta-section .cta-form {
+      position: relative; z-index: 2;
+      display: flex; gap: 10px; margin-top: 28px; flex-wrap: wrap; justify-content: center;
+    }
+    .cta-section input[type="email"] {
+      width: 300px; border: 1px solid rgba(0,0,0,0.1); background: rgba(255,255,255,0.85);
+      color: var(--text); border-radius: var(--radius-sm); padding: 14px 16px;
+      font-family: var(--sans); font-size: 0.95rem; outline: none;
+      backdrop-filter: blur(8px);
+    }
+    .cta-section input:focus { border-color: var(--coral); box-shadow: 0 0 0 3px var(--coral-glow); }
+    .cta-result {
+      position: relative; z-index: 2;
+      margin-top: 10px; min-height: 1.2rem;
+      font-family: var(--mono); font-size: 0.84rem;
+    }
+    .cta-result.ok { color: var(--green); }
+    .cta-result.bad { color: var(--danger); }
+
+    /* ── FOOTER ── */
+    footer {
+      padding: 0 0 40px;
+    }
+    .footer-grid {
+      display: grid; grid-template-columns: 1.3fr 2fr; gap: 14px;
+    }
+    .footer-box {
+      border: 1px solid var(--card-border); background: var(--card);
+      border-radius: var(--radius); padding: 28px;
+    }
+    .footer-brand { font-size: 1.05rem; font-weight: 800; }
+    .footer-brand span { color: var(--coral); }
+    .footer-desc { margin-top: 10px; color: var(--text-secondary); font-size: 0.9rem; line-height: 1.6; }
+    .footer-cols { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
+    .footer-col h4 { font-size: 0.92rem; font-weight: 700; margin-bottom: 12px; }
+    .footer-col a {
+      display: block; color: var(--text-secondary); text-decoration: none;
+      font-size: 0.88rem; padding: 3px 0; transition: color 0.15s;
+    }
+    .footer-col a:hover { color: var(--coral); }
+    .footer-bottom {
+      margin-top: 14px; padding-top: 16px; border-top: 1px solid var(--card-border);
+      font-size: 0.82rem; color: var(--text-muted); text-align: center;
+    }
+
+    /* ── RESPONSIVE ── */
     @media (max-width: 980px) {
-      .hero-panels { grid-template-columns: 1fr; }
-      .cards, .pricing { grid-template-columns: 1fr 1fr; }
+      .bento { grid-template-columns: 1fr; }
+      .bento-wide-inner { grid-template-columns: 1fr; }
+      .values-grid, .pricing-grid { grid-template-columns: 1fr 1fr; }
+      .float-card { display: none; }
+      .footer-grid { grid-template-columns: 1fr; }
+      .footer-cols { grid-template-columns: repeat(3, 1fr); }
+    }
+    @media (max-width: 1200px) {
+      .float-card.left { left: 7%; }
+      .float-card.right { right: 7%; }
+      .float-card.left-mid { left: 13%; }
+      .float-card.right-mid { right: 13%; }
     }
     @media (max-width: 700px) {
-      .nav-links { display: none; }
-      .cards, .pricing { grid-template-columns: 1fr; }
-      .hero { padding-top: 62px; }
-      .hero-form { flex-direction: column; }
-      .hero-form .btn { width: 100%; }
+      .nav-links a:not(.cta-link) { display: none; }
+      .values-grid, .pricing-grid { grid-template-columns: 1fr; }
+      .hero h1 { letter-spacing: -1px; }
+      .hero-form-box { flex-direction: column; align-items: center; }
+      .hero-form-box input[type="email"] { width: 100%; max-width: 340px; }
+      .trust-row { gap: 14px; }
+      .cta-section .cta-form { flex-direction: column; align-items: center; }
+      .cta-section input[type="email"] { width: 100%; max-width: 300px; }
+      .footer-cols { grid-template-columns: 1fr; }
+    }
+
+    /* ── GRID OVERLAY ── */
+    .grid-bg {
+      position: fixed; inset: 0; pointer-events: none; z-index: 0; opacity: 0.08;
+      background-image:
+        linear-gradient(to right, rgba(0,0,0,0.07) 1px, transparent 1px),
+        linear-gradient(to bottom, rgba(0,0,0,0.07) 1px, transparent 1px);
+      background-size: 48px 48px;
+      mask-image: radial-gradient(ellipse at 50% 30%, #000 0%, transparent 70%);
     }
   </style>
 </head>
 <body>
-  <div class="grid-overlay"></div>
+  <div class="grid-bg"></div>
 
+  <!-- ─── NAV ─── -->
   <nav>
     <div class="wrap nav-inner">
       <a class="brand" href="#">Claw <span>Trust</span> Scores</a>
       <div class="nav-links">
-        <a href="#use-cases">Use Cases</a>
+        <a href="#features">Features</a>
+        <a href="#how-it-works">How It Works</a>
         <a href="#pricing">Pricing</a>
-        <a href="#signup">Get API Key</a>
+        <a href="#faq">FAQ</a>
+        <a class="cta-link" href="#signup">Get API Key</a>
       </div>
     </div>
   </nav>
 
-  <main class="wrap">
-    <section class="hero" id="signup">
-      <div class="kicker">Know your agent before you execute</div>
-      <h1>Don’t get pinched.<br /><span class="accent">Know who to trust.</span></h1>
+  <!-- ─── HERO ─── -->
+  <div class="hero-wrap" id="signup">
+    <video class="hero-video" autoplay muted loop playsinline>
+      <source src="hero-lobsters.mp4" type="video/mp4" />
+    </video>
+    <div class="hero-frost"></div>
+
+    <div class="hero-floats">
+      <div class="float-card left">
+        <div class="fc-label">Trust Score</div>
+        <div id="heroHighScore" class="fc-score high">87</div>
+        <div class="fc-bar"><div id="heroHighBar" class="fc-bar-fill" style="width:87%;background:var(--teal);border-radius:99px;"></div></div>
+        <div class="fc-meta">
+          <span id="heroHighTrend" class="fc-badge up">+6 this week</span>
+          <span id="heroHighUpdated">updated 2m ago</span>
+        </div>
+      </div>
+      <div class="float-card right">
+        <div class="fc-label">Risk: flagged</div>
+        <div id="heroLowScore" class="fc-score low">23</div>
+        <div class="fc-bar"><div id="heroLowBar" class="fc-bar-fill" style="width:23%;background:var(--danger);border-radius:99px;"></div></div>
+        <div class="fc-meta">
+          <span id="heroLowTrend" class="fc-badge down">-12 risk spike</span>
+          <span id="heroLowUpdated">updated 1m ago</span>
+        </div>
+      </div>
+      <div class="float-card left-mid">
+        <div class="fc-label">Score: stable</div>
+        <div id="heroStableScore" class="fc-score high" style="color:#1f8f6d;">72</div>
+        <div class="fc-bar"><div id="heroStableBar" class="fc-bar-fill" style="width:72%;background:#1f8f6d;border-radius:99px;"></div></div>
+        <div class="fc-meta">
+          <span id="heroStableTrend" class="fc-badge up">+2 trend</span>
+          <span id="heroStableUpdated">updated 4m ago</span>
+        </div>
+      </div>
+      <div class="float-card right-mid">
+        <div class="fc-label">Preflight Decision</div>
+        <div id="heroDecisionScore" class="fc-score" style="font-size:1.1rem;color:#d28a1d;letter-spacing:-0.3px;">adjusted 46</div>
+        <span id="heroDecisionLabel" class="fc-decision">Review</span>
+        <div class="fc-meta">
+          <span id="heroDecisionContext" class="fc-badge warn">$2,500 + new payee</span>
+          <span id="heroDecisionUpdated">policy run now</span>
+        </div>
+      </div>
+    </div>
+
+    <section class="hero wrap">
+      <div class="pill"><span class="pill-badge">NEW</span> Agent Trust Infrastructure</div>
+      <h1>Don't get pinched.<br /><span class="accent">Know who to trust.</span></h1>
       <p class="hero-sub">
-        Claw Trust Scores gives every agent and tool a decayed, explainable trust score from 0-100 so payment systems,
-        hiring flows, and multi-agent orchestration can block risky counterparts before damage happens.
+        Real-time trust scores for AI agents. Score unknown counterparts before payments,
+        key sharing, or delegated execution — one API call.
       </p>
-
-      <div class="hero-action">
-        <form id="heroSignupForm" class="hero-form">
-          <input id="heroEmail" type="email" required placeholder="Enter your email" autocomplete="email" />
-          <button id="heroSubmitBtn" class="btn primary" type="submit">Get Free API Key</button>
-          <a class="btn secondary" href="#api">See API Flow</a>
-        </form>
-        <div class="hero-mini">
-          <span>Free tier: 5 agents, 100 events, 200 checks per month.</span>
-          <span>No credit card required.</span>
-        </div>
-        <div id="heroResult" class="result"></div>
+      <div class="trust-row">
+        <span class="trust-item"><span class="trust-icon">✓</span> Decayed Scoring</span>
+        <span class="trust-item"><span class="trust-icon">✓</span> Audit Export</span>
+        <span class="trust-item"><span class="trust-icon">✓</span> Preflight Gating</span>
       </div>
+      <form id="heroForm" class="hero-form-box">
+        <input id="heroEmail" type="email" required placeholder="Enter your email" autocomplete="email" />
+        <button id="heroBtn" class="btn btn-primary" type="submit">Get Free API Key</button>
+      </form>
+      <div class="hero-note">Free tier · 5 agents · 100 events · No credit card</div>
+      <div id="heroResult" class="hero-result"></div>
     </section>
+  </div>
 
-    <section id="api">
-      <div class="hero-panels">
-        <div class="panel">
-          <h3>Typical preflight call</h3>
-          <pre class="mono" style="margin:0;white-space:pre-wrap;color:#d7e3ff;font-size:.82rem;line-height:1.65;">POST /v1/integrations/clawcredit/preflight
-x-api-key: claw_xxx
-
-{ "agentId":"agent:vendor:77", "amountUsd":2500,
-  "newPayee":true, "firstTimeCounterparty":true }
-
-=> { "decision":"review", "adjustedScore":48 }</pre>
-        </div>
-        <div class="panel">
-          <h3>Signal model</h3>
-          <div class="metric-grid">
-            <div class="metric"><div class="val">0-100</div><div class="lbl">Score</div></div>
-            <div class="metric"><div class="val">30d</div><div class="lbl">Half-life decay</div></div>
-            <div class="metric"><div class="val">10</div><div class="lbl">Recent history items</div></div>
+  <!-- ─── MARQUEE ─── -->
+  <div class="marquee-section">
+    <div class="marquee-label">Current and future integrations</div>
+    <div class="marquee-row">
+      <div class="marquee-row-label">Live now</div>
+      <div style="overflow:hidden;">
+        <div class="marquee-track">
+          <div class="marquee-group">
+            <span>REST API</span><span>ClawCredit Preflight</span><span>Webhook Alerts</span>
+            <span>Usage Endpoint</span><span>Audit Export (JSON/CSV)</span><span>API Key Self-Serve</span>
           </div>
-          <p style="margin:12px 0 0;color:var(--muted);font-size:.9rem;">Weighted events plus recency decay. Good behavior recovers over time. Recent abuse matters most.</p>
+          <div class="marquee-group" aria-hidden="true">
+            <span>REST API</span><span>ClawCredit Preflight</span><span>Webhook Alerts</span>
+            <span>Usage Endpoint</span><span>Audit Export (JSON/CSV)</span><span>API Key Self-Serve</span>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="marquee-row">
+      <div class="marquee-row-label">Coming soon</div>
+      <div style="overflow:hidden;">
+        <div class="marquee-track reverse">
+          <div class="marquee-group">
+            <span>OpenClaw Skill</span><span>MCP Server Package</span><span>TypeScript SDK</span>
+            <span>Python SDK</span><span>Zapier / Make Connector</span><span>Integration Request Queue</span>
+          </div>
+          <div class="marquee-group" aria-hidden="true">
+            <span>OpenClaw Skill</span><span>MCP Server Package</span><span>TypeScript SDK</span>
+            <span>Python SDK</span><span>Zapier / Make Connector</span><span>Integration Request Queue</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <main class="wrap">
+
+    <!-- ─── FEATURES BENTO ─── -->
+    <section class="section" id="features">
+      <div class="sec-head">
+        <div class="sec-pill"><span class="dot"></span> Features</div>
+        <h2>Everything you need to<br />gate risky agent actions</h2>
+        <p>One trust check call. Explainable scores. Full audit trail.</p>
+      </div>
+
+      <div class="bento">
+        <div class="bento-card">
+          <div class="bento-icon">⚡</div>
+          <h3>Preflight Gating</h3>
+          <p>Block, review, or allow agent actions based on real-time trust + risk context before damage happens.</p>
+          <div class="bento-preview">
+            <div class="line"><span>POST /v1/.../preflight</span></div>
+            <div class="line"><span>decision</span> <span class="val coral">"review"</span></div>
+            <div class="line"><span>adjustedScore</span> <span class="val">48</span></div>
+            <div class="line"><span>riskPenalty</span> <span class="val">-27</span></div>
+          </div>
+        </div>
+
+        <div class="bento-card">
+          <div class="bento-icon">📊</div>
+          <h3>Decayed Trust Scores</h3>
+          <p>0–100 scores with 30-day half-life decay. Recent behavior matters most. Good actors recover over time.</p>
+          <div class="bento-preview">
+            <div class="bar-row">
+              <div class="bar green active" style="height:36px"></div>
+              <div class="bar green active" style="height:42px"></div>
+              <div class="bar green active" style="height:30px"></div>
+              <div class="bar active" style="height:14px"></div>
+              <div class="bar green active" style="height:48px"></div>
+              <div class="bar green" style="height:20px"></div>
+              <div class="bar green active" style="height:38px"></div>
+              <div class="bar" style="height:10px"></div>
+              <div class="bar green active" style="height:44px"></div>
+              <div class="bar green active" style="height:50px"></div>
+            </div>
+            <div class="line" style="margin-top:10px"><span>score</span> <span class="val green">74 · medium-high</span></div>
+          </div>
+        </div>
+
+        <div class="bento-card bento-wide">
+          <div class="bento-wide-inner">
+            <div>
+              <div class="bento-icon">📋</div>
+              <h3>Decision Audit Export</h3>
+              <p>Every block, review, and allow decision is logged with timestamp, agent ID, score, and reason. Export as JSON or CSV for compliance.</p>
+              <div class="bento-stat-row">
+                <div class="bento-stat"><div class="num coral">100%</div><div class="lbl">Decisions logged</div></div>
+                <div class="bento-stat"><div class="num green">JSON + CSV</div><div class="lbl">Export formats</div></div>
+              </div>
+            </div>
+            <div class="bento-preview" style="font-size:0.72rem;">
+              <div class="line"><span>GET /v1/audit/decisions?format=csv</span></div>
+              <div style="margin-top:8px;border-top:1px solid var(--card-border);padding-top:8px;">
+                <div class="line"><span>timestamp</span><span class="val">2026-02-18T14:22:01Z</span></div>
+                <div class="line"><span>action</span><span class="val">clawcredit_preflight</span></div>
+                <div class="line"><span>outcome</span><span class="val coral">block</span></div>
+                <div class="line"><span>score</span><span class="val">18</span></div>
+                <div class="line"><span>reason</span><span class="val">"Below hard min 35"</span></div>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </section>
 
-    <section id="use-cases">
+    <!-- ─── VALUES / HOW IT WORKS ─── -->
+    <section class="section" id="how-it-works">
       <div class="sec-head">
-        <h2>Where teams use it first</h2>
-        <p>One extra API call before risky actions.</p>
+        <div class="sec-pill"><span class="dot"></span> How It Works</div>
+        <h2>One API call before risky actions</h2>
+        <p>Integrate trust scoring into any agent workflow in minutes.</p>
       </div>
-      <div class="cards">
-        <article class="card">
-          <h3>Payment gating</h3>
-          <p>Block or review money movement when counterpart trust is low or risk context is high.</p>
-        </article>
-        <article class="card">
-          <h3>API key sharing</h3>
-          <p>Prevent secret exposure by scoring unknown agents before key issuance or delegated tool execution.</p>
-        </article>
-        <article class="card">
-          <h3>Agent marketplaces</h3>
-          <p>Filter spam and abusive bots with reputation history that decays and updates in near real time.</p>
-        </article>
+
+      <div class="values-grid">
+        <div class="value-card">
+          <div class="value-icon">1</div>
+          <h3>Log Events</h3>
+          <p>POST positive or negative signals as agents interact. Each event is timestamped and weighted.</p>
+        </div>
+        <div class="value-card">
+          <div class="value-icon">2</div>
+          <h3>Check Score</h3>
+          <p>GET a 0–100 trust score for any agent. Includes level, explanation, and recent event history.</p>
+        </div>
+        <div class="value-card">
+          <div class="value-icon">3</div>
+          <h3>Gate Actions</h3>
+          <p>Use preflight to get allow/review/block decisions with risk-adjusted scoring before execution.</p>
+        </div>
+        <div class="value-card">
+          <div class="value-icon">🔔</div>
+          <h3>Webhook Alerts</h3>
+          <p>Get notified when scores drop below thresholds. Automatic suppression prevents alert fatigue.</p>
+        </div>
+        <div class="value-card">
+          <div class="value-icon">📥</div>
+          <h3>Audit Export</h3>
+          <p>Export every decision as JSON or CSV. Compliance-ready. Up to 5,000 entries per API key.</p>
+        </div>
+        <div class="value-card">
+          <div class="value-icon">🔗</div>
+          <h3>Integrations</h3>
+          <p>First-class ClawCredit preflight policy. Framework adapters for TypeScript and Python coming soon.</p>
+        </div>
       </div>
     </section>
 
-    <section id="pricing">
+    <!-- ─── PRICING ─── -->
+    <section class="section" id="pricing">
       <div class="sec-head">
-        <h2>Pricing designed for fast upgrade paths</h2>
-        <p>Free for testing, paid for production behavior.</p>
+        <div class="sec-pill"><span class="dot"></span> Pricing</div>
+        <h2>Simple, transparent pricing</h2>
+        <p>Free for testing. Paid tiers when you go to production.</p>
+        <div style="margin-top:20px;">
+          <div class="pricing-toggle">
+            <button class="active" onclick="setToggle(this,'monthly')">Monthly</button>
+            <button onclick="setToggle(this,'yearly')">Yearly</button>
+          </div>
+        </div>
       </div>
-      <div class="pricing">
-        <article class="tier">
-          <h3>Free</h3>
-          <div class="price">$0 <span>/ month</span></div>
-          <ul>
-            <li>5 tracked agents</li>
-            <li>100 events / month</li>
-            <li>200 score checks / month</li>
-            <li>Basic support</li>
+
+      <div class="pricing-grid">
+        <div class="tier">
+          <div class="tier-name">Free</div>
+          <div class="tier-price" data-m="$0" data-y="$0">$0<span> /month</span></div>
+          <div class="tier-divider"></div>
+          <ul class="tier-features">
+            <li><span class="check">✓</span> 5 tracked agents</li>
+            <li><span class="check">✓</span> 100 events / month</li>
+            <li><span class="check">✓</span> 200 score checks / month</li>
+            <li><span class="check">✓</span> Basic audit log</li>
+            <li><span class="check">✓</span> Community support</li>
           </ul>
-        </article>
-        <article class="tier featured">
-          <h3>Starter</h3>
-          <div class="price">$19 <span>/ month</span></div>
-          <ul>
-            <li>100 tracked agents</li>
-            <li>5,000 events / month</li>
-            <li>10,000 checks / month</li>
-            <li>Webhook alerts + email support</li>
+          <a href="#signup" class="btn btn-primary">Get Started</a>
+        </div>
+
+        <div class="tier featured">
+          <div class="tier-name">Starter</div>
+          <div class="tier-price" data-m="$19" data-y="$15">$19<span> /month</span></div>
+          <div class="tier-divider"></div>
+          <ul class="tier-features">
+            <li><span class="check">✓</span> 100 tracked agents</li>
+            <li><span class="check">✓</span> 5,000 events / month</li>
+            <li><span class="check">✓</span> 10,000 score checks / month</li>
+            <li><span class="check">✓</span> Webhook alerts</li>
+            <li><span class="check">✓</span> CSV + JSON export</li>
           </ul>
-        </article>
-        <article class="tier">
-          <h3>Pro</h3>
-          <div class="price">$79 <span>/ month</span></div>
-          <ul>
-            <li>1,000 tracked agents</li>
-            <li>100,000 events / month</li>
-            <li>200,000 checks / month</li>
-            <li>Priority support + export path</li>
+          <a href="#signup" class="btn btn-primary">Get Started</a>
+        </div>
+
+        <div class="tier">
+          <div class="tier-name">Pro</div>
+          <div class="tier-price" data-m="$79" data-y="$65">$79<span> /month</span></div>
+          <div class="tier-divider"></div>
+          <ul class="tier-features">
+            <li><span class="check">✓</span> 1,000 tracked agents</li>
+            <li><span class="check">✓</span> 100,000 events / month</li>
+            <li><span class="check">✓</span> 200,000 score checks / month</li>
+            <li><span class="check">✓</span> Priority support</li>
+            <li><span class="check">✓</span> Full audit + export path</li>
           </ul>
-        </article>
+          <a href="#signup" class="btn btn-primary">Get Started</a>
+        </div>
+      </div>
+    </section>
+
+    <!-- ─── FAQ ─── -->
+    <section class="section" id="faq">
+      <div class="sec-head">
+        <div class="sec-pill"><span class="dot"></span> FAQ</div>
+        <h2>Frequently Asked Questions</h2>
+      </div>
+
+      <div class="faq-list">
+        <div class="faq-item">
+          <div class="faq-q" onclick="toggleFaq(this)">
+            <span>How does the trust score decay work?</span>
+            <span class="icon">+</span>
+          </div>
+          <div class="faq-a">Scores use a 30-day half-life decay. Recent events count most. A negative event from 60 days ago has roughly 25% of the weight of one from today. This means good actors can recover, and old incidents don't permanently penalize agents.</div>
+        </div>
+        <div class="faq-item">
+          <div class="faq-q" onclick="toggleFaq(this)">
+            <span>What's the difference between score checks and preflight?</span>
+            <span class="icon">+</span>
+          </div>
+          <div class="faq-a">A score check (GET /v1/score) returns the raw trust score. A preflight call (POST /v1/integrations/clawcredit/preflight) combines the trust score with risk context like payment amount, new payees, and privilege level to return an allow/review/block decision.</div>
+        </div>
+        <div class="faq-item">
+          <div class="faq-q" onclick="toggleFaq(this)">
+            <span>Can I export audit logs for compliance?</span>
+            <span class="icon">+</span>
+          </div>
+          <div class="faq-a">Yes. GET /v1/audit/decisions supports both JSON and CSV export. Every score check and preflight decision is automatically logged with timestamp, agent ID, outcome, score, and reason. Up to 5,000 entries per API key.</div>
+        </div>
+        <div class="faq-item">
+          <div class="faq-q" onclick="toggleFaq(this)">
+            <span>Is there a free tier?</span>
+            <span class="icon">+</span>
+          </div>
+          <div class="faq-a">Yes. The free tier includes 5 tracked agents, 100 events, and 200 score checks per month. No credit card required. You can upgrade instantly when you need production volume.</div>
+        </div>
+        <div class="faq-item">
+          <div class="faq-q" onclick="toggleFaq(this)">
+            <span>What integrations are supported?</span>
+            <span class="icon">+</span>
+          </div>
+          <div class="faq-a">ClawCredit preflight policy is built-in as a first-class integration. Framework adapters for TypeScript and Python are on the roadmap. The REST API works with any language or platform that can make HTTP requests.</div>
+        </div>
       </div>
     </section>
   </main>
 
-  <footer>
-    <div class="wrap">Claw Trust Scores · Agent trust infrastructure for payments, hiring, and execution safety</div>
+  <!-- ─── BOTTOM CTA ─── -->
+  <div class="wrap">
+    <div class="cta-section">
+      <video class="cta-video" autoplay muted loop playsinline>
+        <source src="hero-lobsters.mp4" type="video/mp4" />
+      </video>
+      <div class="cta-frost"></div>
+      <h2>Ready to score your first agent?</h2>
+      <p>Start free. No credit card required. Upgrade when you're ready.</p>
+      <form class="cta-form" onsubmit="handleCta(event)">
+        <input type="email" required placeholder="Enter your email" />
+        <button class="btn btn-primary" type="submit">Get Started</button>
+      </form>
+      <div id="ctaResult" class="cta-result"></div>
+    </div>
+  </div>
+
+  <!-- ─── FOOTER ─── -->
+  <footer class="wrap">
+    <div class="footer-grid">
+      <div class="footer-box">
+        <div class="footer-brand">Claw <span>Trust</span> Scores</div>
+        <p class="footer-desc">Trust infrastructure for autonomous agents. Score unknown counterparts before payments, key sharing, or delegated execution.</p>
+      </div>
+      <div class="footer-box">
+        <div class="footer-cols">
+          <div class="footer-col">
+            <h4>Product</h4>
+            <a href="#features">Features</a>
+            <a href="#pricing">Pricing</a>
+            <a href="#faq">FAQ</a>
+          </div>
+          <div class="footer-col">
+            <h4>Developers</h4>
+            <a href="#">API Docs</a>
+            <a href="#">Changelog</a>
+            <a href="#">Status</a>
+          </div>
+          <div class="footer-col">
+            <h4>Contact</h4>
+            <a href="mailto:support@clawtrustscores.com">support@clawtrustscores.com</a>
+            <a href="#">X / Twitter</a>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="footer-bottom">© 2026 Claw Trust Scores · Agent trust infrastructure</div>
   </footer>
 
   <script>
-    const heroSignupForm = document.getElementById("heroSignupForm");
+    /* ─── Hero signup ─── */
+    const heroForm = document.getElementById("heroForm");
     const heroEmail = document.getElementById("heroEmail");
-    const heroSubmitBtn = document.getElementById("heroSubmitBtn");
+    const heroBtn = document.getElementById("heroBtn");
     const heroResult = document.getElementById("heroResult");
 
-    heroSignupForm.addEventListener("submit", async (event) => {
-      event.preventDefault();
+    heroForm.addEventListener("submit", async (e) => {
+      e.preventDefault();
       const email = heroEmail.value.trim().toLowerCase();
       if (!email) return;
-
-      heroSubmitBtn.disabled = true;
-      heroSubmitBtn.textContent = "Creating...";
-      heroResult.className = "result";
+      heroBtn.disabled = true;
+      heroBtn.textContent = "Creating...";
+      heroResult.className = "hero-result";
       heroResult.textContent = "";
+      try {
+        const res = await fetch("/v1/users", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ email })
+        });
+        const data = await res.json();
+        if (!res.ok) {
+          heroResult.className = "hero-result bad";
+          heroResult.textContent = data.error || "Could not create key.";
+          return;
+        }
+        heroResult.className = "hero-result ok";
+        heroResult.textContent = data.message || "API key created — check your email.";
+      } catch {
+        heroResult.className = "hero-result bad";
+        heroResult.textContent = "Network error. Try again.";
+      } finally {
+        heroBtn.disabled = false;
+        heroBtn.textContent = "Get Free API Key";
+      }
+    });
+
+    /* ─── Bottom CTA ─── */
+    async function handleCta(e) {
+      e.preventDefault();
+      const input = e.target.querySelector('input');
+      const email = input.value.trim().toLowerCase();
+      const ctaResult = document.getElementById("ctaResult");
+      if (!email) return;
+      ctaResult.className = "cta-result";
+      ctaResult.textContent = "";
 
       try {
         const res = await fetch("/v1/users", {
@@ -279,23 +1048,93 @@ x-api-key: claw_xxx
           body: JSON.stringify({ email })
         });
         const data = await res.json();
+        ctaResult.className = res.ok ? "cta-result ok" : "cta-result bad";
+        ctaResult.textContent = res.ok
+          ? (data.message || "API key created — check your email.")
+          : (data.error || "Could not create key.");
+      } catch {
+        ctaResult.className = "cta-result bad";
+        ctaResult.textContent = "Network error. Try again.";
+      }
+    }
 
-        if (!res.ok) {
-          heroResult.className = "result bad";
-          heroResult.textContent = data.error || "Could not create key.";
-          return;
+    /* ─── Pricing toggle ─── */
+    function setToggle(btn, period) {
+      btn.parentElement.querySelectorAll('button').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      document.querySelectorAll('.tier-price').forEach(el => {
+        const val = period === 'yearly' ? el.dataset.y : el.dataset.m;
+        const suffix = period === 'yearly' ? ' /month' : ' /month';
+        el.innerHTML = val + '<span>' + suffix + '</span>';
+      });
+    }
+
+    /* ─── FAQ accordion ─── */
+    function toggleFaq(el) {
+      el.closest('.faq-item').classList.toggle('open');
+    }
+
+    function setBar(id, score) {
+      const el = document.getElementById(id);
+      if (!el) return;
+      const value = Math.max(0, Math.min(100, Number(score) || 0));
+      el.style.width = `${value}%`;
+    }
+
+    function setTrendBadge(id, text) {
+      const el = document.getElementById(id);
+      if (!el) return;
+      el.textContent = text;
+      if (text.startsWith("+")) {
+        el.className = "fc-badge up";
+      } else if (text.startsWith("-")) {
+        el.className = "fc-badge down";
+      } else {
+        el.className = "fc-badge warn";
+      }
+    }
+
+    async function loadHeroSnapshot() {
+      try {
+        const res = await fetch("/v1/public/hero-snapshot", { cache: "no-store" });
+        if (!res.ok) return;
+        const data = await res.json();
+        const cards = data?.cards;
+        if (!cards) return;
+
+        if (cards.high) {
+          document.getElementById("heroHighScore").textContent = String(cards.high.score);
+          setBar("heroHighBar", cards.high.score);
+          setTrendBadge("heroHighTrend", cards.high.trend || "");
+          document.getElementById("heroHighUpdated").textContent = cards.high.updated || "";
         }
 
-        heroResult.className = "result ok";
-        heroResult.textContent = data.message || "API key created.";
+        if (cards.low) {
+          document.getElementById("heroLowScore").textContent = String(cards.low.score);
+          setBar("heroLowBar", cards.low.score);
+          setTrendBadge("heroLowTrend", cards.low.trend || "");
+          document.getElementById("heroLowUpdated").textContent = cards.low.updated || "";
+        }
+
+        if (cards.stable) {
+          document.getElementById("heroStableScore").textContent = String(cards.stable.score);
+          setBar("heroStableBar", cards.stable.score);
+          setTrendBadge("heroStableTrend", cards.stable.trend || "");
+          document.getElementById("heroStableUpdated").textContent = cards.stable.updated || "";
+        }
+
+        if (cards.decision) {
+          document.getElementById("heroDecisionScore").textContent = `adjusted ${cards.decision.adjustedScore}`;
+          document.getElementById("heroDecisionLabel").textContent = String(cards.decision.decision || "review");
+          document.getElementById("heroDecisionContext").textContent = cards.decision.context || "";
+          document.getElementById("heroDecisionUpdated").textContent = cards.decision.updated || "";
+        }
       } catch {
-        heroResult.className = "result bad";
-        heroResult.textContent = "Network error. Try again.";
-      } finally {
-        heroSubmitBtn.disabled = false;
-        heroSubmitBtn.textContent = "Get Free API Key";
+        // keep fallback card values
       }
-    });
+    }
+
+    loadHeroSnapshot();
   </script>
 </body>
 </html>

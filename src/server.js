@@ -12,8 +12,10 @@ import { getScore, postEvent } from "./service.js";
 import { handleCreateUser, handleUpgrade, handleStripeWebhook } from "./selfserve.js";
 import { getUsageSnapshot } from "./usage.js";
 import { createWebhook, deleteWebhook, getWebhooks } from "./webhooks.js";
+import { getHeroSnapshot } from "./public-signals.js";
 
 const PORT = Number(process.env.PORT ?? 8080);
+const PUBLIC_DIR = path.resolve(process.cwd(), "public");
 const LANDING_PATH = path.resolve(process.cwd(), "public", "index.html");
 
 loadStoreFromDisk();
@@ -69,6 +71,59 @@ function sendHtmlFile(response, absolutePath) {
     response.end(html);
   } catch {
     sendJson(response, 500, { error: "Landing page unavailable." });
+  }
+}
+
+function mimeTypeForPath(absolutePath) {
+  const ext = path.extname(absolutePath).toLowerCase();
+  if (ext === ".mp4") return "video/mp4";
+  if (ext === ".webm") return "video/webm";
+  if (ext === ".png") return "image/png";
+  if (ext === ".jpg" || ext === ".jpeg") return "image/jpeg";
+  if (ext === ".svg") return "image/svg+xml";
+  if (ext === ".ico") return "image/x-icon";
+  if (ext === ".css") return "text/css; charset=utf-8";
+  if (ext === ".js") return "application/javascript; charset=utf-8";
+  if (ext === ".json") return "application/json; charset=utf-8";
+  if (ext === ".txt") return "text/plain; charset=utf-8";
+  return "application/octet-stream";
+}
+
+function trySendStaticAsset(response, pathname) {
+  const decoded = decodeURIComponent(pathname);
+  const relative = decoded.replace(/^\/+/, "");
+  if (!relative || relative.includes("\0")) return false;
+
+  const absolutePath = path.resolve(PUBLIC_DIR, relative);
+  if (
+    absolutePath !== PUBLIC_DIR &&
+    !absolutePath.startsWith(`${PUBLIC_DIR}${path.sep}`)
+  ) {
+    return false;
+  }
+
+  let stat;
+  try {
+    stat = fs.statSync(absolutePath);
+  } catch {
+    return false;
+  }
+  if (!stat.isFile()) return false;
+
+  try {
+    const body = fs.readFileSync(absolutePath);
+    response.writeHead(200, {
+      "content-type": mimeTypeForPath(absolutePath),
+      "cache-control": "public, max-age=3600",
+      "x-content-type-options": "nosniff",
+      "referrer-policy": "no-referrer",
+      ...CORS_HEADERS,
+    });
+    response.end(body);
+    return true;
+  } catch {
+    sendJson(response, 500, { error: "Static asset unavailable." });
+    return true;
   }
 }
 
@@ -138,6 +193,10 @@ const server = http.createServer(async (request, response) => {
     return sendHtmlFile(response, LANDING_PATH);
   }
 
+  if (request.method === "GET" && trySendStaticAsset(response, url.pathname)) {
+    return;
+  }
+
   // --- Health check ---
   if (request.method === "GET" && url.pathname === "/health") {
     return sendJson(response, 200, {
@@ -150,6 +209,11 @@ const server = http.createServer(async (request, response) => {
   // --- Plans (public) ---
   if (request.method === "GET" && url.pathname === "/v1/plans") {
     return sendJson(response, 200, { plans: PLANS });
+  }
+
+  // --- Public hero snapshot (safe demo data for landing page) ---
+  if (request.method === "GET" && url.pathname === "/v1/public/hero-snapshot") {
+    return sendJson(response, 200, getHeroSnapshot());
   }
 
   // --- Self-serve signup (public, no auth required) ---

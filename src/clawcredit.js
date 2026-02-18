@@ -7,7 +7,7 @@ function toNumber(value, fallback = 0) {
   return Number.isFinite(num) ? num : fallback;
 }
 
-function riskFromPayload(payload) {
+export function riskFromPayload(payload) {
   let risk = 0;
 
   const amountUsd = toNumber(payload.amountUsd, 0);
