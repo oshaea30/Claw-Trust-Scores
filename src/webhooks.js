@@ -1,4 +1,5 @@
 import crypto from "node:crypto";
+import net from "node:net";
 
 import { appendWebhookDelivery, listWebhooks, putWebhooks, store } from "./store.js";
 import { scheduleFlush } from "./persistence.js";
@@ -6,12 +7,66 @@ import { scheduleFlush } from "./persistence.js";
 const WEBHOOK_TIMEOUT_MS = 5000;
 const WEBHOOK_COOLDOWN_MS = 60 * 60 * 1000;
 
-function isValidHttpUrl(input) {
+function isPrivateIpv4(host) {
+  const parts = host.split(".").map((value) => Number(value));
+  if (parts.length !== 4 || parts.some((value) => Number.isNaN(value) || value < 0 || value > 255)) {
+    return false;
+  }
+
+  if (parts[0] === 10) return true;
+  if (parts[0] === 127) return true;
+  if (parts[0] === 0) return true;
+  if (parts[0] === 169 && parts[1] === 254) return true;
+  if (parts[0] === 192 && parts[1] === 168) return true;
+  if (parts[0] === 172 && parts[1] >= 16 && parts[1] <= 31) return true;
+
+  return false;
+}
+
+function isPrivateIpv6(host) {
+  const normalized = host.toLowerCase();
+  return (
+    normalized === "::1" ||
+    normalized.startsWith("fc") ||
+    normalized.startsWith("fd") ||
+    normalized.startsWith("fe80:")
+  );
+}
+
+function isBlockedHostname(hostname) {
+  const host = hostname.toLowerCase();
+  if (!host) return true;
+
+  if (host === "localhost" || host.endsWith(".localhost") || host.endsWith(".local") || host === "host.docker.internal") {
+    return true;
+  }
+
+  const ipVersion = net.isIP(host);
+  if (ipVersion === 4) {
+    return isPrivateIpv4(host);
+  }
+
+  if (ipVersion === 6) {
+    return isPrivateIpv6(host);
+  }
+
+  return false;
+}
+
+function parseWebhookUrl(input) {
   try {
     const parsed = new URL(input);
-    return parsed.protocol === "http:" || parsed.protocol === "https:";
+    if (!(parsed.protocol === "http:" || parsed.protocol === "https:")) {
+      return null;
+    }
+
+    if (isBlockedHostname(parsed.hostname)) {
+      return null;
+    }
+
+    return parsed;
   } catch {
-    return false;
+    return null;
   }
 }
 
@@ -24,12 +79,18 @@ export function createWebhook({ account, payload }) {
     return { status: 403, body: { error: "Webhooks are available on Starter and Pro only." } };
   }
 
-  const url = String(payload.url ?? "").trim();
+  const urlRaw = String(payload.url ?? "").trim();
+  const parsedUrl = parseWebhookUrl(urlRaw);
   const threshold = Number(payload.threshold);
   const secret = String(payload.secret ?? "").trim();
 
-  if (!url || !isValidHttpUrl(url)) {
-    return { status: 400, body: { error: "url is required and must be a valid http/https URL." } };
+  if (!parsedUrl) {
+    return {
+      status: 400,
+      body: {
+        error: "url is required and must be a valid public http/https URL (localhost/private network blocked)."
+      }
+    };
   }
 
   if (!Number.isFinite(threshold) || threshold < 0 || threshold > 100) {
@@ -47,7 +108,7 @@ export function createWebhook({ account, payload }) {
 
   const webhook = {
     id: crypto.randomUUID(),
-    url,
+    url: parsedUrl.toString(),
     threshold: Math.round(threshold),
     secret,
     createdAt: new Date().toISOString(),

@@ -18,6 +18,18 @@ function kindValid(kind) {
   return kind === "positive" || kind === "neutral" || kind === "negative";
 }
 
+function prettyTier(tier) {
+  if (tier === "free") return "Free";
+  if (tier === "starter") return "Starter";
+  return "Pro";
+}
+
+function nextTier(tier) {
+  if (tier === "free") return "Starter";
+  if (tier === "starter") return "Pro";
+  return "Enterprise";
+}
+
 function rateLimited({ apiKey, tier, action }) {
   const limit = RATE_LIMITS_PER_MINUTE[tier][action];
   const minuteWindow = Math.floor(Date.now() / 60000);
@@ -48,7 +60,7 @@ function enforceAgentCap(usage, plan, normalizedAgentId, tier) {
   if (newAgent && usage.trackedAgents.size >= plan.maxAgents) {
     return {
       ok: false,
-      error: `Plan limit reached: ${tier} allows up to ${plan.maxAgents} tracked agents/month.`
+      error: `${prettyTier(tier)} plan limit hit: ${plan.maxAgents} tracked agents/month. Upgrade to ${nextTier(tier)}.`
     };
   }
   return { ok: true };
@@ -82,7 +94,9 @@ export async function postEvent({ account, payload }) {
   if (usage.eventsLogged >= plan.maxEventsPerMonth) {
     return {
       status: 402,
-      body: { error: `Plan limit reached: ${account.tier} allows ${plan.maxEventsPerMonth} events/month.` }
+      body: {
+        error: `${prettyTier(account.tier)} plan limit hit: ${plan.maxEventsPerMonth} events/month exceeded. Upgrade to ${nextTier(account.tier)}.`
+      }
     };
   }
 
@@ -153,7 +167,9 @@ export function getScore({ account, agentId }) {
   if (usage.scoreChecks >= plan.maxChecksPerMonth) {
     return {
       status: 402,
-      body: { error: `Plan limit reached: ${account.tier} allows ${plan.maxChecksPerMonth} score checks/month.` }
+      body: {
+        error: `${prettyTier(account.tier)} plan limit hit: ${plan.maxChecksPerMonth} score checks/month exceeded. Upgrade to ${nextTier(account.tier)}.`
+      }
     };
   }
 

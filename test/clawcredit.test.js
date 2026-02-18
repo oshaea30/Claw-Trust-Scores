@@ -1,10 +1,15 @@
-import test from "node:test";
+import test, { beforeEach } from "node:test";
 import assert from "node:assert/strict";
 
 import { postEvent } from "../src/service.js";
 import { clawCreditPreflight } from "../src/clawcredit.js";
+import { resetStore } from "../src/store.js";
 
 const account = { apiKey: "demo_starter_key", tier: "starter" };
+
+beforeEach(() => {
+  resetStore();
+});
 
 test("clawcredit preflight blocks risky low-trust payment", async () => {
   await postEvent({

@@ -1,7 +1,12 @@
-import test from "node:test";
+import test, { beforeEach } from "node:test";
 import assert from "node:assert/strict";
 
+import { resetStore } from "../src/store.js";
 import { createWebhook } from "../src/webhooks.js";
+
+beforeEach(() => {
+  resetStore();
+});
 
 test("free tier cannot create webhook", () => {
   const result = createWebhook({
