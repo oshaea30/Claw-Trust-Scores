@@ -3,11 +3,19 @@ import path from "node:path";
 
 import { store } from "./store.js";
 
-const DATA_DIR = process.env.DATA_DIR ?? path.resolve(process.cwd(), "data");
-const STATE_PATH = path.join(DATA_DIR, "state.json");
-
 let flushTimer = null;
 let loaded = false;
+
+function currentDataDir() {
+  const dir = process.env.DATA_DIR;
+  // Guard against literal "undefined" — an older bug wrote to an "undefined/" folder
+  if (!dir || dir === "undefined") return path.resolve(process.cwd(), "data");
+  return dir;
+}
+
+function currentStatePath() {
+  return path.join(currentDataDir(), "state.json");
+}
 
 function toObjectMap(map) {
   return Object.fromEntries(map.entries());
@@ -18,13 +26,22 @@ function loadObjectMap(input) {
   return new Map(Object.entries(input));
 }
 
+export function resetPersistenceStateForTest() {
+  loaded = false;
+  if (flushTimer) {
+    clearTimeout(flushTimer);
+    flushTimer = null;
+  }
+}
+
 export function loadStoreFromDisk() {
   if (loaded) return;
   loaded = true;
 
   try {
-    if (!fs.existsSync(STATE_PATH)) return;
-    const parsed = JSON.parse(fs.readFileSync(STATE_PATH, "utf8"));
+    const statePath = currentStatePath();
+    if (!fs.existsSync(statePath)) return;
+    const parsed = JSON.parse(fs.readFileSync(statePath, "utf8"));
 
     store.eventsByAgentId = loadObjectMap(parsed.eventsByAgentId);
 
@@ -43,6 +60,9 @@ export function loadStoreFromDisk() {
     store.webhooksByApiKey = loadObjectMap(parsed.webhooksByApiKey);
     store.webhookDeliveries = loadObjectMap(parsed.webhookDeliveries);
     store.webhookSuppression = loadObjectMap(parsed.webhookSuppression);
+
+    // Self-serve users (added in v0.2)
+    store.users = loadObjectMap(parsed.users);
   } catch {
     // Ignore broken state and start fresh.
   }
@@ -50,7 +70,9 @@ export function loadStoreFromDisk() {
 
 export function flushStoreToDisk() {
   try {
-    fs.mkdirSync(DATA_DIR, { recursive: true });
+    const dataDir = currentDataDir();
+    const statePath = currentStatePath();
+    fs.mkdirSync(dataDir, { recursive: true });
     const usage = Object.fromEntries(
       [...store.usageByMonthAndApiKey.entries()].map(([key, value]) => [
         key,
@@ -67,10 +89,11 @@ export function flushStoreToDisk() {
       usageByMonthAndApiKey: usage,
       webhooksByApiKey: toObjectMap(store.webhooksByApiKey),
       webhookDeliveries: toObjectMap(store.webhookDeliveries),
-      webhookSuppression: toObjectMap(store.webhookSuppression)
+      webhookSuppression: toObjectMap(store.webhookSuppression),
+      users: toObjectMap(store.users ?? new Map()),
     };
 
-    fs.writeFileSync(STATE_PATH, JSON.stringify(payload), "utf8");
+    fs.writeFileSync(statePath, JSON.stringify(payload), "utf8");
   } catch {
     // Keep serving even if persistence fails.
   }
@@ -88,5 +111,5 @@ export function scheduleFlush() {
 }
 
 export function getPersistenceStatePath() {
-  return STATE_PATH;
+  return currentStatePath();
 }

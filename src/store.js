@@ -5,8 +5,20 @@ export const store = {
   recentEventHashes: new Map(),
   webhooksByApiKey: new Map(),
   webhookDeliveries: new Map(),
-  webhookSuppression: new Map()
+  webhookSuppression: new Map(),
+  users: new Map(),
 };
+
+export function resetStore() {
+  store.eventsByAgentId = new Map();
+  store.usageByMonthAndApiKey = new Map();
+  store.rateCounterByWindowAndKey = new Map();
+  store.recentEventHashes = new Map();
+  store.webhooksByApiKey = new Map();
+  store.webhookDeliveries = new Map();
+  store.webhookSuppression = new Map();
+  store.users = new Map();
+}
 
 export function getMonthKey(now = new Date()) {
   const year = now.getUTCFullYear();
