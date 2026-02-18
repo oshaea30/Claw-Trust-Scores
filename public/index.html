@@ -10,18 +10,18 @@
   <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
   <style>
     :root {
-      --bg: #06090f;
+      --bg: #070a11;
       --bg-soft: #0d1422;
-      --card: #0f1829;
-      --card-2: #101b2f;
+      --card: #10192b;
+      --card-2: #0c1423;
       --line: #24324f;
-      --text: #e6edf8;
-      --muted: #8fa0c4;
-      --accent: #ff6b4a;
-      --accent-2: #14d8c6;
-      --ok: #7ce8a4;
-      --warn: #ffd56a;
-      --danger: #ff7985;
+      --text: #e8effb;
+      --muted: #91a2c6;
+      --accent: #ff6f4f;
+      --accent-dark: #cc553a;
+      --accent-2: #18c9ba;
+      --ok: #83e6a7;
+      --danger: #ff8d9b;
       --mono: "IBM Plex Mono", monospace;
       --sans: "Space Grotesk", sans-serif;
     }
@@ -31,10 +31,7 @@
     body {
       font-family: var(--sans);
       color: var(--text);
-      background:
-        radial-gradient(1200px 600px at 10% -10%, #1b2540 0%, transparent 55%),
-        radial-gradient(1000px 500px at 90% -20%, #20354e 0%, transparent 55%),
-        var(--bg);
+      background: var(--bg);
       line-height: 1.5;
     }
 
@@ -42,12 +39,12 @@
       position: fixed;
       inset: 0;
       pointer-events: none;
-      opacity: 0.13;
+      opacity: 0.16;
       background-image:
-        linear-gradient(to right, rgba(150, 170, 220, 0.14) 1px, transparent 1px),
-        linear-gradient(to bottom, rgba(150, 170, 220, 0.14) 1px, transparent 1px);
+        linear-gradient(to right, rgba(146, 169, 220, 0.16) 1px, transparent 1px),
+        linear-gradient(to bottom, rgba(146, 169, 220, 0.16) 1px, transparent 1px);
       background-size: 42px 42px;
-      mask-image: radial-gradient(circle at 50% 0%, #000 30%, transparent 85%);
+      mask-image: linear-gradient(to bottom, #000 0%, #000 58%, transparent 100%);
     }
 
     .wrap { width: min(1120px, 92vw); margin: 0 auto; }
@@ -55,25 +52,26 @@
     nav {
       position: sticky;
       top: 0;
-      z-index: 20;
-      backdrop-filter: blur(10px);
-      background: rgba(6, 9, 15, 0.78);
-      border-bottom: 1px solid rgba(133, 158, 219, 0.2);
+      z-index: 25;
+      backdrop-filter: blur(8px);
+      background: rgba(7, 10, 17, 0.86);
+      border-bottom: 1px solid rgba(132, 154, 201, 0.22);
     }
     .nav-inner {
-      height: 68px;
+      height: 66px;
       display: flex;
       align-items: center;
       justify-content: space-between;
     }
     .brand {
-      font-weight: 700;
-      letter-spacing: 0.2px;
-      text-decoration: none;
-      color: var(--text);
       font-size: 1.02rem;
+      font-weight: 700;
+      color: var(--text);
+      text-decoration: none;
+      letter-spacing: 0.2px;
     }
     .brand span { color: var(--accent); }
+
     .nav-links {
       display: flex;
       gap: 1.2rem;
@@ -82,87 +80,128 @@
     .nav-links a {
       color: var(--muted);
       text-decoration: none;
-      font-size: 0.95rem;
+      font-size: 0.93rem;
+      font-weight: 500;
     }
     .nav-links a:hover { color: var(--text); }
 
     .hero {
-      padding: 88px 0 44px;
+      padding: 82px 0 40px;
       display: grid;
-      gap: 22px;
+      gap: 18px;
     }
-    .hero-kicker {
+    .kicker {
       width: fit-content;
-      font-family: var(--mono);
-      font-size: 0.77rem;
-      letter-spacing: 1.2px;
+      border: 1px solid rgba(24, 201, 186, 0.36);
+      background: rgba(24, 201, 186, 0.08);
       color: var(--accent-2);
-      text-transform: uppercase;
-      border: 1px solid rgba(20, 216, 198, 0.35);
-      background: rgba(20, 216, 198, 0.08);
       border-radius: 999px;
-      padding: 7px 11px;
+      padding: 7px 12px;
+      font-family: var(--mono);
+      font-size: 0.76rem;
+      text-transform: uppercase;
+      letter-spacing: 1.2px;
     }
     h1 {
       margin: 0;
-      font-size: clamp(2rem, 5.4vw, 4.25rem);
-      line-height: 1.03;
+      font-size: clamp(2.1rem, 6.2vw, 4.5rem);
+      line-height: 1.02;
       letter-spacing: -1.4px;
-      max-width: 900px;
+      max-width: 860px;
     }
-    h1 em {
-      color: var(--accent);
-      font-style: normal;
-    }
+    h1 .accent { color: var(--accent); }
+
     .hero-sub {
-      color: var(--muted);
+      margin: 0;
       max-width: 760px;
-      font-size: clamp(1rem, 1.5vw, 1.18rem);
+      color: var(--muted);
+      font-size: clamp(1rem, 1.4vw, 1.15rem);
     }
-    .hero-ctas {
+
+    .hero-action {
+      margin-top: 6px;
+      width: min(720px, 100%);
+      border: 1px solid var(--line);
+      background: rgba(15, 23, 40, 0.82);
+      border-radius: 14px;
+      padding: 12px;
+    }
+    .hero-form {
       display: flex;
+      gap: 10px;
       flex-wrap: wrap;
-      gap: 12px;
-      margin-top: 4px;
     }
+    .hero-form input[type="email"] {
+      flex: 1;
+      min-width: 240px;
+      border: 1px solid var(--line);
+      background: #0a1221;
+      color: var(--text);
+      border-radius: 10px;
+      padding: 12px 12px;
+      font-family: var(--sans);
+      font-size: 0.95rem;
+    }
+
     .btn {
       border: 1px solid transparent;
-      border-radius: 12px;
-      padding: 12px 17px;
+      border-radius: 10px;
+      padding: 11px 15px;
       text-decoration: none;
       font-weight: 600;
       cursor: pointer;
       font-family: var(--sans);
-      font-size: 0.96rem;
+      font-size: 0.95rem;
       transition: 160ms ease;
     }
     .btn.primary {
-      background: linear-gradient(135deg, var(--accent), #ff8f5e);
-      color: #170f0d;
+      background: var(--accent);
+      color: #1e1310;
     }
-    .btn.primary:hover { transform: translateY(-1px); }
+    .btn.primary:hover { background: #ff7d62; transform: translateY(-1px); }
     .btn.secondary {
+      background: rgba(21, 31, 52, 0.7);
       border-color: var(--line);
       color: var(--text);
-      background: rgba(26, 39, 63, 0.4);
     }
 
+    .hero-mini {
+      margin-top: 8px;
+      display: flex;
+      justify-content: space-between;
+      gap: 10px;
+      align-items: center;
+      flex-wrap: wrap;
+      font-size: 0.8rem;
+      color: var(--muted);
+    }
+    .hero-mini a { color: #b6c8ef; text-decoration: none; }
+
+    .result {
+      margin-top: 8px;
+      font-family: var(--mono);
+      font-size: 0.83rem;
+      min-height: 1.1rem;
+    }
+    .result.ok { color: var(--ok); }
+    .result.bad { color: var(--danger); }
+
     .hero-panels {
-      margin-top: 14px;
+      margin-top: 12px;
       display: grid;
       grid-template-columns: 1.2fr 0.8fr;
-      gap: 14px;
+      gap: 12px;
     }
     .panel {
       border: 1px solid var(--line);
-      background: linear-gradient(180deg, var(--card), #0b1323);
-      border-radius: 16px;
-      padding: 18px;
+      background: var(--card-2);
+      border-radius: 15px;
+      padding: 16px;
     }
     .panel h3 {
       margin: 0 0 8px;
-      font-size: 0.95rem;
-      color: #c8d7f6;
+      font-size: 0.96rem;
+      color: #d4e1ff;
       font-weight: 600;
     }
     .mono { font-family: var(--mono); }
@@ -170,29 +209,29 @@
     .metric-grid {
       display: grid;
       grid-template-columns: repeat(3, minmax(0, 1fr));
-      gap: 10px;
-      margin-top: 12px;
+      gap: 9px;
+      margin-top: 11px;
     }
     .metric {
       border: 1px solid var(--line);
       border-radius: 10px;
+      background: rgba(255,255,255,0.015);
       padding: 9px 10px;
-      background: rgba(255, 255, 255, 0.015);
     }
     .metric .val { font-size: 1.1rem; font-weight: 700; }
     .metric .lbl { font-size: 0.78rem; color: var(--muted); }
 
-    section { padding: 64px 0; }
+    section { padding: 62px 0; }
     .sec-head {
       display: flex;
       justify-content: space-between;
       align-items: baseline;
-      gap: 14px;
-      margin-bottom: 18px;
+      gap: 12px;
+      margin-bottom: 17px;
     }
     .sec-head h2 {
       margin: 0;
-      font-size: clamp(1.35rem, 3vw, 2rem);
+      font-size: clamp(1.4rem, 3vw, 2rem);
       letter-spacing: -0.5px;
     }
     .sec-head p { margin: 0; color: var(--muted); }
@@ -200,15 +239,15 @@
     .cards {
       display: grid;
       grid-template-columns: repeat(3, minmax(0, 1fr));
-      gap: 12px;
+      gap: 11px;
     }
     .card {
       border: 1px solid var(--line);
-      background: linear-gradient(180deg, var(--card-2), #0b1220);
+      background: var(--card);
       border-radius: 14px;
       padding: 16px;
     }
-    .card h3 { margin: 0 0 7px; font-size: 1.02rem; }
+    .card h3 { margin: 0 0 8px; font-size: 1.02rem; }
     .card p { margin: 0; color: var(--muted); font-size: 0.95rem; }
 
     .pricing {
@@ -218,13 +257,13 @@
     }
     .tier {
       border: 1px solid var(--line);
-      border-radius: 16px;
+      border-radius: 15px;
       padding: 18px;
-      background: linear-gradient(180deg, var(--card), #0b1221);
+      background: var(--card);
     }
     .tier.featured {
-      border-color: rgba(255, 107, 74, 0.65);
-      box-shadow: 0 0 0 1px rgba(255, 107, 74, 0.2), 0 20px 50px rgba(0, 0, 0, 0.28);
+      border-color: rgba(255, 111, 79, 0.7);
+      box-shadow: 0 0 0 1px rgba(255, 111, 79, 0.2);
     }
     .tier h3 { margin: 0; }
     .tier .price {
@@ -244,41 +283,34 @@
       font-size: 0.92rem;
     }
 
-    .signup {
-      border: 1px solid rgba(20, 216, 198, 0.28);
-      border-radius: 16px;
-      background: linear-gradient(180deg, rgba(20, 216, 198, 0.08), rgba(20, 216, 198, 0.02));
-      padding: 18px;
-    }
-    .form-row {
-      margin-top: 12px;
-      display: flex;
-      gap: 10px;
-      flex-wrap: wrap;
-    }
-    input[type="email"] {
-      flex: 1;
-      min-width: 230px;
+    .next {
       border: 1px solid var(--line);
-      background: #091122;
-      color: var(--text);
-      border-radius: 10px;
-      padding: 12px 12px;
-      font-family: var(--sans);
-      font-size: 0.95rem;
+      border-radius: 15px;
+      background: var(--card-2);
+      padding: 17px;
     }
-    .result {
-      margin-top: 10px;
+    .steps {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 10px;
+      margin-top: 11px;
+    }
+    .step {
+      border: 1px solid var(--line);
+      border-radius: 11px;
+      padding: 11px;
+      background: rgba(255,255,255,0.01);
+    }
+    .step .n {
       font-family: var(--mono);
-      font-size: 0.84rem;
-      min-height: 1.1rem;
+      font-size: 0.78rem;
+      color: var(--accent-2);
+      margin-bottom: 4px;
     }
-    .result.ok { color: var(--ok); }
-    .result.bad { color: var(--danger); }
 
     footer {
       border-top: 1px solid var(--line);
-      padding: 26px 0 34px;
+      padding: 24px 0 32px;
       color: var(--muted);
       font-size: 0.88rem;
     }
@@ -286,13 +318,14 @@
     @media (max-width: 980px) {
       .hero-panels { grid-template-columns: 1fr; }
       .cards, .pricing { grid-template-columns: 1fr 1fr; }
+      .steps { grid-template-columns: 1fr; }
     }
     @media (max-width: 700px) {
       .nav-links { display: none; }
       .cards, .pricing { grid-template-columns: 1fr; }
-      .hero { padding-top: 64px; }
-      .form-row { flex-direction: column; }
-      .btn { width: 100%; text-align: center; }
+      .hero { padding-top: 62px; }
+      .hero-form { flex-direction: column; }
+      .hero-form .btn { width: 100%; }
     }
   </style>
 </head>
@@ -311,23 +344,31 @@
   </nav>
 
   <main class="wrap">
-    <section class="hero">
-      <div class="hero-kicker">Know your agent before you execute</div>
-      <h1>Trust is now a <em>preflight check</em>, not an afterthought.</h1>
+    <section class="hero" id="signup">
+      <div class="kicker">Know your agent before you execute</div>
+      <h1>Don’t get pinched.<br /><span class="accent">Know who to trust.</span></h1>
       <p class="hero-sub">
         Claw Trust Scores gives every agent and tool a decayed, explainable trust score from 0-100 so payment systems,
         hiring flows, and multi-agent orchestration can block risky counterparts before damage happens.
       </p>
-      <div class="hero-ctas">
-        <a class="btn primary" href="#signup">Get Free API Key</a>
-        <a class="btn secondary" href="#api">See API Flow</a>
+
+      <div class="hero-action">
+        <form id="heroSignupForm" class="hero-form">
+          <input id="heroEmail" type="email" required placeholder="Enter your email" autocomplete="email" />
+          <button id="heroSubmitBtn" class="btn primary" type="submit">Get Free API Key</button>
+          <a class="btn secondary" href="#api">See API Flow</a>
+        </form>
+        <div class="hero-mini">
+          <span>Free tier: 5 agents, 100 events, 200 checks per month.</span>
+          <span>No credit card required.</span>
+        </div>
+        <div id="heroResult" class="result"></div>
       </div>
 
       <div class="hero-panels" id="api">
         <div class="panel">
           <h3>Typical preflight call</h3>
-          <pre class="mono" style="margin:0;white-space:pre-wrap;color:#d7e3ff;font-size:.82rem;line-height:1.65;">
-POST /v1/integrations/clawcredit/preflight
+          <pre class="mono" style="margin:0;white-space:pre-wrap;color:#d7e3ff;font-size:.82rem;line-height:1.65;">POST /v1/integrations/clawcredit/preflight
 x-api-key: claw_xxx
 
 { "agentId":"agent:vendor:77", "amountUsd":2500,
@@ -342,9 +383,7 @@ x-api-key: claw_xxx
             <div class="metric"><div class="val">30d</div><div class="lbl">Half-life decay</div></div>
             <div class="metric"><div class="val">10</div><div class="lbl">Recent history items</div></div>
           </div>
-          <p style="margin:12px 0 0;color:var(--muted);font-size:.9rem;">
-            Weighted events plus recency decay. Good behavior recovers over time. Recent abuse matters most.
-          </p>
+          <p style="margin:12px 0 0;color:var(--muted);font-size:.9rem;">Weighted events plus recency decay. Good behavior recovers over time. Recent abuse matters most.</p>
         </div>
       </div>
     </section>
@@ -409,43 +448,40 @@ x-api-key: claw_xxx
       </div>
     </section>
 
-    <section id="signup">
+    <section>
       <div class="sec-head">
-        <h2>Start free in under 1 minute</h2>
-        <p>We generate a key immediately.</p>
+        <h2>What happens after signup</h2>
+        <p>No hidden setup. Three steps.</p>
       </div>
-      <div class="signup">
-        <p style="margin:0;color:#d8e4fb;">Enter your email. We will create a free key and send onboarding details.</p>
-        <form id="signupForm" class="form-row">
-          <input id="email" type="email" required placeholder="you@company.com" autocomplete="email" />
-          <button id="submitBtn" class="btn primary" type="submit">Generate API Key</button>
-        </form>
-        <div id="result" class="result"></div>
+      <div class="next">
+        <div class="steps">
+          <div class="step"><div class="n">01</div><strong>Get your key</strong><div style="color:var(--muted);font-size:.9rem;">We create a free key and email onboarding details.</div></div>
+          <div class="step"><div class="n">02</div><strong>Add one trust call</strong><div style="color:var(--muted);font-size:.9rem;">Check trust before sending money, keys, or risky tasks.</div></div>
+          <div class="step"><div class="n">03</div><strong>Upgrade when needed</strong><div style="color:var(--muted);font-size:.9rem;">Hit free limits in production, then move to Starter or Pro.</div></div>
+        </div>
       </div>
     </section>
   </main>
 
   <footer>
-    <div class="wrap">
-      Claw Trust Scores · Agent trust infrastructure for payments, hiring, and execution safety
-    </div>
+    <div class="wrap">Claw Trust Scores · Agent trust infrastructure for payments, hiring, and execution safety</div>
   </footer>
 
   <script>
-    const signupForm = document.getElementById("signupForm");
-    const emailInput = document.getElementById("email");
-    const submitBtn = document.getElementById("submitBtn");
-    const resultEl = document.getElementById("result");
+    const heroSignupForm = document.getElementById("heroSignupForm");
+    const heroEmail = document.getElementById("heroEmail");
+    const heroSubmitBtn = document.getElementById("heroSubmitBtn");
+    const heroResult = document.getElementById("heroResult");
 
-    signupForm.addEventListener("submit", async (event) => {
+    heroSignupForm.addEventListener("submit", async (event) => {
       event.preventDefault();
-      const email = emailInput.value.trim().toLowerCase();
+      const email = heroEmail.value.trim().toLowerCase();
       if (!email) return;
 
-      submitBtn.disabled = true;
-      submitBtn.textContent = "Creating...";
-      resultEl.className = "result";
-      resultEl.textContent = "";
+      heroSubmitBtn.disabled = true;
+      heroSubmitBtn.textContent = "Creating...";
+      heroResult.className = "result";
+      heroResult.textContent = "";
 
       try {
         const res = await fetch("/v1/users", {
@@ -456,19 +492,19 @@ x-api-key: claw_xxx
         const data = await res.json();
 
         if (!res.ok) {
-          resultEl.className = "result bad";
-          resultEl.textContent = data.error || "Could not create key.";
+          heroResult.className = "result bad";
+          heroResult.textContent = data.error || "Could not create key.";
           return;
         }
 
-        resultEl.className = "result ok";
-        resultEl.textContent = data.message || "API key created.";
+        heroResult.className = "result ok";
+        heroResult.textContent = data.message || "API key created.";
       } catch {
-        resultEl.className = "result bad";
-        resultEl.textContent = "Network error. Try again.";
+        heroResult.className = "result bad";
+        heroResult.textContent = "Network error. Try again.";
       } finally {
-        submitBtn.disabled = false;
-        submitBtn.textContent = "Generate API Key";
+        heroSubmitBtn.disabled = false;
+        heroSubmitBtn.textContent = "Get Free API Key";
       }
     });
   </script>
