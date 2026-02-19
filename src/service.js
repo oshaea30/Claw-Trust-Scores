@@ -18,6 +18,12 @@ function kindValid(kind) {
   return kind === "positive" || kind === "neutral" || kind === "negative";
 }
 
+function clampConfidence(value) {
+  const numeric = Number(value);
+  if (!Number.isFinite(numeric)) return undefined;
+  return Math.max(0, Math.min(1, numeric));
+}
+
 function prettyTier(tier) {
   if (tier === "free") return "Free";
   if (tier === "starter") return "Starter";
@@ -113,6 +119,10 @@ export async function postEvent({ account, payload }) {
     kind,
     eventType,
     details: typeof payload.details === "string" ? payload.details.trim().slice(0, 300) : undefined,
+    source: typeof payload.source === "string" ? payload.source.trim().toLowerCase().slice(0, 80) : undefined,
+    sourceType: typeof payload.sourceType === "string" ? payload.sourceType.trim().toLowerCase().slice(0, 40) : undefined,
+    confidence: clampConfidence(payload.confidence),
+    externalEventId: typeof payload.externalEventId === "string" ? payload.externalEventId.trim().slice(0, 120) : undefined,
     sourceApiKey: account.apiKey,
     createdAt: createdAt.toISOString()
   };

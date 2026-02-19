@@ -79,6 +79,8 @@ Protected (`x-api-key` required):
 - `GET /v1/audit/decisions?format=json|csv&limit=...`
 - `POST /v1/keys/rotate`
 - `POST /v1/keys/revoke` with `{"confirm":"REVOKE"}`
+- `POST /v1/integrations/ingest/secret` rotate inbound ingest secret
+- `POST /v1/integrations/ingest/events` ingest signed verified events
 - `POST /v1/webhooks`
 - `GET /v1/webhooks`
 - `DELETE /v1/webhooks/{webhookId}`

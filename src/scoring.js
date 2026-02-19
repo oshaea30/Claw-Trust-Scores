@@ -80,6 +80,10 @@ export function scoreAgent(agentId, events) {
       kind: event.kind,
       eventType: event.eventType,
       details: event.details,
+      source: event.source,
+      sourceType: event.sourceType,
+      confidence: event.confidence,
+      externalEventId: event.externalEventId,
       createdAt: event.createdAt
     }));
 

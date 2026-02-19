@@ -60,6 +60,8 @@ export function loadStoreFromDisk() {
     store.webhooksByApiKey = loadObjectMap(parsed.webhooksByApiKey);
     store.webhookDeliveries = loadObjectMap(parsed.webhookDeliveries);
     store.webhookSuppression = loadObjectMap(parsed.webhookSuppression);
+    store.inboundSecretsByApiKey = loadObjectMap(parsed.inboundSecretsByApiKey);
+    store.processedInboundEvents = loadObjectMap(parsed.processedInboundEvents);
 
     // Self-serve users (added in v0.2)
     store.users = loadObjectMap(parsed.users);
@@ -93,6 +95,8 @@ export function flushStoreToDisk() {
       webhooksByApiKey: toObjectMap(store.webhooksByApiKey),
       webhookDeliveries: toObjectMap(store.webhookDeliveries),
       webhookSuppression: toObjectMap(store.webhookSuppression),
+      inboundSecretsByApiKey: toObjectMap(store.inboundSecretsByApiKey ?? new Map()),
+      processedInboundEvents: toObjectMap(store.processedInboundEvents ?? new Map()),
       users: toObjectMap(store.users ?? new Map()),
       decisionLogsByApiKey: toObjectMap(store.decisionLogsByApiKey ?? new Map()),
     };

@@ -5,6 +5,8 @@ export const store = {
   usageByMonthAndApiKey: new Map(),
   rateCounterByWindowAndKey: new Map(),
   recentEventHashes: new Map(),
+  inboundSecretsByApiKey: new Map(),
+  processedInboundEvents: new Map(),
   webhooksByApiKey: new Map(),
   webhookDeliveries: new Map(),
   webhookSuppression: new Map(),
@@ -17,6 +19,8 @@ export function resetStore() {
   store.usageByMonthAndApiKey = new Map();
   store.rateCounterByWindowAndKey = new Map();
   store.recentEventHashes = new Map();
+  store.inboundSecretsByApiKey = new Map();
+  store.processedInboundEvents = new Map();
   store.webhooksByApiKey = new Map();
   store.webhookDeliveries = new Map();
   store.webhookSuppression = new Map();

@@ -7,6 +7,7 @@ import {
   revokeUserApiKey,
   rotateUserApiKey,
 } from "../src/key-store.js";
+import { rotateIngestSecret } from "../src/ingest.js";
 import { appendDecisionLog, getMonthKey, getUsage, putWebhooks, resetStore, store } from "../src/store.js";
 
 beforeEach(() => {
@@ -25,6 +26,8 @@ test("rotateUserApiKey migrates account data and invalidates old key", () => {
 
   putWebhooks(oldKey, [{ id: "hook-1", url: "https://example.com", threshold: 50, secret: "12345678", enabled: true }]);
   appendDecisionLog(oldKey, { action: "score_check", agentId: "agent:1", outcome: "scored", score: 70, reason: "ok" });
+  rotateIngestSecret({ apiKey: oldKey, tier: "free" });
+  store.processedInboundEvents.set(`${oldKey}:stripe:evt_1`, Date.now());
 
   const rotated = rotateUserApiKey(oldKey);
   assert.equal(rotated.ok, true);
@@ -36,6 +39,10 @@ test("rotateUserApiKey migrates account data and invalidates old key", () => {
   assert.equal(store.webhooksByApiKey.has(newKey), true);
   assert.equal(store.decisionLogsByApiKey.has(oldKey), false);
   assert.equal(store.decisionLogsByApiKey.has(newKey), true);
+  assert.equal(store.inboundSecretsByApiKey.has(oldKey), false);
+  assert.equal(store.inboundSecretsByApiKey.has(newKey), true);
+  assert.equal(store.processedInboundEvents.has(`${oldKey}:stripe:evt_1`), false);
+  assert.equal(store.processedInboundEvents.has(`${newKey}:stripe:evt_1`), true);
   assert.equal(store.usageByMonthAndApiKey.has(`${monthKey}:${oldKey}`), false);
   assert.equal(store.usageByMonthAndApiKey.has(`${monthKey}:${newKey}`), true);
 });
@@ -51,6 +58,8 @@ test("revokeUserApiKey removes user and key-scoped data", () => {
   store.webhookDeliveries.set("hook-2", [{ ok: true }]);
   store.webhookSuppression.set("hook-2:agent:1", Date.now() + 10000);
   appendDecisionLog(apiKey, { action: "score_check", agentId: "agent:1", outcome: "scored", score: 44, reason: "ok" });
+  rotateIngestSecret({ apiKey, tier: "free" });
+  store.processedInboundEvents.set(`${apiKey}:stripe:evt_2`, Date.now());
 
   const revoked = revokeUserApiKey(apiKey);
   assert.equal(revoked.ok, true);
@@ -58,6 +67,8 @@ test("revokeUserApiKey removes user and key-scoped data", () => {
   assert.equal(store.users.has(apiKey), false);
   assert.equal(store.webhooksByApiKey.has(apiKey), false);
   assert.equal(store.decisionLogsByApiKey.has(apiKey), false);
+  assert.equal(store.inboundSecretsByApiKey.has(apiKey), false);
+  assert.equal(store.processedInboundEvents.has(`${apiKey}:stripe:evt_2`), false);
   assert.equal(store.usageByMonthAndApiKey.has(`${monthKey}:${apiKey}`), false);
   assert.equal(store.webhookDeliveries.has("hook-2"), false);
   assert.equal(store.webhookSuppression.has("hook-2:agent:1"), false);

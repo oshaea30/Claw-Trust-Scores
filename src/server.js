@@ -15,6 +15,7 @@ import { getUsageSnapshot } from "./usage.js";
 import { createWebhook, deleteWebhook, getWebhooks } from "./webhooks.js";
 import { getHeroSnapshot } from "./public-signals.js";
 import { revokeUserApiKey, rotateUserApiKey } from "./key-store.js";
+import { ingestVerifiedEvent, rotateIngestSecret } from "./ingest.js";
 
 const PORT = Number(process.env.PORT ?? 8080);
 const PUBLIC_DIR = path.resolve(process.cwd(), "public");
@@ -303,6 +304,36 @@ const server = http.createServer(async (request, response) => {
     }
   }
 
+  // --- Verified inbound events (signed integration ingestion) ---
+  if (request.method === "POST" && url.pathname === "/v1/integrations/ingest/events") {
+    const account = authenticate(request);
+    if (!account) {
+      return sendJson(response, 401, {
+        error: "Unauthorized. Provide a valid x-api-key header.",
+      });
+    }
+
+    try {
+      const rawBody = await readRawBody(request);
+      const payload = rawBody ? JSON.parse(rawBody) : {};
+      const signature = request.headers["x-ingest-signature"] ?? "";
+      const timestamp = request.headers["x-ingest-timestamp"] ?? "";
+      const result = await ingestVerifiedEvent({
+        account,
+        payload,
+        rawBody,
+        signature,
+        timestamp,
+      });
+      return sendJson(response, result.status, result.body);
+    } catch (error) {
+      if (error instanceof Error && error.message === "Payload too large") {
+        return sendJson(response, 413, { error: "Payload too large." });
+      }
+      return sendJson(response, 400, { error: "Invalid JSON body." });
+    }
+  }
+
   // --- Upgrade success/cancel pages (simple HTML responses) ---
   if (request.method === "GET" && url.pathname === "/upgrade-success") {
     response.writeHead(200, { "content-type": "text/html; charset=utf-8" });
@@ -432,6 +463,16 @@ const server = http.createServer(async (request, response) => {
       }
       return sendJson(response, 400, { error: "Invalid JSON body." });
     }
+  }
+
+  // --- Integration ingest secret management ---
+  if (request.method === "POST" && url.pathname === "/v1/integrations/ingest/secret") {
+    const rotated = rotateIngestSecret(account);
+    return sendJson(response, 200, {
+      message: "Ingest secret rotated. Store it securely in your integration provider.",
+      ingestSecret: rotated.ingestSecret,
+      rotatedAt: rotated.rotatedAt,
+    });
   }
 
   // --- Decision audit export ---

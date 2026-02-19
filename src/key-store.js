@@ -193,16 +193,35 @@ function moveApiKeyScopedMaps(oldApiKey, newApiKey) {
     store.decisionLogsByApiKey.set(newApiKey, store.decisionLogsByApiKey.get(oldApiKey));
     store.decisionLogsByApiKey.delete(oldApiKey);
   }
+
+  if (store.inboundSecretsByApiKey.has(oldApiKey)) {
+    store.inboundSecretsByApiKey.set(newApiKey, store.inboundSecretsByApiKey.get(oldApiKey));
+    store.inboundSecretsByApiKey.delete(oldApiKey);
+  }
+
+  for (const [processedKey, processedValue] of [...store.processedInboundEvents.entries()]) {
+    if (!processedKey.startsWith(`${oldApiKey}:`)) continue;
+    const suffix = processedKey.slice(oldApiKey.length + 1);
+    store.processedInboundEvents.set(`${newApiKey}:${suffix}`, processedValue);
+    store.processedInboundEvents.delete(processedKey);
+  }
 }
 
 function purgeApiKeyScopedData(apiKey) {
   const hooks = store.webhooksByApiKey.get(apiKey) ?? [];
   store.webhooksByApiKey.delete(apiKey);
   store.decisionLogsByApiKey.delete(apiKey);
+  store.inboundSecretsByApiKey.delete(apiKey);
 
   for (const [usageKey] of [...store.usageByMonthAndApiKey.entries()]) {
     if (usageKey.endsWith(`:${apiKey}`)) {
       store.usageByMonthAndApiKey.delete(usageKey);
+    }
+  }
+
+  for (const [processedKey] of [...store.processedInboundEvents.entries()]) {
+    if (processedKey.startsWith(`${apiKey}:`)) {
+      store.processedInboundEvents.delete(processedKey);
     }
   }
 
