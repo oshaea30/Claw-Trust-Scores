@@ -88,6 +88,63 @@
       border-radius: var(--radius-pill); font-weight: 600; font-size: 0.88rem;
     }
     .nav-links a.cta-link:hover { background: #333; color: #fff; }
+    .mobile-nav-toggle {
+      display: none;
+      width: 42px;
+      height: 42px;
+      border-radius: 10px;
+      border: 1px solid var(--card-border);
+      background: rgba(255,255,255,0.9);
+      color: var(--text);
+      cursor: pointer;
+      align-items: center;
+      justify-content: center;
+      gap: 4px;
+      flex-direction: column;
+    }
+    .mobile-nav-toggle span {
+      width: 18px;
+      height: 2px;
+      background: currentColor;
+      border-radius: 99px;
+      transition: transform 0.2s ease, opacity 0.2s ease;
+    }
+    .mobile-menu {
+      display: none;
+      border-top: 1px solid rgba(0,0,0,0.06);
+      padding: 10px 0 14px;
+      max-height: 0;
+      overflow: hidden;
+      transition: max-height 0.2s ease;
+    }
+    .mobile-menu a {
+      display: block;
+      padding: 10px 0;
+      text-decoration: none;
+      color: var(--text-secondary);
+      font-weight: 600;
+      font-size: 0.95rem;
+    }
+    .mobile-menu a.cta-mobile {
+      color: #fff;
+      background: var(--text);
+      border-radius: var(--radius-pill);
+      padding: 10px 16px;
+      text-align: center;
+      margin-top: 8px;
+    }
+    nav.mobile-open .mobile-menu {
+      max-height: 320px;
+    }
+    nav.mobile-open .mobile-nav-toggle span:nth-child(1) {
+      transform: translateY(6px) rotate(45deg);
+    }
+    nav.mobile-open .mobile-nav-toggle span:nth-child(2) {
+      opacity: 0;
+    }
+    nav.mobile-open .mobile-nav-toggle span:nth-child(3) {
+      transform: translateY(-6px) rotate(-45deg);
+    }
 
     /* ── HERO ── */
     .hero-wrap {
@@ -640,7 +697,9 @@
       .float-card.right-mid { right: 13%; }
     }
     @media (max-width: 700px) {
-      .nav-links a:not(.cta-link) { display: none; }
+      .nav-links { display: none; }
+      .mobile-nav-toggle { display: inline-flex; }
+      .mobile-menu { display: block; }
       .values-grid, .pricing-grid { grid-template-columns: 1fr; }
       .hero-video { opacity: 0.68; }
       .hero-frost {
@@ -690,6 +749,17 @@
         <a href="/api-docs">API Docs</a>
         <a class="cta-link" href="#signup">Get API Key</a>
       </div>
+      <button class="mobile-nav-toggle" id="mobileNavToggle" type="button" aria-label="Open navigation menu" aria-expanded="false">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+    <div class="wrap mobile-menu" id="mobileMenu">
+      <a href="#features">Features</a>
+      <a href="#how-it-works">How It Works</a>
+      <a href="#pricing">Pricing</a>
+      <a href="#faq">FAQ</a>
+      <a href="/api-docs">API Docs</a>
+      <a class="cta-mobile" href="#signup">Get API Key</a>
     </div>
   </nav>
 
@@ -1285,6 +1355,26 @@
       setTimeout(applyFallback, 1200);
     }
 
+    function setupMobileNav() {
+      const nav = document.querySelector("nav");
+      const toggle = document.getElementById("mobileNavToggle");
+      const menu = document.getElementById("mobileMenu");
+      if (!nav || !toggle || !menu) return;
+
+      toggle.addEventListener("click", () => {
+        const open = nav.classList.toggle("mobile-open");
+        toggle.setAttribute("aria-expanded", open ? "true" : "false");
+      });
+
+      menu.querySelectorAll("a").forEach((link) => {
+        link.addEventListener("click", () => {
+          nav.classList.remove("mobile-open");
+          toggle.setAttribute("aria-expanded", "false");
+        });
+      });
+    }
+
+    setupMobileNav();
     setupHeroVideoFallback();
     loadHeroSnapshot();
   </script>
