@@ -4,6 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Claw Trust Scores | Agent Trust Infrastructure</title>
+  <link rel="icon" type="image/png" href="/logo-mark.png" />
   <meta name="description" content="Trust infrastructure for autonomous agents. Score unknown counterparts before payments, key sharing, or delegated execution." />
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -53,8 +54,23 @@
     .nav-inner {
       height: 64px; display: flex; align-items: center; justify-content: space-between;
     }
-    .brand { font-size: 1.05rem; font-weight: 800; color: var(--text); text-decoration: none; letter-spacing: -0.2px; }
-    .brand span { color: var(--coral); }
+    .brand {
+      display: inline-flex;
+      align-items: center;
+      gap: 9px;
+      font-size: 1.05rem;
+      font-weight: 800;
+      color: var(--text);
+      text-decoration: none;
+      letter-spacing: -0.2px;
+    }
+    .brand-mark {
+      width: 30px;
+      height: 30px;
+      object-fit: contain;
+      filter: drop-shadow(0 2px 6px rgba(212,83,42,0.16));
+    }
+    .brand-text span { color: var(--coral); }
     .nav-links { display: flex; align-items: center; gap: 2rem; }
     .nav-links a {
       color: var(--text-secondary); text-decoration: none; font-size: 0.92rem; font-weight: 500;
@@ -380,6 +396,15 @@
       background: var(--coral-bg); color: var(--coral);
       display: grid; place-items: center; font-size: 1.1rem; font-weight: 700;
     }
+    .bento-icon svg {
+      width: 22px;
+      height: 22px;
+      stroke: currentColor;
+      fill: none;
+      stroke-width: 1.8;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
     .bento-card h3 { margin-top: 14px; font-size: 1.12rem; font-weight: 700; }
     .bento-card > p { margin-top: 6px; color: var(--text-secondary); font-size: 0.92rem; line-height: 1.55; }
 
@@ -430,6 +455,15 @@
       width: 48px; height: 48px; border-radius: 12px;
       background: var(--coral); color: #fff;
       display: inline-grid; place-items: center; font-size: 1.2rem;
+    }
+    .value-icon svg {
+      width: 22px;
+      height: 22px;
+      stroke: currentColor;
+      fill: none;
+      stroke-width: 1.9;
+      stroke-linecap: round;
+      stroke-linejoin: round;
     }
     .value-card h3 { margin-top: 16px; font-size: 1.02rem; font-weight: 700; }
     .value-card p { margin-top: 8px; color: var(--text-secondary); font-size: 0.9rem; line-height: 1.55; }
@@ -613,7 +647,10 @@
   <!-- ─── NAV ─── -->
   <nav>
     <div class="wrap nav-inner">
-      <a class="brand" href="/">Claw <span>Trust</span> Scores</a>
+      <a class="brand" href="/">
+        <img class="brand-mark" src="/logo-mark.png" alt="Claw Trust Scores logo" />
+        <span class="brand-text">Claw <span>Trust</span> Scores</span>
+      </a>
       <div class="nav-links">
         <a href="#features">Features</a>
         <a href="#how-it-works">How It Works</a>
@@ -738,7 +775,14 @@
 
       <div class="bento">
         <div class="bento-card">
-          <div class="bento-icon">PF</div>
+          <div class="bento-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24">
+              <path d="M4 6h16"></path>
+              <path d="M4 12h8"></path>
+              <path d="M4 18h6"></path>
+              <path d="M15 15l2 2 4-4"></path>
+            </svg>
+          </div>
           <h3>Preflight Gating</h3>
           <p>Block, review, or allow agent actions based on real-time trust + risk context before damage happens.</p>
           <div class="bento-preview">
@@ -750,7 +794,12 @@
         </div>
 
         <div class="bento-card">
-          <div class="bento-icon">TS</div>
+          <div class="bento-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24">
+              <path d="M4 17l4-4 3 3 5-6 4 4"></path>
+              <path d="M4 20h16"></path>
+            </svg>
+          </div>
           <h3>Decayed Trust Scores</h3>
           <p>0–100 scores with 30-day half-life decay. Recent behavior matters most. Good actors recover over time.</p>
           <div class="bento-preview">
@@ -773,7 +822,13 @@
         <div class="bento-card bento-wide">
           <div class="bento-wide-inner">
             <div>
-              <div class="bento-icon">AX</div>
+              <div class="bento-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24">
+                  <rect x="4" y="5" width="16" height="14" rx="2"></rect>
+                  <path d="M8 9h8"></path>
+                  <path d="M8 13h5"></path>
+                </svg>
+              </div>
               <h3>Decision Audit Export</h3>
               <p>Every block, review, and allow decision is logged with timestamp, agent ID, score, and reason. Export as JSON or CSV for compliance.</p>
               <div class="bento-stat-row">
@@ -806,32 +861,66 @@
 
       <div class="values-grid">
         <div class="value-card">
-          <div class="value-icon">1</div>
+          <div class="value-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24">
+              <circle cx="12" cy="12" r="7"></circle>
+              <path d="M12 8v8"></path>
+              <path d="M8 12h8"></path>
+            </svg>
+          </div>
           <h3>Log Events</h3>
           <p>POST positive or negative signals as agents interact. Each event is timestamped and weighted.</p>
         </div>
         <div class="value-card">
-          <div class="value-icon">2</div>
+          <div class="value-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24">
+              <path d="M6 18h12"></path>
+              <path d="M7 14l4-4 3 3 4-4"></path>
+            </svg>
+          </div>
           <h3>Check Score</h3>
           <p>GET a 0–100 trust score for any agent. Includes level, explanation, and recent event history.</p>
         </div>
         <div class="value-card">
-          <div class="value-icon">3</div>
+          <div class="value-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24">
+              <path d="M4 12h9"></path>
+              <path d="M13 8l6 4-6 4z"></path>
+            </svg>
+          </div>
           <h3>Gate Actions</h3>
           <p>Use preflight to get allow/review/block decisions with risk-adjusted scoring before execution.</p>
         </div>
         <div class="value-card">
-          <div class="value-icon">4</div>
+          <div class="value-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24">
+              <path d="M12 4a6 6 0 0 1 6 6c0 4-6 8-6 8s-6-4-6-8a6 6 0 0 1 6-6z"></path>
+              <path d="M12 8v3"></path>
+              <path d="M12 14h.01"></path>
+            </svg>
+          </div>
           <h3>Webhook Alerts</h3>
           <p>Get notified when scores drop below thresholds. Automatic suppression prevents alert fatigue.</p>
         </div>
         <div class="value-card">
-          <div class="value-icon">5</div>
+          <div class="value-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24">
+              <path d="M6 4h9l3 3v13H6z"></path>
+              <path d="M15 4v3h3"></path>
+              <path d="M9 12h6"></path>
+              <path d="M9 16h4"></path>
+            </svg>
+          </div>
           <h3>Audit Export</h3>
           <p>Export every decision as JSON or CSV. Compliance-ready. Up to 5,000 entries per API key.</p>
         </div>
         <div class="value-card">
-          <div class="value-icon">6</div>
+          <div class="value-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24">
+              <path d="M10 14a4 4 0 0 1 0-6l2-2a4 4 0 0 1 6 6l-1 1"></path>
+              <path d="M14 10a4 4 0 0 1 0 6l-2 2a4 4 0 0 1-6-6l1-1"></path>
+            </svg>
+          </div>
           <h3>Integrations</h3>
           <p>First-class ClawCredit preflight policy. Framework adapters for TypeScript and Python coming soon.</p>
         </div>

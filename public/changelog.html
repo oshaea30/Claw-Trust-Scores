@@ -4,15 +4,75 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Claw Trust Scores - Changelog</title>
+  <link rel="icon" type="image/png" href="/logo-mark.png" />
   <style>
     body { font-family: ui-sans-serif, system-ui, -apple-system, sans-serif; margin: 0; background: #f7f4f1; color: #1f1a16; }
     .wrap { max-width: 860px; margin: 0 auto; padding: 28px 20px 56px; }
+    .topbar {
+      border-bottom: 1px solid #e7ddd4;
+      background: rgba(247,244,241,0.9);
+      backdrop-filter: blur(8px);
+      position: sticky;
+      top: 0;
+      z-index: 20;
+    }
+    .topbar-inner {
+      max-width: 860px;
+      margin: 0 auto;
+      padding: 0 20px;
+      height: 64px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .brand {
+      display: inline-flex;
+      align-items: center;
+      gap: 9px;
+      color: #1f1a16;
+      text-decoration: none;
+      font-weight: 800;
+      font-size: 1.02rem;
+      letter-spacing: -0.2px;
+    }
+    .brand-mark {
+      width: 30px;
+      height: 30px;
+      object-fit: contain;
+      filter: drop-shadow(0 2px 6px rgba(212,83,42,0.16));
+    }
+    .brand-text span { color: #d4532a; }
+    .top-links { display: flex; align-items: center; gap: 12px; }
+    .top-links a {
+      color: #6f6257;
+      text-decoration: none;
+      font-size: 0.9rem;
+      font-weight: 600;
+      padding: 8px 12px;
+      border-radius: 999px;
+      border: 1px solid transparent;
+    }
+    .top-links a:hover { color: #1f1a16; border-color: #e7ddd4; background: #fff; }
     a { color: #d4532a; text-decoration: none; }
     .entry { background: #fff; border: 1px solid #e7ddd4; border-radius: 12px; padding: 14px; margin: 10px 0; }
     .muted { color: #6f6257; }
+    @media (max-width: 700px) { .top-links { display: none; } }
   </style>
 </head>
 <body>
+  <header class="topbar">
+    <div class="topbar-inner">
+      <a class="brand" href="/">
+        <img class="brand-mark" src="/logo-mark.png" alt="Claw Trust Scores logo" />
+        <span class="brand-text">Claw <span>Trust</span> Scores</span>
+      </a>
+      <nav class="top-links">
+        <a href="/">Home</a>
+        <a href="/api-docs.html">API Docs</a>
+        <a href="/health" target="_blank" rel="noopener noreferrer">Status</a>
+      </nav>
+    </div>
+  </header>
   <div class="wrap">
     <p><a href="/">← Back to home</a></p>
     <h1>Changelog</h1>

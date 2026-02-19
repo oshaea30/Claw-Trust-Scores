@@ -3,52 +3,349 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Claw Trust Scores - API Docs</title>
+  <title>Claw Trust Scores | API Docs</title>
+  <link rel="icon" type="image/png" href="/logo-mark.png" />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
   <style>
-    body { font-family: ui-sans-serif, system-ui, -apple-system, sans-serif; margin: 0; background: #f7f4f1; color: #1f1a16; }
-    .wrap { max-width: 860px; margin: 0 auto; padding: 28px 20px 56px; }
-    a { color: #d4532a; text-decoration: none; }
-    .card { background: #fff; border: 1px solid #e7ddd4; border-radius: 12px; padding: 16px; margin: 12px 0; }
-    code { background: #f3ece6; padding: 2px 6px; border-radius: 6px; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
-    pre { background: #12100e; color: #f9f4ee; padding: 12px; border-radius: 10px; overflow: auto; }
-    h1, h2 { margin: 0 0 10px; }
-    .muted { color: #6f6257; }
+    :root {
+      --bg: #f8f4ef;
+      --surface: #ffffff;
+      --surface-2: #f6efe8;
+      --line: #e8ddd1;
+      --text: #1e1814;
+      --muted: #6f6154;
+      --accent: #d4532a;
+      --accent-soft: rgba(212, 83, 42, 0.12);
+      --ok: #14886f;
+      --mono: "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+      --sans: "Plus Jakarta Sans", ui-sans-serif, system-ui, -apple-system, sans-serif;
+    }
+
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: var(--sans);
+      background: radial-gradient(1200px 500px at 20% -10%, rgba(212,83,42,0.06), transparent), var(--bg);
+      color: var(--text);
+      line-height: 1.5;
+    }
+
+    .wrap { width: min(1020px, 92vw); margin: 0 auto; }
+
+    .topbar {
+      border-bottom: 1px solid var(--line);
+      background: rgba(248, 244, 239, 0.88);
+      backdrop-filter: blur(8px);
+      position: sticky;
+      top: 0;
+      z-index: 20;
+    }
+    .topbar-inner {
+      height: 64px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .brand {
+      display: inline-flex;
+      align-items: center;
+      gap: 9px;
+      color: var(--text);
+      text-decoration: none;
+      font-weight: 800;
+      font-size: 1.02rem;
+      letter-spacing: -0.2px;
+    }
+    .brand-mark {
+      width: 30px;
+      height: 30px;
+      object-fit: contain;
+      filter: drop-shadow(0 2px 6px rgba(212,83,42,0.16));
+    }
+    .brand-text span { color: var(--accent); }
+    .top-links {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .top-links a {
+      text-decoration: none;
+      color: var(--muted);
+      font-size: 0.9rem;
+      font-weight: 600;
+      padding: 8px 12px;
+      border-radius: 999px;
+      border: 1px solid transparent;
+    }
+    .top-links a:hover {
+      color: var(--text);
+      border-color: var(--line);
+      background: #fff;
+    }
+
+    main { padding: 26px 0 54px; }
+
+    .hero {
+      background: var(--surface);
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      padding: 24px;
+      box-shadow: 0 8px 32px rgba(21, 16, 11, 0.05);
+      margin-bottom: 14px;
+    }
+    h1 {
+      margin: 0;
+      font-size: clamp(1.8rem, 3vw, 2.5rem);
+      line-height: 1.08;
+      letter-spacing: -1px;
+    }
+    .hero p {
+      margin: 10px 0 0;
+      color: var(--muted);
+      max-width: 760px;
+    }
+    .base-url {
+      margin-top: 14px;
+      display: inline-flex;
+      align-items: center;
+      gap: 9px;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      padding: 7px 12px;
+      background: var(--surface-2);
+      color: var(--muted);
+      font-size: 0.82rem;
+    }
+    .base-url code { font-family: var(--mono); color: var(--text); }
+
+    .grid {
+      display: grid;
+      grid-template-columns: 1.1fr 0.9fr;
+      gap: 14px;
+      margin-bottom: 14px;
+    }
+
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      padding: 18px;
+    }
+    .card h2 {
+      margin: 0 0 12px;
+      font-size: 1.35rem;
+      letter-spacing: -0.5px;
+    }
+
+    .auth-row {
+      display: flex;
+      align-items: center;
+      gap: 9px;
+      padding: 10px 12px;
+      border: 1px solid var(--line);
+      border-radius: 11px;
+      background: #fff;
+      font-size: 0.95rem;
+      color: var(--muted);
+    }
+    .auth-row code {
+      font-family: var(--mono);
+      color: var(--text);
+      background: var(--surface-2);
+      border-radius: 8px;
+      padding: 2px 7px;
+    }
+
+    .endpoint-list {
+      display: grid;
+      gap: 8px;
+    }
+    .endpoint {
+      display: grid;
+      grid-template-columns: auto 1fr;
+      gap: 10px;
+      align-items: center;
+      border: 1px solid var(--line);
+      border-radius: 11px;
+      padding: 9px 10px;
+      background: #fff;
+    }
+    .verb {
+      font-family: var(--mono);
+      font-size: 0.74rem;
+      font-weight: 700;
+      letter-spacing: 0.4px;
+      border-radius: 7px;
+      padding: 4px 7px;
+      line-height: 1;
+      width: fit-content;
+      border: 1px solid transparent;
+    }
+    .verb.get {
+      color: #135f9e;
+      border-color: rgba(19,95,158,0.2);
+      background: rgba(19,95,158,0.08);
+    }
+    .verb.post {
+      color: #0e7a58;
+      border-color: rgba(14,122,88,0.2);
+      background: rgba(14,122,88,0.09);
+    }
+    .endpoint code {
+      font-family: var(--mono);
+      font-size: 0.82rem;
+      color: var(--text);
+      background: var(--surface-2);
+      border-radius: 8px;
+      padding: 3px 7px;
+      margin-right: 7px;
+      display: inline-block;
+    }
+    .endpoint span {
+      color: var(--muted);
+      font-size: 0.9rem;
+    }
+
+    .mono {
+      font-family: var(--mono);
+    }
+    pre {
+      margin: 0;
+      border-radius: 12px;
+      border: 1px solid #2c231e;
+      background: #171210;
+      color: #f7efe6;
+      padding: 14px;
+      font-size: 0.79rem;
+      line-height: 1.65;
+      overflow: auto;
+    }
+
+    .guides {
+      display: grid;
+      gap: 10px;
+    }
+    .guide-link {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      text-decoration: none;
+      color: var(--text);
+      border: 1px solid var(--line);
+      border-radius: 11px;
+      padding: 12px;
+      background: #fff;
+      font-weight: 600;
+      font-size: 0.93rem;
+    }
+    .guide-link span:last-child {
+      color: var(--accent);
+      font-size: 0.8rem;
+      font-family: var(--mono);
+    }
+    .guide-link:hover {
+      border-color: #dfc6b5;
+      background: #fff9f5;
+    }
+
+    .footer-note {
+      margin-top: 16px;
+      color: var(--muted);
+      font-size: 0.84rem;
+      text-align: center;
+    }
+
+    @media (max-width: 900px) {
+      .grid { grid-template-columns: 1fr; }
+      .top-links { display: none; }
+    }
   </style>
 </head>
 <body>
-  <div class="wrap">
-    <p><a href="/">← Back to home</a></p>
-    <h1>API Docs</h1>
-    <p class="muted">Base URL: <code>https://claw-trust-scores-production.up.railway.app</code></p>
-
-    <div class="card">
-      <h2>Auth</h2>
-      <p>Send <code>x-api-key</code> on protected endpoints.</p>
+  <header class="topbar">
+    <div class="wrap topbar-inner">
+      <a class="brand" href="/">
+        <img class="brand-mark" src="/logo-mark.png" alt="Claw Trust Scores logo" />
+        <span class="brand-text">Claw <span>Trust</span> Scores</span>
+      </a>
+      <nav class="top-links">
+        <a href="/">Home</a>
+        <a href="/changelog.html">Changelog</a>
+        <a href="/health" target="_blank" rel="noopener noreferrer">Status</a>
+      </nav>
     </div>
+  </header>
 
-    <div class="card">
-      <h2>Core Endpoints</h2>
-      <p><code>POST /v1/events</code> log trust events</p>
-      <p><code>GET /v1/score?agentId=...</code> read trust score</p>
-      <p><code>POST /v1/integrations/clawcredit/preflight</code> policy decision</p>
-      <p><code>GET /v1/usage</code> limits and monthly usage</p>
-      <p><code>GET /v1/audit/decisions?format=json|csv</code> export decision logs</p>
-      <p><code>GET /v1/plans</code> public plan limits</p>
-      <p><code>GET /health</code> service status</p>
-    </div>
+  <main class="wrap">
+    <section class="hero">
+      <h1>API Docs</h1>
+      <p>Drop-in trust checks for agent workflows. Use one API key and these endpoints to log events, read scores, gate actions, and export audit trails.</p>
+      <div class="base-url">
+        <strong>Base URL</strong>
+        <code>https://claw-trust-scores-production.up.railway.app</code>
+      </div>
+    </section>
 
-    <div class="card">
-      <h2>Quick Example</h2>
-      <pre><code>curl "https://claw-trust-scores-production.up.railway.app/v1/score?agentId=agent:demo:vendor-1" \
+    <section class="grid">
+      <article class="card">
+        <h2>Auth</h2>
+        <div class="auth-row">
+          Send header <code>x-api-key: YOUR_KEY</code> on all protected endpoints.
+        </div>
+      </article>
+
+      <article class="card">
+        <h2>Quick Example</h2>
+        <pre><code>curl "https://claw-trust-scores-production.up.railway.app/v1/score?agentId=agent:demo:vendor-1" \
   -H "x-api-key: YOUR_KEY"</code></pre>
-    </div>
+      </article>
+    </section>
 
-    <div class="card">
+    <section class="card" style="margin-bottom:14px;">
+      <h2>Core Endpoints</h2>
+      <div class="endpoint-list">
+        <div class="endpoint">
+          <span class="verb post">POST</span>
+          <div><code>/v1/events</code><span>Log trust events</span></div>
+        </div>
+        <div class="endpoint">
+          <span class="verb get">GET</span>
+          <div><code>/v1/score?agentId=...</code><span>Read trust score + explanation</span></div>
+        </div>
+        <div class="endpoint">
+          <span class="verb post">POST</span>
+          <div><code>/v1/integrations/clawcredit/preflight</code><span>Return allow/review/block decision</span></div>
+        </div>
+        <div class="endpoint">
+          <span class="verb get">GET</span>
+          <div><code>/v1/usage</code><span>Current month usage + limits</span></div>
+        </div>
+        <div class="endpoint">
+          <span class="verb get">GET</span>
+          <div><code>/v1/audit/decisions?format=json|csv</code><span>Export decision logs</span></div>
+        </div>
+        <div class="endpoint">
+          <span class="verb get">GET</span>
+          <div><code>/v1/plans</code><span>Public plan limits</span></div>
+        </div>
+        <div class="endpoint">
+          <span class="verb get">GET</span>
+          <div><code>/health</code><span>Service health check</span></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="card">
       <h2>Full Guides</h2>
-      <p><a href="https://github.com/oshaea30/Claw-Trust-Scores/blob/main/USER_GUIDE.md" target="_blank" rel="noopener noreferrer">User Guide</a></p>
-      <p><a href="https://github.com/oshaea30/Claw-Trust-Scores/blob/main/README.md" target="_blank" rel="noopener noreferrer">README</a></p>
-      <p><a href="https://github.com/oshaea30/Claw-Trust-Scores/blob/main/TECHNICAL_DOCUMENTATION.md" target="_blank" rel="noopener noreferrer">Technical Documentation</a></p>
-    </div>
-  </div>
+      <div class="guides">
+        <a class="guide-link" href="https://github.com/oshaea30/Claw-Trust-Scores/blob/main/USER_GUIDE.md" target="_blank" rel="noopener noreferrer"><span>User Guide</span><span>OPEN</span></a>
+        <a class="guide-link" href="https://github.com/oshaea30/Claw-Trust-Scores/blob/main/README.md" target="_blank" rel="noopener noreferrer"><span>README</span><span>OPEN</span></a>
+        <a class="guide-link" href="https://github.com/oshaea30/Claw-Trust-Scores/blob/main/TECHNICAL_DOCUMENTATION.md" target="_blank" rel="noopener noreferrer"><span>Technical Documentation</span><span>OPEN</span></a>
+      </div>
+      <p class="footer-note">For billing and key management setup, see <span class="mono">SELFSERVE-SETUP.md</span> in the repository.</p>
+    </section>
+  </main>
 </body>
 </html>

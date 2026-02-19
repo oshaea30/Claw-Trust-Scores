@@ -1,6 +1,6 @@
 # Claw Trust Scores - User Guide
 
-This guide is for people using the API, not building the backend.
+This guide is for users and developers integrating Claw Trust Scores into their apps and agent workflows.
 
 ## 1) What this does
 
