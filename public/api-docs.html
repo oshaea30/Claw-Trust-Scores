@@ -372,11 +372,68 @@
       color: var(--muted);
       font-size: 0.9rem;
     }
+    .try-box {
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      padding: 12px;
+      background: #fff;
+      display: grid;
+      gap: 10px;
+    }
+    .try-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr auto;
+      gap: 8px;
+      align-items: end;
+    }
+    .try-field label {
+      display: block;
+      font-size: 0.78rem;
+      color: var(--muted);
+      margin-bottom: 5px;
+      font-weight: 600;
+    }
+    .try-field input {
+      width: 100%;
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      padding: 10px;
+      font-family: var(--mono);
+      font-size: 0.82rem;
+      color: var(--text);
+      background: #fff;
+    }
+    .try-btn {
+      border: 0;
+      border-radius: 10px;
+      padding: 11px 14px;
+      background: var(--text);
+      color: #fff;
+      font-family: var(--sans);
+      font-size: 0.86rem;
+      font-weight: 700;
+      cursor: pointer;
+    }
+    .try-btn:disabled { opacity: 0.6; cursor: not-allowed; }
+    .try-result {
+      margin: 0;
+      border-radius: 10px;
+      border: 1px solid #2c231e;
+      background: #171210;
+      color: #f7efe6;
+      padding: 12px;
+      font-size: 0.78rem;
+      min-height: 86px;
+      overflow: auto;
+      font-family: var(--mono);
+      line-height: 1.55;
+    }
 
     @media (max-width: 900px) {
       .grid { grid-template-columns: 1fr; }
       .step-row { grid-template-columns: 1fr; }
       .top-links { display: none; }
+      .try-grid { grid-template-columns: 1fr; }
     }
   </style>
 </head>
@@ -439,6 +496,24 @@
           <pre><code>curl "https://claw-trust-scores-production.up.railway.app/v1/score?agentId=agent:demo:vendor-1" \
   -H "x-api-key: YOUR_KEY"</code></pre>
           <p class="small-note">Expected result: score + trust level + explanation in plain JSON.</p>
+        </article>
+        <article class="card">
+          <h2>Try It Now (No Coding)</h2>
+          <div class="try-box">
+            <div class="try-grid">
+              <div class="try-field">
+                <label for="tryApiKey">Your API key</label>
+                <input id="tryApiKey" type="password" placeholder="claw_xxx" autocomplete="off" />
+              </div>
+              <div class="try-field">
+                <label for="tryAgentId">Agent ID to check</label>
+                <input id="tryAgentId" type="text" value="agent:demo:vendor-1" />
+              </div>
+              <button class="try-btn" id="tryBtn" type="button">Run check</button>
+            </div>
+            <pre id="tryResult" class="try-result">Result will appear here.</pre>
+          </div>
+          <p class="small-note">This calls <span class="mono">GET /v1/score</span> using your key.</p>
         </article>
         <article class="simple-callout">
           If you just want to launch fast, use only these endpoints first: <span class="mono">/v1/events</span>, <span class="mono">/v1/score</span>, and <span class="mono">/v1/integrations/clawcredit/preflight</span>.
@@ -552,6 +627,45 @@
 
     simpleBtn.addEventListener("click", () => setMode("simple"));
     developerBtn.addEventListener("click", () => setMode("developer"));
+
+    const tryBtn = document.getElementById("tryBtn");
+    const tryApiKey = document.getElementById("tryApiKey");
+    const tryAgentId = document.getElementById("tryAgentId");
+    const tryResult = document.getElementById("tryResult");
+
+    async function runSimpleCheck() {
+      const apiKey = (tryApiKey.value || "").trim();
+      const agentId = (tryAgentId.value || "").trim();
+
+      if (!apiKey) {
+        tryResult.textContent = "Please enter your API key.";
+        return;
+      }
+      if (!agentId) {
+        tryResult.textContent = "Please enter an agent ID.";
+        return;
+      }
+
+      tryBtn.disabled = true;
+      tryBtn.textContent = "Checking...";
+      tryResult.textContent = "Running check...";
+
+      try {
+        const res = await fetch(`/v1/score?agentId=${encodeURIComponent(agentId)}`, {
+          headers: { "x-api-key": apiKey },
+          cache: "no-store",
+        });
+        const data = await res.json();
+        tryResult.textContent = JSON.stringify(data, null, 2);
+      } catch {
+        tryResult.textContent = "Network error while running check.";
+      } finally {
+        tryBtn.disabled = false;
+        tryBtn.textContent = "Run check";
+      }
+    }
+
+    tryBtn.addEventListener("click", runSimpleCheck);
   </script>
 </body>
 </html>
