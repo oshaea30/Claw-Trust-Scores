@@ -314,6 +314,64 @@
       color: var(--muted);
       font-size: 0.82rem;
     }
+    .mode-switch {
+      display: inline-flex;
+      gap: 8px;
+      margin-bottom: 14px;
+      background: #efe5db;
+      border: 1px solid #ddc9b8;
+      border-radius: 999px;
+      padding: 4px;
+    }
+    .mode-btn {
+      border: 0;
+      border-radius: 999px;
+      padding: 8px 14px;
+      font-family: var(--sans);
+      font-size: 0.86rem;
+      font-weight: 700;
+      color: var(--muted);
+      background: transparent;
+      cursor: pointer;
+    }
+    .mode-btn.active {
+      background: #fff;
+      color: var(--text);
+      box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+    }
+    .mode-panel.hidden { display: none; }
+    .simple-grid {
+      display: grid;
+      gap: 12px;
+    }
+    .simple-steps {
+      display: grid;
+      gap: 10px;
+    }
+    .simple-step {
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      background: #fff;
+      padding: 12px;
+    }
+    .simple-step strong {
+      display: block;
+      font-size: 0.95rem;
+      margin-bottom: 4px;
+    }
+    .simple-step p {
+      margin: 0;
+      color: var(--muted);
+      font-size: 0.9rem;
+    }
+    .simple-callout {
+      border: 1px solid #d8c8bb;
+      border-radius: 12px;
+      padding: 12px;
+      background: #fffaf6;
+      color: var(--muted);
+      font-size: 0.9rem;
+    }
 
     @media (max-width: 900px) {
       .grid { grid-template-columns: 1fr; }
@@ -348,91 +406,152 @@
         <code>https://claw-trust-scores-production.up.railway.app</code>
       </div>
     </section>
-    <section class="step-row">
-      <div class="step"><strong>1. Create key</strong>Call <code>POST /v1/users</code> with your email.</div>
-      <div class="step"><strong>2. Log + score</strong>Use <code>/v1/events</code> then <code>/v1/score</code>.</div>
-      <div class="step"><strong>3. Gate actions</strong>Use preflight to return allow/review/block.</div>
-    </section>
+    <div class="mode-switch" role="tablist" aria-label="Documentation mode">
+      <button class="mode-btn active" id="simpleModeBtn" type="button" role="tab" aria-selected="true">Simple mode</button>
+      <button class="mode-btn" id="developerModeBtn" type="button" role="tab" aria-selected="false">Developer mode</button>
+    </div>
 
-    <section class="grid">
-      <article class="card">
-        <h2>Auth</h2>
-        <div class="auth-row">
-          Send header <code>x-api-key: YOUR_KEY</code> on all protected endpoints.
-        </div>
-        <p class="small-note">Most integrations can ignore admin endpoints.</p>
-      </article>
-
-      <article class="card">
-        <h2>Quick Example</h2>
-        <pre><code>curl "https://claw-trust-scores-production.up.railway.app/v1/score?agentId=agent:demo:vendor-1" \
+    <div class="mode-panel" id="simpleModePanel">
+      <section class="simple-grid">
+        <article class="card">
+          <h2>What This Does</h2>
+          <p>Before your app sends money, shares keys, or runs risky actions, this service tells you whether the other agent looks safe, risky, or needs review.</p>
+        </article>
+        <article class="card">
+          <h2>3 Steps</h2>
+          <div class="simple-steps">
+            <div class="simple-step">
+              <strong>1. Get your API key</strong>
+              <p>Use the signup form on the homepage. You will get a key like <span class="mono">claw_xxx</span>.</p>
+            </div>
+            <div class="simple-step">
+              <strong>2. Ask for a trust score</strong>
+              <p>Send an agent ID. You get back a score from 0 to 100 plus a short explanation.</p>
+            </div>
+            <div class="simple-step">
+              <strong>3. Make a decision</strong>
+              <p>Use the score or preflight endpoint to allow, review, or block the action.</p>
+            </div>
+          </div>
+        </article>
+        <article class="card">
+          <h2>Copy/Paste Example</h2>
+          <pre><code>curl "https://claw-trust-scores-production.up.railway.app/v1/score?agentId=agent:demo:vendor-1" \
   -H "x-api-key: YOUR_KEY"</code></pre>
-      </article>
-    </section>
+          <p class="small-note">Expected result: score + trust level + explanation in plain JSON.</p>
+        </article>
+        <article class="simple-callout">
+          If you just want to launch fast, use only these endpoints first: <span class="mono">/v1/events</span>, <span class="mono">/v1/score</span>, and <span class="mono">/v1/integrations/clawcredit/preflight</span>.
+        </article>
+      </section>
+    </div>
 
-    <section class="card" style="margin-bottom:14px;">
-      <h2>Most Used Endpoints</h2>
-      <div class="endpoint-list">
-        <div class="endpoint">
-          <span class="verb post">POST</span>
-          <div><code>/v1/events</code><span>Log trust events</span></div>
-        </div>
-        <div class="endpoint">
-          <span class="verb get">GET</span>
-          <div><code>/v1/score?agentId=...</code><span>Read trust score + explanation</span></div>
-        </div>
-        <div class="endpoint">
-          <span class="verb post">POST</span>
-          <div><code>/v1/integrations/clawcredit/preflight</code><span>Return allow/review/block decision</span></div>
-        </div>
-        <div class="endpoint">
-          <span class="verb get">GET</span>
-          <div><code>/v1/usage</code><span>Current month usage + limits</span></div>
-        </div>
-        <div class="endpoint">
-          <span class="verb get">GET</span>
-          <div><code>/v1/audit/decisions?format=json|csv</code><span>Export decision logs</span></div>
-        </div>
-      </div>
-      <details class="advanced">
-        <summary>Advanced and account-management endpoints</summary>
-        <div class="endpoint-list" style="margin-top:10px;">
+    <div class="mode-panel hidden" id="developerModePanel">
+      <section class="step-row">
+        <div class="step"><strong>1. Create key</strong>Call <code>POST /v1/users</code> with your email.</div>
+        <div class="step"><strong>2. Log + score</strong>Use <code>/v1/events</code> then <code>/v1/score</code>.</div>
+        <div class="step"><strong>3. Gate actions</strong>Use preflight to return allow/review/block.</div>
+      </section>
+
+      <section class="grid">
+        <article class="card">
+          <h2>Auth</h2>
+          <div class="auth-row">
+            Send header <code>x-api-key: YOUR_KEY</code> on all protected endpoints.
+          </div>
+          <p class="small-note">Most integrations can ignore admin endpoints.</p>
+        </article>
+
+        <article class="card">
+          <h2>Quick Example</h2>
+          <pre><code>curl "https://claw-trust-scores-production.up.railway.app/v1/score?agentId=agent:demo:vendor-1" \
+  -H "x-api-key: YOUR_KEY"</code></pre>
+        </article>
+      </section>
+
+      <section class="card" style="margin-bottom:14px;">
+        <h2>Most Used Endpoints</h2>
+        <div class="endpoint-list">
+          <div class="endpoint">
+            <span class="verb post">POST</span>
+            <div><code>/v1/events</code><span>Log trust events</span></div>
+          </div>
           <div class="endpoint">
             <span class="verb get">GET</span>
-            <div><code>/v1/plans</code><span>Public plan limits</span></div>
+            <div><code>/v1/score?agentId=...</code><span>Read trust score + explanation</span></div>
           </div>
           <div class="endpoint">
             <span class="verb post">POST</span>
-            <div><code>/v1/keys/rotate</code><span>Rotate current dynamic API key</span></div>
-          </div>
-          <div class="endpoint">
-            <span class="verb post">POST</span>
-            <div><code>/v1/keys/revoke</code><span>Revoke current dynamic API key</span></div>
+            <div><code>/v1/integrations/clawcredit/preflight</code><span>Return allow/review/block decision</span></div>
           </div>
           <div class="endpoint">
             <span class="verb get">GET</span>
-            <div><code>/health</code><span>Service health check</span></div>
+            <div><code>/v1/usage</code><span>Current month usage + limits</span></div>
           </div>
           <div class="endpoint">
             <span class="verb get">GET</span>
-            <div><code>/v1/admin/overview</code><span>Internal metrics overview (admin token)</span></div>
+            <div><code>/v1/audit/decisions?format=json|csv</code><span>Export decision logs</span></div>
           </div>
         </div>
-      </details>
-    </section>
+        <details class="advanced">
+          <summary>Advanced and account-management endpoints</summary>
+          <div class="endpoint-list" style="margin-top:10px;">
+            <div class="endpoint">
+              <span class="verb get">GET</span>
+              <div><code>/v1/plans</code><span>Public plan limits</span></div>
+            </div>
+            <div class="endpoint">
+              <span class="verb post">POST</span>
+              <div><code>/v1/keys/rotate</code><span>Rotate current dynamic API key</span></div>
+            </div>
+            <div class="endpoint">
+              <span class="verb post">POST</span>
+              <div><code>/v1/keys/revoke</code><span>Revoke current dynamic API key</span></div>
+            </div>
+            <div class="endpoint">
+              <span class="verb get">GET</span>
+              <div><code>/health</code><span>Service health check</span></div>
+            </div>
+            <div class="endpoint">
+              <span class="verb get">GET</span>
+              <div><code>/v1/admin/overview</code><span>Internal metrics overview (admin token)</span></div>
+            </div>
+          </div>
+        </details>
+      </section>
 
-    <section class="card">
-      <h2>Full Guides</h2>
-      <div class="guides">
-        <a class="guide-link" href="/getting-started"><span>5-Minute Quickstart</span><span>OPEN</span></a>
-        <a class="guide-link" href="https://github.com/oshaea30/Claw-Trust-Scores/blob/main/USER_GUIDE.md" target="_blank" rel="noopener noreferrer"><span>User Guide</span><span>OPEN</span></a>
-        <a class="guide-link" href="https://github.com/oshaea30/Claw-Trust-Scores/blob/main/README.md" target="_blank" rel="noopener noreferrer"><span>README</span><span>OPEN</span></a>
-        <a class="guide-link" href="https://github.com/oshaea30/Claw-Trust-Scores/blob/main/TECHNICAL_DOCUMENTATION.md" target="_blank" rel="noopener noreferrer"><span>Technical Documentation</span><span>OPEN</span></a>
-        <a class="guide-link" href="/terms"><span>Terms of Service</span><span>OPEN</span></a>
-        <a class="guide-link" href="/privacy"><span>Privacy Policy</span><span>OPEN</span></a>
-      </div>
-      <p class="footer-note">Need billing setup or plan upgrades? Contact <a href="mailto:info@collocatellc.com">info@collocatellc.com</a>.</p>
-    </section>
+      <section class="card">
+        <h2>Full Guides</h2>
+        <div class="guides">
+          <a class="guide-link" href="/getting-started"><span>5-Minute Quickstart</span><span>OPEN</span></a>
+          <a class="guide-link" href="https://github.com/oshaea30/Claw-Trust-Scores/blob/main/USER_GUIDE.md" target="_blank" rel="noopener noreferrer"><span>User Guide</span><span>OPEN</span></a>
+          <a class="guide-link" href="https://github.com/oshaea30/Claw-Trust-Scores/blob/main/README.md" target="_blank" rel="noopener noreferrer"><span>README</span><span>OPEN</span></a>
+          <a class="guide-link" href="https://github.com/oshaea30/Claw-Trust-Scores/blob/main/TECHNICAL_DOCUMENTATION.md" target="_blank" rel="noopener noreferrer"><span>Technical Documentation</span><span>OPEN</span></a>
+          <a class="guide-link" href="/terms"><span>Terms of Service</span><span>OPEN</span></a>
+          <a class="guide-link" href="/privacy"><span>Privacy Policy</span><span>OPEN</span></a>
+        </div>
+      </section>
+    </div>
+    <p class="footer-note">Need billing setup or plan upgrades? Contact <a href="mailto:info@collocatellc.com">info@collocatellc.com</a>.</p>
   </main>
+  <script>
+    const simpleBtn = document.getElementById("simpleModeBtn");
+    const developerBtn = document.getElementById("developerModeBtn");
+    const simplePanel = document.getElementById("simpleModePanel");
+    const developerPanel = document.getElementById("developerModePanel");
+
+    function setMode(mode) {
+      const simple = mode === "simple";
+      simpleBtn.classList.toggle("active", simple);
+      developerBtn.classList.toggle("active", !simple);
+      simpleBtn.setAttribute("aria-selected", simple ? "true" : "false");
+      developerBtn.setAttribute("aria-selected", simple ? "false" : "true");
+      simplePanel.classList.toggle("hidden", !simple);
+      developerPanel.classList.toggle("hidden", simple);
+    }
+
+    simpleBtn.addEventListener("click", () => setMode("simple"));
+    developerBtn.addEventListener("click", () => setMode("developer"));
+  </script>
 </body>
 </html>
