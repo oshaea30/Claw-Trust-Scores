@@ -32,25 +32,25 @@
     </div>
     <div class="card">
       <h2>1. Create key</h2>
-      <pre><code>curl -X POST "https://claw-trust-scores-production.up.railway.app/v1/users" \
+      <pre><code>curl -X POST "https://clawtrustscores.com/v1/users" \
   -H "Content-Type: application/json" \
   -d '{"email":"you@example.com"}'</code></pre>
     </div>
     <div class="card">
       <h2>2. Log event</h2>
-      <pre><code>curl -X POST "https://claw-trust-scores-production.up.railway.app/v1/events" \
+      <pre><code>curl -X POST "https://clawtrustscores.com/v1/events" \
   -H "Content-Type: application/json" \
   -H "x-api-key: YOUR_KEY" \
   -d '{"agentId":"agent:demo:1","kind":"positive","eventType":"completed_task_on_time"}'</code></pre>
     </div>
     <div class="card">
       <h2>3. Read trust score</h2>
-      <pre><code>curl "https://claw-trust-scores-production.up.railway.app/v1/score?agentId=agent:demo:1" \
+      <pre><code>curl "https://clawtrustscores.com/v1/score?agentId=agent:demo:1" \
   -H "x-api-key: YOUR_KEY"</code></pre>
     </div>
     <div class="card">
       <h2>4. Preflight decision</h2>
-      <pre><code>curl -X POST "https://claw-trust-scores-production.up.railway.app/v1/integrations/clawcredit/preflight" \
+      <pre><code>curl -X POST "https://clawtrustscores.com/v1/integrations/clawcredit/preflight" \
   -H "Content-Type: application/json" \
   -H "x-api-key: YOUR_KEY" \
   -d '{"agentId":"agent:demo:1","amountUsd":2500,"newPayee":true,"firstTimeCounterparty":true}'</code></pre>
