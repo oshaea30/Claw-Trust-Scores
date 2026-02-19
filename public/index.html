@@ -1218,7 +1218,9 @@
           return;
         }
         heroResult.className = "hero-result ok";
-        heroResult.textContent = data.message || "API key created — check your email.";
+        heroResult.textContent = data.apiKey
+          ? `API key created: ${data.apiKey}`
+          : (data.message || "API key created — check your email.");
       } catch {
         heroResult.className = "hero-result bad";
         heroResult.textContent = "Network error. Try again.";
@@ -1247,7 +1249,7 @@
         const data = await res.json();
         ctaResult.className = res.ok ? "cta-result ok" : "cta-result bad";
         ctaResult.textContent = res.ok
-          ? (data.message || "API key created — check your email.")
+          ? (data.apiKey ? `API key created: ${data.apiKey}` : (data.message || "API key created — check your email."))
           : (data.error || "Could not create key.");
       } catch {
         ctaResult.className = "cta-result bad";
