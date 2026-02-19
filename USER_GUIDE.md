@@ -174,7 +174,25 @@ curl "https://claw-trust-scores-production.up.railway.app/v1/audit/decisions?for
   -H "x-api-key: $TRUST_KEY"
 ```
 
-## 9) Troubleshooting
+## 9) Rotate or revoke your API key
+
+Rotate (recommended if compromised):
+
+```bash
+curl -X POST "https://claw-trust-scores-production.up.railway.app/v1/keys/rotate" \
+  -H "x-api-key: $TRUST_KEY"
+```
+
+Revoke permanently:
+
+```bash
+curl -X POST "https://claw-trust-scores-production.up.railway.app/v1/keys/revoke" \
+  -H "Content-Type: application/json" \
+  -H "x-api-key: $TRUST_KEY" \
+  -d '{"confirm":"REVOKE"}'
+```
+
+## 10) Troubleshooting
 
 `{"error":"Not Found"}`
 - You likely hit an endpoint that does not exist.
@@ -191,7 +209,7 @@ curl "https://claw-trust-scores-production.up.railway.app/v1/audit/decisions?for
 Video/landing assets not loading
 - Confirm server is on the latest deploy with static asset support.
 
-## 10) Minimal Node example
+## 11) Minimal Node example
 
 ```js
 const BASE_URL = "https://claw-trust-scores-production.up.railway.app";
@@ -212,4 +230,3 @@ if (trust.score < 50) {
   throw new Error(`Blocked by policy: score=${trust.score}`);
 }
 ```
-

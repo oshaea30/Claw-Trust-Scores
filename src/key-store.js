@@ -52,6 +52,10 @@ function currentStaticKeys() {
   return parseEnvKeys();
 }
 
+function isStaticKey(apiKey) {
+  return Boolean(currentStaticKeys()[apiKey]);
+}
+
 // ---------------------------------------------------------------------------
 // Helpers
 // ---------------------------------------------------------------------------
@@ -87,6 +91,10 @@ export function getKeyTier(apiKey) {
 /** Returns full user record by API key, or null. */
 export function getUserByKey(apiKey) {
   return users().get(apiKey) ?? null;
+}
+
+export function getAllUsers() {
+  return [...users().entries()].map(([apiKey, user]) => ({ apiKey, ...user }));
 }
 
 /** Find user by email (linear scan — fine for early scale). */
@@ -163,4 +171,90 @@ export function getUserByStripeCustomerId(customerId) {
     }
   }
   return null;
+}
+
+function moveUsageKeys(oldApiKey, newApiKey) {
+  for (const [usageKey, usageValue] of [...store.usageByMonthAndApiKey.entries()]) {
+    const suffix = `:${oldApiKey}`;
+    if (!usageKey.endsWith(suffix)) continue;
+    const monthPrefix = usageKey.slice(0, -suffix.length);
+    store.usageByMonthAndApiKey.set(`${monthPrefix}:${newApiKey}`, usageValue);
+    store.usageByMonthAndApiKey.delete(usageKey);
+  }
+}
+
+function moveApiKeyScopedMaps(oldApiKey, newApiKey) {
+  if (store.webhooksByApiKey.has(oldApiKey)) {
+    store.webhooksByApiKey.set(newApiKey, store.webhooksByApiKey.get(oldApiKey));
+    store.webhooksByApiKey.delete(oldApiKey);
+  }
+
+  if (store.decisionLogsByApiKey.has(oldApiKey)) {
+    store.decisionLogsByApiKey.set(newApiKey, store.decisionLogsByApiKey.get(oldApiKey));
+    store.decisionLogsByApiKey.delete(oldApiKey);
+  }
+}
+
+function purgeApiKeyScopedData(apiKey) {
+  const hooks = store.webhooksByApiKey.get(apiKey) ?? [];
+  store.webhooksByApiKey.delete(apiKey);
+  store.decisionLogsByApiKey.delete(apiKey);
+
+  for (const [usageKey] of [...store.usageByMonthAndApiKey.entries()]) {
+    if (usageKey.endsWith(`:${apiKey}`)) {
+      store.usageByMonthAndApiKey.delete(usageKey);
+    }
+  }
+
+  for (const hook of hooks) {
+    store.webhookDeliveries.delete(hook.id);
+    for (const [suppressionKey] of [...store.webhookSuppression.entries()]) {
+      if (suppressionKey.startsWith(`${hook.id}:`)) {
+        store.webhookSuppression.delete(suppressionKey);
+      }
+    }
+  }
+}
+
+export function rotateUserApiKey(oldApiKey) {
+  if (!oldApiKey) return { ok: false, error: "API key is required." };
+  if (isStaticKey(oldApiKey)) {
+    return { ok: false, error: "Static keys cannot be rotated via API." };
+  }
+
+  const existing = users().get(oldApiKey);
+  if (!existing) return { ok: false, error: "API key not found." };
+
+  let newApiKey = generateApiKey();
+  while (users().has(newApiKey) || isStaticKey(newApiKey)) {
+    newApiKey = generateApiKey();
+  }
+
+  users().set(newApiKey, {
+    ...existing,
+    rotatedAt: new Date().toISOString(),
+  });
+  users().delete(oldApiKey);
+
+  moveUsageKeys(oldApiKey, newApiKey);
+  moveApiKeyScopedMaps(oldApiKey, newApiKey);
+
+  scheduleFlush();
+  return { ok: true, apiKey: newApiKey, tier: existing.tier };
+}
+
+export function revokeUserApiKey(apiKey) {
+  if (!apiKey) return { ok: false, error: "API key is required." };
+  if (isStaticKey(apiKey)) {
+    return { ok: false, error: "Static keys cannot be revoked via API." };
+  }
+
+  const existing = users().get(apiKey);
+  if (!existing) return { ok: false, error: "API key not found." };
+
+  users().delete(apiKey);
+  purgeApiKeyScopedData(apiKey);
+  scheduleFlush();
+
+  return { ok: true, email: existing.email };
 }

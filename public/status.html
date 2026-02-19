@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Status | Claw Trust Scores</title>
+  <link rel="icon" type="image/png" href="/logo-mark.png" />
+  <style>
+    body { margin: 0; font-family: ui-sans-serif, system-ui, -apple-system, sans-serif; background: #f8f4ef; color: #1f1a16; }
+    .wrap { max-width: 780px; margin: 0 auto; padding: 28px 20px 64px; }
+    .card { background: #fff; border: 1px solid #e7ddd4; border-radius: 12px; padding: 18px; }
+    .row { display: flex; align-items: center; gap: 10px; }
+    .dot { width: 10px; height: 10px; border-radius: 50%; background: #999; }
+    .ok { background: #14886f; }
+    .bad { background: #b33838; }
+    .muted { color: #6f6257; }
+    pre { background: #171210; color: #f7efe6; border-radius: 10px; padding: 12px; overflow: auto; }
+    a { color: #d4532a; text-decoration: none; }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <p><a href="/">← Back to home</a></p>
+    <div class="card">
+      <h1 style="margin-top:0;">Service Status</h1>
+      <div class="row">
+        <span id="dot" class="dot"></span>
+        <strong id="label">Checking...</strong>
+      </div>
+      <p class="muted">Health endpoint: <code>/health</code></p>
+      <pre id="output">{}</pre>
+    </div>
+  </div>
+  <script>
+    async function checkHealth() {
+      const dot = document.getElementById("dot");
+      const label = document.getElementById("label");
+      const output = document.getElementById("output");
+      try {
+        const res = await fetch("/health", { cache: "no-store" });
+        const data = await res.json();
+        output.textContent = JSON.stringify(data, null, 2);
+        if (res.ok && data.ok === true) {
+          dot.className = "dot ok";
+          label.textContent = "Operational";
+          return;
+        }
+        dot.className = "dot bad";
+        label.textContent = "Degraded";
+      } catch {
+        dot.className = "dot bad";
+        label.textContent = "Unavailable";
+        output.textContent = JSON.stringify({ ok: false, error: "Network error" }, null, 2);
+      }
+    }
+    checkHealth();
+  </script>
+</body>
+</html>

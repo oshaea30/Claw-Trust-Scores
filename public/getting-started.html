@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Getting Started | Claw Trust Scores</title>
+  <link rel="icon" type="image/png" href="/logo-mark.png" />
+  <style>
+    body { margin: 0; font-family: ui-sans-serif, system-ui, -apple-system, sans-serif; background: #f8f4ef; color: #1f1a16; }
+    .wrap { max-width: 920px; margin: 0 auto; padding: 28px 20px 64px; }
+    .card { background: #fff; border: 1px solid #e7ddd4; border-radius: 12px; padding: 18px; margin-bottom: 12px; }
+    h1 { margin: 0 0 10px; }
+    code, pre { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
+    pre { background: #171210; color: #f7efe6; border-radius: 10px; padding: 12px; overflow: auto; }
+    .muted { color: #6f6257; }
+    a { color: #d4532a; text-decoration: none; }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <p><a href="/">← Back to home</a></p>
+    <div class="card">
+      <h1>Getting Started in 5 Minutes</h1>
+      <p class="muted">Get your key, log an event, read a score, and run preflight policy checks.</p>
+    </div>
+    <div class="card">
+      <h2>1. Create key</h2>
+      <pre><code>curl -X POST "https://claw-trust-scores-production.up.railway.app/v1/users" \
+  -H "Content-Type: application/json" \
+  -d '{"email":"you@example.com"}'</code></pre>
+    </div>
+    <div class="card">
+      <h2>2. Log event</h2>
+      <pre><code>curl -X POST "https://claw-trust-scores-production.up.railway.app/v1/events" \
+  -H "Content-Type: application/json" \
+  -H "x-api-key: YOUR_KEY" \
+  -d '{"agentId":"agent:demo:1","kind":"positive","eventType":"completed_task_on_time"}'</code></pre>
+    </div>
+    <div class="card">
+      <h2>3. Read trust score</h2>
+      <pre><code>curl "https://claw-trust-scores-production.up.railway.app/v1/score?agentId=agent:demo:1" \
+  -H "x-api-key: YOUR_KEY"</code></pre>
+    </div>
+    <div class="card">
+      <h2>4. Preflight decision</h2>
+      <pre><code>curl -X POST "https://claw-trust-scores-production.up.railway.app/v1/integrations/clawcredit/preflight" \
+  -H "Content-Type: application/json" \
+  -H "x-api-key: YOUR_KEY" \
+  -d '{"agentId":"agent:demo:1","amountUsd":2500,"newPayee":true,"firstTimeCounterparty":true}'</code></pre>
+    </div>
+  </div>
+</body>
+</html>

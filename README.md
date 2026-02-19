@@ -6,6 +6,8 @@ Small service that returns a 0-100 trust score and short history for any AI agen
 
 - End-user/API onboarding: `USER_GUIDE.md`
 - Self-serve billing + infra setup: `SELFSERVE-SETUP.md`
+- Launch readiness checklist: `LAUNCH_CHECKLIST.md`
+- Monitoring runbook: `MONITORING.md`
 - Full implementation details: `TECHNICAL_DOCUMENTATION.md`
 
 ## Why it exists
@@ -113,6 +115,26 @@ Export policy decisions (score checks + ClawCredit preflight outcomes) for compl
 Get current month usage, plan limits, and remaining quota.
 
 `GET /v1/usage`
+
+### 4b) API Key Lifecycle
+
+Rotate current dynamic API key:
+
+`POST /v1/keys/rotate`
+
+Revoke current dynamic API key:
+
+`POST /v1/keys/revoke`
+
+```json
+{ "confirm": "REVOKE" }
+```
+
+### 4c) Admin Overview (ops)
+
+Requires `ADMIN_TOKEN` and header `x-admin-token`.
+
+`GET /v1/admin/overview`
 
 ### 5) Webhooks (Starter/Pro)
 

@@ -272,8 +272,9 @@
       </a>
       <nav class="top-links">
         <a href="/">Home</a>
+        <a href="/getting-started.html">Getting Started</a>
         <a href="/changelog.html">Changelog</a>
-        <a href="/health" target="_blank" rel="noopener noreferrer">Status</a>
+        <a href="/status.html">Status</a>
       </nav>
     </div>
   </header>
@@ -293,6 +294,9 @@
         <h2>Auth</h2>
         <div class="auth-row">
           Send header <code>x-api-key: YOUR_KEY</code> on all protected endpoints.
+        </div>
+        <div class="auth-row" style="margin-top:8px;">
+          Admin endpoint uses <code>x-admin-token: ADMIN_TOKEN</code>.
         </div>
       </article>
 
@@ -331,8 +335,20 @@
           <div><code>/v1/plans</code><span>Public plan limits</span></div>
         </div>
         <div class="endpoint">
+          <span class="verb post">POST</span>
+          <div><code>/v1/keys/rotate</code><span>Rotate current dynamic API key</span></div>
+        </div>
+        <div class="endpoint">
+          <span class="verb post">POST</span>
+          <div><code>/v1/keys/revoke</code><span>Revoke current dynamic API key</span></div>
+        </div>
+        <div class="endpoint">
           <span class="verb get">GET</span>
           <div><code>/health</code><span>Service health check</span></div>
+        </div>
+        <div class="endpoint">
+          <span class="verb get">GET</span>
+          <div><code>/v1/admin/overview</code><span>Internal metrics overview (admin token)</span></div>
         </div>
       </div>
     </section>
@@ -340,9 +356,12 @@
     <section class="card">
       <h2>Full Guides</h2>
       <div class="guides">
+        <a class="guide-link" href="/getting-started.html"><span>5-Minute Quickstart</span><span>OPEN</span></a>
         <a class="guide-link" href="https://github.com/oshaea30/Claw-Trust-Scores/blob/main/USER_GUIDE.md" target="_blank" rel="noopener noreferrer"><span>User Guide</span><span>OPEN</span></a>
         <a class="guide-link" href="https://github.com/oshaea30/Claw-Trust-Scores/blob/main/README.md" target="_blank" rel="noopener noreferrer"><span>README</span><span>OPEN</span></a>
         <a class="guide-link" href="https://github.com/oshaea30/Claw-Trust-Scores/blob/main/TECHNICAL_DOCUMENTATION.md" target="_blank" rel="noopener noreferrer"><span>Technical Documentation</span><span>OPEN</span></a>
+        <a class="guide-link" href="/terms.html"><span>Terms of Service</span><span>OPEN</span></a>
+        <a class="guide-link" href="/privacy.html"><span>Privacy Policy</span><span>OPEN</span></a>
       </div>
       <p class="footer-note">For billing and key management setup, see <span class="mono">SELFSERVE-SETUP.md</span> in the repository.</p>
     </section>

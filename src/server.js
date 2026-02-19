@@ -3,6 +3,7 @@ import path from "node:path";
 import http from "node:http";
 import { URL } from "node:url";
 
+import { getAdminOverview } from "./admin.js";
 import { authenticate } from "./auth.js";
 import { getDecisionLogs, logDecision } from "./audit.js";
 import { clawCreditPreflight } from "./clawcredit.js";
@@ -13,6 +14,7 @@ import { handleCreateUser, handleUpgrade, handleStripeWebhook } from "./selfserv
 import { getUsageSnapshot } from "./usage.js";
 import { createWebhook, deleteWebhook, getWebhooks } from "./webhooks.js";
 import { getHeroSnapshot } from "./public-signals.js";
+import { revokeUserApiKey, rotateUserApiKey } from "./key-store.js";
 
 const PORT = Number(process.env.PORT ?? 8080);
 const PUBLIC_DIR = path.resolve(process.cwd(), "public");
@@ -217,6 +219,18 @@ const server = http.createServer(async (request, response) => {
     return sendJson(response, 200, getHeroSnapshot());
   }
 
+  if (request.method === "GET" && url.pathname === "/v1/admin/overview") {
+    const adminToken = process.env.ADMIN_TOKEN ?? "";
+    if (!adminToken) {
+      return sendJson(response, 503, { error: "Admin endpoint is not configured." });
+    }
+    const received = request.headers["x-admin-token"]?.trim() ?? "";
+    if (!received || received !== adminToken) {
+      return sendJson(response, 401, { error: "Unauthorized admin token." });
+    }
+    return sendJson(response, 200, getAdminOverview());
+  }
+
   // --- Self-serve signup (public, no auth required) ---
   if (request.method === "POST" && url.pathname === "/v1/users") {
     try {
@@ -355,6 +369,43 @@ const server = http.createServer(async (request, response) => {
   if (request.method === "GET" && url.pathname === "/v1/usage") {
     const result = getUsageSnapshot({ account });
     return sendJson(response, result.status, result.body);
+  }
+
+  // --- API key security lifecycle ---
+  if (request.method === "POST" && url.pathname === "/v1/keys/rotate") {
+    const result = rotateUserApiKey(account.apiKey);
+    if (!result.ok) {
+      return sendJson(response, 400, { error: result.error });
+    }
+    return sendJson(response, 200, {
+      message: "API key rotated. Use the new key immediately; the old key is invalid.",
+      apiKey: result.apiKey,
+      tier: result.tier,
+    });
+  }
+
+  if (request.method === "POST" && url.pathname === "/v1/keys/revoke") {
+    try {
+      const payload = await readJsonBody(request);
+      if (payload.confirm !== "REVOKE") {
+        return sendJson(response, 400, {
+          error: 'Set {"confirm":"REVOKE"} to confirm key revocation.',
+        });
+      }
+      const result = revokeUserApiKey(account.apiKey);
+      if (!result.ok) {
+        return sendJson(response, 400, { error: result.error });
+      }
+      return sendJson(response, 200, {
+        message: "API key revoked. Create a new key from the signup flow to continue.",
+        revoked: true,
+      });
+    } catch (error) {
+      if (error instanceof Error && error.message === "Payload too large") {
+        return sendJson(response, 413, { error: "Payload too large." });
+      }
+      return sendJson(response, 400, { error: "Invalid JSON body." });
+    }
   }
 
   // --- Decision audit export ---
