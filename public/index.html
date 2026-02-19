@@ -96,6 +96,9 @@
       border-radius: 0;
       min-height: 680px;
       border-bottom: 1px solid rgba(0,0,0,0.08);
+      background:
+        radial-gradient(1200px 580px at 50% 100%, rgba(212,83,42,0.26), rgba(212,83,42,0.08) 44%, rgba(250,249,247,0.45) 100%),
+        linear-gradient(180deg, #f9f5f0 0%, #f4e6da 58%, #ecd0bc 100%);
     }
     .hero-video {
       position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover;
@@ -111,6 +114,16 @@
         rgba(245,226,210,0.34) 40%,
         rgba(222,140,100,0.24) 70%,
         rgba(212,83,42,0.18) 100%
+      );
+    }
+    .hero-wrap.no-video .hero-video { display: none; }
+    .hero-wrap.no-video .hero-frost {
+      backdrop-filter: blur(8px) saturate(1.03);
+      background: linear-gradient(
+        180deg,
+        rgba(250,249,247,0.42) 0%,
+        rgba(245,226,210,0.34) 45%,
+        rgba(224,152,115,0.28) 100%
       );
     }
     .hero {
@@ -629,6 +642,16 @@
     @media (max-width: 700px) {
       .nav-links a:not(.cta-link) { display: none; }
       .values-grid, .pricing-grid { grid-template-columns: 1fr; }
+      .hero-video { opacity: 0.68; }
+      .hero-frost {
+        backdrop-filter: blur(5px) saturate(1.02);
+        background: linear-gradient(
+          180deg,
+          rgba(250,249,247,0.22) 0%,
+          rgba(245,226,210,0.16) 52%,
+          rgba(224,152,115,0.14) 100%
+        );
+      }
       .hero h1 { letter-spacing: -1px; }
       .hero-form-box { flex-direction: column; align-items: center; }
       .hero-form-box input[type="email"] { width: 100%; max-width: 340px; }
@@ -672,7 +695,7 @@
 
   <!-- ─── HERO ─── -->
   <div class="hero-wrap" id="signup">
-    <video class="hero-video" autoplay muted loop playsinline>
+    <video class="hero-video" id="heroVideo" autoplay muted loop playsinline>
       <source src="hero-lobsters.mp4" type="video/mp4" />
     </video>
     <div class="hero-frost"></div>
@@ -1238,6 +1261,31 @@
       }
     }
 
+    function setupHeroVideoFallback() {
+      const heroWrap = document.querySelector(".hero-wrap");
+      const video = document.getElementById("heroVideo");
+      if (!heroWrap || !video) return;
+
+      let didPlay = false;
+      const markPlayed = () => {
+        didPlay = true;
+        heroWrap.classList.remove("no-video");
+      };
+      video.addEventListener("playing", markPlayed, { once: true });
+      video.addEventListener("timeupdate", markPlayed, { once: true });
+
+      const applyFallback = () => {
+        if (!didPlay) heroWrap.classList.add("no-video");
+      };
+
+      const playPromise = video.play();
+      if (playPromise && typeof playPromise.then === "function") {
+        playPromise.then(markPlayed).catch(applyFallback);
+      }
+      setTimeout(applyFallback, 1200);
+    }
+
+    setupHeroVideoFallback();
     loadHeroSnapshot();
   </script>
 </body>
