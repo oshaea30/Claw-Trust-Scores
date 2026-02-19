@@ -3,7 +3,7 @@
 ## Uptime Targets
 
 - Primary health endpoint: `GET /health`
-- Human-friendly status page: `GET /status.html`
+- Human-friendly status page: `GET /status`
 
 ## Recommended External Monitors
 
@@ -54,6 +54,6 @@ Set alerting on:
 ```bash
 BASE="https://claw-trust-scores-production.up.railway.app"
 curl -s "$BASE/health"
-curl -s "$BASE/status.html" >/dev/null
+curl -s "$BASE/status" >/dev/null
 curl -s "$BASE/v1/plans"
 ```

@@ -19,6 +19,20 @@ import { revokeUserApiKey, rotateUserApiKey } from "./key-store.js";
 const PORT = Number(process.env.PORT ?? 8080);
 const PUBLIC_DIR = path.resolve(process.cwd(), "public");
 const LANDING_PATH = path.resolve(process.cwd(), "public", "index.html");
+const CLEAN_PAGE_ROUTES = new Map([
+  ["/api-docs", "api-docs.html"],
+  ["/getting-started", "getting-started.html"],
+  ["/privacy", "privacy.html"],
+  ["/terms", "terms.html"],
+  ["/status", "status.html"],
+  ["/changelog", "changelog.html"],
+]);
+const LEGACY_HTML_REDIRECTS = new Map(
+  [...CLEAN_PAGE_ROUTES.entries()].map(([cleanPath, fileName]) => [
+    `/${fileName}`,
+    cleanPath,
+  ])
+);
 
 loadStoreFromDisk();
 
@@ -194,6 +208,18 @@ const server = http.createServer(async (request, response) => {
   // --- Landing page ---
   if (request.method === "GET" && (url.pathname === "/" || url.pathname === "/index.html")) {
     return sendHtmlFile(response, LANDING_PATH);
+  }
+
+  if (request.method === "GET" && LEGACY_HTML_REDIRECTS.has(url.pathname)) {
+    response.writeHead(308, { Location: LEGACY_HTML_REDIRECTS.get(url.pathname) });
+    return response.end();
+  }
+
+  if (request.method === "GET" && CLEAN_PAGE_ROUTES.has(url.pathname)) {
+    return sendHtmlFile(
+      response,
+      path.resolve(PUBLIC_DIR, CLEAN_PAGE_ROUTES.get(url.pathname))
+    );
   }
 
   if (request.method === "GET" && trySendStaticAsset(response, url.pathname)) {

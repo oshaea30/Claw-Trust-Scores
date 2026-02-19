@@ -5,9 +5,9 @@ Use this as a pass/fail checklist before announcing launch.
 ## 1) Core Availability
 
 - [ ] `GET /health` returns `{"ok":true}`
-- [ ] `GET /status.html` shows `Operational`
+- [ ] `GET /status` shows `Operational`
 - [ ] Landing page loads with hero video/logo/assets
-- [ ] `GET /api-docs.html` and `GET /getting-started.html` load
+- [ ] `GET /api-docs` and `GET /getting-started` load
 
 ## 2) Signup + Email Flow
 
@@ -37,8 +37,8 @@ Use this as a pass/fail checklist before announcing launch.
 
 ## 6) Legal + Trust
 
-- [ ] `GET /terms.html` loads
-- [ ] `GET /privacy.html` loads
+- [ ] `GET /terms` loads
+- [ ] `GET /privacy` loads
 - [ ] Footer links point to real pages (no dead `#` links)
 
 ## 7) Ops + Monitoring

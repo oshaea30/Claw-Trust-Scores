@@ -6,8 +6,8 @@ Use this API before risky actions (payments, key sharing, delegated execution) t
 
 ## Start Here
 
-- API docs page: `/api-docs.html`
-- 5-minute quickstart page: `/getting-started.html`
+- API docs page: `/api-docs`
+- 5-minute quickstart page: `/getting-started`
 - User guide: `USER_GUIDE.md`
 - Launch checklist: `LAUNCH_CHECKLIST.md`
 - Monitoring runbook: `MONITORING.md`
@@ -63,7 +63,7 @@ curl "$BASE/v1/usage" \
 Public:
 
 - `GET /health`
-- `GET /status.html`
+- `GET /status`
 - `GET /v1/plans`
 - `POST /v1/users`
 - `GET /v1/upgrade/:apiKey?tier=starter|pro`
@@ -107,4 +107,3 @@ npm run start
 ```
 
 Environment vars are in `.env.example`.
-
