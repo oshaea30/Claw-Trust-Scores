@@ -534,7 +534,7 @@
             </div>
             <div class="simple-step">
               <strong>2. Ask for a trust score</strong>
-              <p>Your backend sends the API call with header <span class="mono">x-api-key</span>. You get back a score from 0 to 100 plus a short explanation.</p>
+              <p>Your backend sends the API call with header <span class="mono">x-api-key</span>. You get back a score from 0 to 100 plus explanation and <span class="mono">signalQuality</span> (how trustworthy the underlying signals are).</p>
             </div>
             <div class="simple-step">
               <strong>3. Make a decision</strong>
@@ -626,7 +626,7 @@ CLAWTRUST_API_KEY=INSERT_YOUR_API_KEY_HERE</code></pre>
           </div>
           <div class="endpoint">
             <span class="verb get">GET</span>
-            <div><code>/v1/score?agentId=...&amp;includeTrace=1</code><span>Read trust score + explanation (+ optional contribution trace)</span></div>
+            <div><code>/v1/score?agentId=...&amp;includeTrace=1</code><span>Read trust score + explanation + signal quality (+ optional contribution trace)</span></div>
           </div>
           <div class="endpoint">
             <span class="verb post">POST</span>

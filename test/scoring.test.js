@@ -73,3 +73,33 @@ test("confidence and source type reduce low-trust signal impact and trace is ava
   assert.equal(strong.history[0].verificationStatus, "verified");
   assert.equal(weak.history[0].verificationStatus, "unverified");
 });
+
+test("score response includes signal quality with verified percentage", () => {
+  const now = new Date().toISOString();
+  const events = [
+    {
+      id: "v1",
+      agentId: "agent-q",
+      kind: "positive",
+      eventType: "completed_task_on_time",
+      sourceType: "verified_integration",
+      confidence: 1,
+      createdAt: now,
+    },
+    {
+      id: "u1",
+      agentId: "agent-q",
+      kind: "negative",
+      eventType: "failed_payment",
+      sourceType: "self_reported",
+      confidence: 1,
+      createdAt: now,
+    },
+  ];
+
+  const result = scoreAgent("agent-q", events);
+  assert.equal(typeof result.signalQuality.score, "number");
+  assert.equal(typeof result.signalQuality.level, "string");
+  assert.equal(result.signalQuality.sampleSize, 2);
+  assert.equal(result.signalQuality.verifiedPercent, 50);
+});

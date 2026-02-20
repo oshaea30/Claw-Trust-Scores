@@ -1442,7 +1442,11 @@
         return null;
       }
       quickResult.className = "hero-quick-result ok";
-      quickResult.textContent = `Score ${data.score} (${data.level}) — ${data.explanation || "No explanation provided."}`;
+      const sq = data.signalQuality || {};
+      const qualityText = typeof sq.score === "number"
+        ? ` · Signal quality ${sq.score} (${sq.level || "n/a"}, ${sq.verifiedPercent ?? 0}% verified, n=${sq.sampleSize ?? 0})`
+        : "";
+      quickResult.textContent = `Score ${data.score} (${data.level})${qualityText} — ${data.explanation || "No explanation provided."}`;
       return data;
     }
 

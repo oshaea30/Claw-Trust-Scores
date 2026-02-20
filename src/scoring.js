@@ -47,6 +47,15 @@ function sourceTrustFactor(event) {
   return 1;
 }
 
+function sourceQualityFactor(event) {
+  const sourceType = String(event.sourceType ?? "").trim().toLowerCase();
+  if (sourceType === "verified_integration") return 1;
+  if (sourceType === "manual") return 0.85;
+  if (sourceType === "self_reported") return 0.55;
+  if (sourceType === "unverified") return 0.35;
+  return 0.7;
+}
+
 function confidenceFactor(event) {
   const confidence = Number(event.confidence);
   if (!Number.isFinite(confidence)) return 1;
@@ -140,6 +149,12 @@ function explanation(level, positive30d, negative30d) {
   return `${level}: ${positive30d} positive vs ${negative30d} negative events in 30 days.`;
 }
 
+function signalQualityLevel(score) {
+  if (score >= 80) return "High";
+  if (score >= 55) return "Medium";
+  return "Low";
+}
+
 export function scoreAgent(agentId, events, options = {}) {
   const includeTrace = options.includeTrace === true;
   const traceLimit = clamp(Number(options.traceLimit ?? 5), 1, 20);
@@ -157,6 +172,10 @@ export function scoreAgent(agentId, events, options = {}) {
     excludedByVerification: 0,
     included: 0,
   };
+  let qualityNumerator = 0;
+  let qualityDenominator = 0;
+  let qualitySampleSize = 0;
+  let qualityVerifiedEvents = 0;
 
   for (const event of events) {
     const ageDays = daysSince(event.createdAt, nowMs);
@@ -173,6 +192,13 @@ export function scoreAgent(agentId, events, options = {}) {
       contribution = baseWeight * decayFactor * sourceFactor * confidence * eventMultiplier;
       scoreValue += contribution;
       policySummary.included += 1;
+      qualitySampleSize += 1;
+      if (String(event.sourceType ?? "").trim().toLowerCase() === "verified_integration") {
+        qualityVerifiedEvents += 1;
+      }
+      const qualityWeight = Math.max(0.05, decayFactor * confidence);
+      qualityDenominator += qualityWeight;
+      qualityNumerator += qualityWeight * sourceQualityFactor(event);
     } else if (policyEffect.reason === "below_min_confidence") {
       policySummary.excludedByConfidence += 1;
     } else if (policyEffect.reason === "source_not_allowed") {
@@ -219,6 +245,17 @@ export function scoreAgent(agentId, events, options = {}) {
 
   const score = Math.round(clamp(scoreValue, SCORE_MIN, SCORE_MAX));
   const level = levelFor(score);
+  const signalQualityScore = qualityDenominator > 0
+    ? Math.round(clamp((qualityNumerator / qualityDenominator) * 100, 0, 100))
+    : 0;
+  const signalQuality = {
+    score: signalQualityScore,
+    level: signalQualityLevel(signalQualityScore),
+    sampleSize: qualitySampleSize,
+    verifiedPercent: qualitySampleSize > 0
+      ? Math.round((qualityVerifiedEvents / qualitySampleSize) * 100)
+      : 0,
+  };
   const history = [...events]
     .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
     .slice(0, 10)
@@ -243,6 +280,7 @@ export function scoreAgent(agentId, events, options = {}) {
     score,
     level,
     explanation: explanation(level, positive30d, negative30d),
+    signalQuality,
     breakdown: {
       positive30d,
       neutral30d,
