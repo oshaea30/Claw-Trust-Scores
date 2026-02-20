@@ -704,39 +704,44 @@
         <h2>Connector Quickstart (Stripe/Auth/Marketplace)</h2>
         <ol class="setup-list">
           <li>Create your ingest secret with <span class="mono">POST /v1/integrations/ingest/secret</span>.</li>
+          <li>Preview event mappings with <span class="mono">POST /v1/integrations/map-event</span> before wiring webhooks.</li>
           <li>Send signed events to <span class="mono">POST /v1/integrations/ingest/events</span> with source <span class="mono">stripe</span>, <span class="mono">auth</span>, or <span class="mono">marketplace</span>.</li>
-          <li>Use <span class="mono">providerEventType</span> (or <span class="mono">stripeEventType</span>) and let mapping auto-convert to trust events.</li>
         </ol>
         <div style="height:10px"></div>
         <pre><code># 1) Rotate/create ingest secret (store securely)
 curl -X POST "https://clawtrustscores.com/v1/integrations/ingest/secret" \
   -H "x-api-key: YOUR_KEY"</code></pre>
         <div style="height:10px"></div>
-        <pre><code># 2) Sign payload with HMAC SHA256 over: "{timestamp}.{rawJsonBody}"
-#    Header format: x-ingest-signature: sha256=&lt;hex_digest&gt;
-#    Required headers:
-#      x-api-key
-#      x-ingest-timestamp (unix seconds)
-#      x-ingest-signature
-
-{
-  "source": "stripe",
-  "eventId": "evt_12345",
-  "agentId": "agent:vendor:acme",
-  "providerEventType": "payment_intent.payment_failed",
-  "amountUsd": 49.99,
-  "currency": "usd",
-  "chargeId": "ch_12345"
-}</code></pre>
+        <pre><code># 2) Preview mapping before ingesting events
+curl -X POST "https://clawtrustscores.com/v1/integrations/map-event" \
+  -H "Content-Type: application/json" \
+  -H "x-api-key: YOUR_KEY" \
+  -d '{"source":"stripe","providerEventType":"payment_intent.payment_failed"}'</code></pre>
         <div style="height:10px"></div>
-        <pre><code># 3) Post to ingest endpoint
+        <pre><code># 3a) Stripe example payload
 curl -X POST "https://clawtrustscores.com/v1/integrations/ingest/events" \
   -H "Content-Type: application/json" \
   -H "x-api-key: YOUR_KEY" \
   -H "x-ingest-timestamp: 1739980000" \
   -H "x-ingest-signature: sha256=YOUR_HEX_SIGNATURE" \
   -d '{"source":"stripe","eventId":"evt_12345","agentId":"agent:vendor:acme","providerEventType":"payment_intent.payment_failed","amountUsd":49.99,"currency":"usd","chargeId":"ch_12345"}'</code></pre>
-        <p class="small-note">Template mapping and supported provider event types are available at <span class="mono">GET /v1/integrations/templates</span>. You can preview any mapping with <span class="mono">POST /v1/integrations/map-event</span>.</p>
+        <div style="height:10px"></div>
+        <pre><code># 3b) Auth provider example payload
+curl -X POST "https://clawtrustscores.com/v1/integrations/ingest/events" \
+  -H "Content-Type: application/json" \
+  -H "x-api-key: YOUR_KEY" \
+  -H "x-ingest-timestamp: 1739980000" \
+  -H "x-ingest-signature: sha256=YOUR_HEX_SIGNATURE" \
+  -d '{"source":"auth","eventId":"auth_evt_9001","agentId":"agent:vendor:acme","providerEventType":"impersonation.detected","ip":"203.0.113.8"}'</code></pre>
+        <div style="height:10px"></div>
+        <pre><code># 3c) Marketplace example payload
+curl -X POST "https://clawtrustscores.com/v1/integrations/ingest/events" \
+  -H "Content-Type: application/json" \
+  -H "x-api-key: YOUR_KEY" \
+  -H "x-ingest-timestamp: 1739980000" \
+  -H "x-ingest-signature: sha256=YOUR_HEX_SIGNATURE" \
+  -d '{"source":"marketplace","eventId":"mk_evt_1002","agentId":"agent:vendor:acme","providerEventType":"task.abandoned","taskId":"task_1002"}'</code></pre>
+        <p class="small-note">Template mapping and supported provider event types are available at <span class="mono">GET /v1/integrations/templates</span>. Use <span class="mono">POST /v1/integrations/map-event</span> to verify exact mapping behavior before sending live events.</p>
       </section>
 
       <section class="card">

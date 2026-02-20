@@ -167,10 +167,10 @@
       backdrop-filter: blur(14px) saturate(1.06);
       background: linear-gradient(
         180deg,
-        rgba(250,249,247,0.46) 0%,
-        rgba(245,226,210,0.34) 40%,
-        rgba(222,140,100,0.24) 70%,
-        rgba(212,83,42,0.18) 100%
+        rgba(250,249,247,0.56) 0%,
+        rgba(245,226,210,0.42) 40%,
+        rgba(222,140,100,0.3) 70%,
+        rgba(212,83,42,0.22) 100%
       );
     }
     .hero-wrap.no-video .hero-video { display: none; }
@@ -207,8 +207,9 @@
     .hero h1 .accent { color: var(--coral); }
     .hero-sub {
       margin-top: 18px; max-width: 580px;
-      color: var(--text-secondary); font-size: clamp(0.95rem, 1.3vw, 1.08rem);
+      color: #5a514a; font-size: clamp(0.95rem, 1.3vw, 1.08rem);
       line-height: 1.6;
+      text-shadow: 0 1px 1px rgba(255,255,255,0.35);
     }
     .trust-row {
       margin-top: 22px; display: flex; gap: 24px; flex-wrap: wrap; justify-content: center;
@@ -245,7 +246,8 @@
     }
     .btn-primary:hover { transform: translateY(-1px); box-shadow: 0 6px 20px rgba(0,0,0,0.18); }
     .hero-note {
-      margin-top: 12px; font-size: 0.82rem; color: var(--text-muted);
+      margin-top: 12px; font-size: 0.82rem; color: #6a6058;
+      text-shadow: 0 1px 1px rgba(255,255,255,0.35);
     }
     .hero-result {
       margin-top: 8px; font-family: var(--mono); font-size: 0.85rem; min-height: 1.2rem;
@@ -633,7 +635,10 @@
       font-size: clamp(1.8rem, 4vw, 2.8rem); font-weight: 800; letter-spacing: -1px;
       max-width: 600px; line-height: 1.1;
     }
-    .cta-section p { position: relative; z-index: 2; margin-top: 14px; color: var(--text-secondary); }
+    .cta-section p {
+      position: relative; z-index: 2; margin-top: 14px; color: #5f554d;
+      text-shadow: 0 1px 1px rgba(255,255,255,0.35);
+    }
     .cta-section .cta-form {
       position: relative; z-index: 2;
       display: flex; gap: 10px; margin-top: 28px; flex-wrap: wrap; justify-content: center;
@@ -814,12 +819,13 @@
       <h1>Don't get pinched.<br /><span class="accent">Know who to trust.</span></h1>
       <p class="hero-sub">
         Real-time trust scores for AI agents. Score unknown counterparts before payments,
-        key sharing, or delegated execution — one API call.
+        key sharing, or delegated execution — one API call. Works with Stripe, auth providers,
+        and marketplaces.
       </p>
       <div class="trust-row">
         <span class="trust-item"><span class="trust-icon">✓</span> Decayed Scoring</span>
         <span class="trust-item"><span class="trust-icon">✓</span> Audit Export</span>
-        <span class="trust-item"><span class="trust-icon">✓</span> Preflight Gating</span>
+        <span class="trust-item"><span class="trust-icon">✓</span> Trusted Ingest + Provider Mapping</span>
       </div>
       <form id="heroForm" class="hero-form-box">
         <input id="heroEmail" type="email" required placeholder="Enter your email" autocomplete="email" />

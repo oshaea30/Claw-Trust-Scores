@@ -4,56 +4,132 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Getting Started | Claw Trust Scores</title>
-  <meta name="description" content="Get started with Claw Trust Scores in 5 minutes: create an API key, log events, check scores, and run preflight decisions." />
+  <meta name="description" content="Get started with Claw Trust Scores in 5 minutes: pick your source, map events, and send trusted ingest payloads." />
   <link rel="canonical" href="https://clawtrustscores.com/getting-started" />
   <meta property="og:title" content="Getting Started | Claw Trust Scores" />
-  <meta property="og:description" content="A quickstart guide for integrating trust scoring into your workflow." />
+  <meta property="og:description" content="A source-first quickstart for Stripe, auth providers, and marketplaces." />
   <meta property="og:type" content="website" />
   <meta property="og:url" content="https://clawtrustscores.com/getting-started" />
   <meta name="twitter:card" content="summary_large_image" />
   <link rel="icon" type="image/png" href="/logo-mark.png" />
   <style>
-    body { margin: 0; font-family: ui-sans-serif, system-ui, -apple-system, sans-serif; background: #f8f4ef; color: #1f1a16; }
-    .wrap { max-width: 920px; margin: 0 auto; padding: 28px 20px 64px; }
-    .card { background: #fff; border: 1px solid #e7ddd4; border-radius: 12px; padding: 18px; margin-bottom: 12px; }
-    h1 { margin: 0 0 10px; }
+    :root {
+      --bg: #f8f4ef;
+      --surface: #fff;
+      --line: #e7ddd4;
+      --text: #1f1a16;
+      --muted: #6f6257;
+      --accent: #d4532a;
+    }
+    * { box-sizing: border-box; }
+    body { margin: 0; font-family: ui-sans-serif, system-ui, -apple-system, sans-serif; background: var(--bg); color: var(--text); }
+    .wrap { max-width: 960px; margin: 0 auto; padding: 28px 20px 64px; }
+    .card { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 18px; margin-bottom: 12px; }
+    h1, h2, h3 { margin: 0 0 10px; }
+    p { margin: 0; }
+    .muted { color: var(--muted); }
+    a { color: var(--accent); text-decoration: none; }
     code, pre { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
-    pre { background: #171210; color: #f7efe6; border-radius: 10px; padding: 12px; overflow: auto; }
-    .muted { color: #6f6257; }
-    a { color: #d4532a; text-decoration: none; }
+    pre { background: #171210; color: #f7efe6; border-radius: 10px; padding: 12px; overflow: auto; margin: 10px 0 0; }
+    .steps { display: grid; gap: 10px; margin-top: 12px; }
+    .step { border: 1px solid var(--line); border-radius: 10px; padding: 12px; background: #fff; }
+    .sources { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; margin-top: 12px; }
+    .source { border: 1px solid var(--line); border-radius: 10px; padding: 12px; background: #fff; }
+    .source a { display: inline-block; margin-top: 8px; font-weight: 700; }
+    ul { margin: 8px 0 0; padding-left: 18px; color: var(--muted); }
+    li { margin: 5px 0; }
+    .pill { display: inline-flex; align-items: center; gap: 6px; border: 1px solid var(--line); background: #faf7f2; border-radius: 999px; padding: 6px 10px; font-size: 0.83rem; color: var(--muted); margin-top: 10px; }
+    @media (max-width: 900px) {
+      .sources { grid-template-columns: 1fr; }
+    }
   </style>
 </head>
 <body>
   <div class="wrap">
     <p><a href="/api-docs">← Back to API Docs</a></p>
+
     <div class="card">
       <h1>Getting Started in 5 Minutes</h1>
-      <p class="muted">Get your key, log an event, read a score, and run preflight policy checks.</p>
+      <p class="muted">Pick your source, preview event mapping, then send trusted events. This is the fastest path for Stripe, auth providers, and marketplaces.</p>
+      <div class="pill">Base URL: <code>https://clawtrustscores.com</code></div>
     </div>
+
     <div class="card">
-      <h2>1. Create key</h2>
-      <pre><code>curl -X POST "https://clawtrustscores.com/v1/users" \
-  -H "Content-Type: application/json" \
-  -d '{"email":"you@example.com"}'</code></pre>
+      <h2>3 quick steps</h2>
+      <div class="steps">
+        <div class="step"><strong>1. Get an API key</strong><br /><span class="muted">Use the homepage form or create one with <code>POST /v1/users</code>.</span></div>
+        <div class="step"><strong>2. Pick your source</strong><br /><span class="muted">Choose Stripe, Auth, or Marketplace and use its event type names.</span></div>
+        <div class="step"><strong>3. Start sending trusted events</strong><br /><span class="muted">Use signed ingest so your score is fed automatically from real systems.</span></div>
+      </div>
     </div>
+
     <div class="card">
-      <h2>2. Log event</h2>
-      <pre><code>curl -X POST "https://clawtrustscores.com/v1/events" \
+      <h2>Choose your source</h2>
+      <div class="sources">
+        <div class="source">
+          <h3>Stripe</h3>
+          <p class="muted">Payments and disputes.</p>
+          <a href="#source-stripe">Open Stripe quickstart</a>
+        </div>
+        <div class="source">
+          <h3>Auth Provider</h3>
+          <p class="muted">Impersonation, abuse, and login risk.</p>
+          <a href="#source-auth">Open Auth quickstart</a>
+        </div>
+        <div class="source">
+          <h3>Marketplace</h3>
+          <p class="muted">Task completion quality and abuse signals.</p>
+          <a href="#source-marketplace">Open Marketplace quickstart</a>
+        </div>
+      </div>
+    </div>
+
+    <div class="card" id="source-stripe">
+      <h2>Stripe quickstart</h2>
+      <h3>No-code setup first</h3>
+      <ul>
+        <li>Create ingest secret: <code>POST /v1/integrations/ingest/secret</code></li>
+        <li>Preview mapping: <code>POST /v1/integrations/map-event</code> with <code>{"source":"stripe","providerEventType":"payment_intent.payment_failed"}</code></li>
+        <li>Send signed events to <code>POST /v1/integrations/ingest/events</code></li>
+      </ul>
+      <pre><code>curl -X POST "https://clawtrustscores.com/v1/integrations/ingest/events" \
   -H "Content-Type: application/json" \
   -H "x-api-key: YOUR_KEY" \
-  -d '{"agentId":"agent:demo:1","kind":"positive","eventType":"completed_task_on_time"}'</code></pre>
+  -H "x-ingest-timestamp: 1739980000" \
+  -H "x-ingest-signature: sha256=YOUR_HEX_SIGNATURE" \
+  -d '{"source":"stripe","eventId":"evt_123","agentId":"agent:vendor:acme","providerEventType":"payment_intent.payment_failed","amountUsd":49.99,"currency":"usd"}'</code></pre>
     </div>
-    <div class="card">
-      <h2>3. Read trust score</h2>
-      <pre><code>curl "https://clawtrustscores.com/v1/score?agentId=agent:demo:1" \
-  -H "x-api-key: YOUR_KEY"</code></pre>
-    </div>
-    <div class="card">
-      <h2>4. Preflight decision</h2>
-      <pre><code>curl -X POST "https://clawtrustscores.com/v1/integrations/clawcredit/preflight" \
+
+    <div class="card" id="source-auth">
+      <h2>Auth provider quickstart</h2>
+      <h3>No-code setup first</h3>
+      <ul>
+        <li>Create ingest secret: <code>POST /v1/integrations/ingest/secret</code></li>
+        <li>Preview mapping: <code>POST /v1/integrations/map-event</code> with <code>{"source":"auth","providerEventType":"impersonation.detected"}</code></li>
+        <li>Send signed events to <code>POST /v1/integrations/ingest/events</code></li>
+      </ul>
+      <pre><code>curl -X POST "https://clawtrustscores.com/v1/integrations/ingest/events" \
   -H "Content-Type: application/json" \
   -H "x-api-key: YOUR_KEY" \
-  -d '{"agentId":"agent:demo:1","amountUsd":2500,"newPayee":true,"firstTimeCounterparty":true}'</code></pre>
+  -H "x-ingest-timestamp: 1739980000" \
+  -H "x-ingest-signature: sha256=YOUR_HEX_SIGNATURE" \
+  -d '{"source":"auth","eventId":"auth_evt_9001","agentId":"agent:vendor:acme","providerEventType":"impersonation.detected","ip":"203.0.113.8"}'</code></pre>
+    </div>
+
+    <div class="card" id="source-marketplace">
+      <h2>Marketplace quickstart</h2>
+      <h3>No-code setup first</h3>
+      <ul>
+        <li>Create ingest secret: <code>POST /v1/integrations/ingest/secret</code></li>
+        <li>Preview mapping: <code>POST /v1/integrations/map-event</code> with <code>{"source":"marketplace","providerEventType":"task.abandoned"}</code></li>
+        <li>Send signed events to <code>POST /v1/integrations/ingest/events</code></li>
+      </ul>
+      <pre><code>curl -X POST "https://clawtrustscores.com/v1/integrations/ingest/events" \
+  -H "Content-Type: application/json" \
+  -H "x-api-key: YOUR_KEY" \
+  -H "x-ingest-timestamp: 1739980000" \
+  -H "x-ingest-signature: sha256=YOUR_HEX_SIGNATURE" \
+  -d '{"source":"marketplace","eventId":"mk_evt_1002","agentId":"agent:vendor:acme","providerEventType":"task.abandoned","taskId":"task_1002"}'</code></pre>
     </div>
   </div>
 </body>
