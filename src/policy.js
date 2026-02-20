@@ -8,12 +8,64 @@ const DEFAULT_SOURCE_TYPE_MULTIPLIERS = {
   manual: 1,
 };
 
+const POLICY_PRESETS = {
+  open: {
+    minConfidence: 0,
+    allowedSources: [],
+    sourceTypeMultipliers: {
+      verified_integration: 1,
+      self_reported: 0.75,
+      unverified: 0.6,
+      manual: 1,
+    },
+    eventOverrides: {},
+    description: "Accept broad signals. Best for fast onboarding and experimentation.",
+  },
+  balanced: {
+    minConfidence: 0.35,
+    allowedSources: [],
+    sourceTypeMultipliers: {
+      verified_integration: 1,
+      self_reported: 0.55,
+      unverified: 0.35,
+      manual: 0.75,
+    },
+    eventOverrides: {},
+    description: "Default production posture: verified signals favored, low-confidence noise reduced.",
+  },
+  strict: {
+    minConfidence: 0.75,
+    allowedSources: [],
+    sourceTypeMultipliers: {
+      verified_integration: 1,
+      self_reported: 0.2,
+      unverified: 0,
+      manual: 0.4,
+    },
+    eventOverrides: {},
+    description: "High-assurance mode: only high-confidence signals have meaningful impact.",
+  },
+};
+
 export function defaultPolicy() {
   return {
     minConfidence: 0,
     allowedSources: [],
     sourceTypeMultipliers: { ...DEFAULT_SOURCE_TYPE_MULTIPLIERS },
     eventOverrides: {},
+  };
+}
+
+function clonePreset(name) {
+  const preset = POLICY_PRESETS[name];
+  if (!preset) return null;
+  return {
+    minConfidence: preset.minConfidence,
+    allowedSources: [...preset.allowedSources],
+    sourceTypeMultipliers: { ...preset.sourceTypeMultipliers },
+    eventOverrides: { ...preset.eventOverrides },
+    preset: name,
+    presetDescription: preset.description,
   };
 }
 
@@ -116,6 +168,9 @@ export function getPolicy(apiKey) {
 
 export function setPolicy(apiKey, payload) {
   ensurePolicyMap();
+  if (!payload || typeof payload !== "object" || Array.isArray(payload)) {
+    throw new Error("Policy payload must be a JSON object.");
+  }
 
   const current = getPolicy(apiKey);
   const next = { ...current };
@@ -159,4 +214,26 @@ export function resetPolicy(apiKey) {
   store.policyByApiKey.delete(apiKey);
   scheduleFlush();
   return defaultPolicy();
+}
+
+export function listPolicyPresets() {
+  return {
+    presets: Object.fromEntries(
+      Object.keys(POLICY_PRESETS).map((name) => [name, clonePreset(name)])
+    ),
+    recommended: "balanced",
+  };
+}
+
+export function applyPolicyPreset(apiKey, presetName) {
+  ensurePolicyMap();
+  const normalized = String(presetName ?? "").trim().toLowerCase();
+  const preset = clonePreset(normalized);
+  if (!preset) {
+    throw new Error("Unknown preset. Supported presets: open, balanced, strict.");
+  }
+  preset.updatedAt = new Date().toISOString();
+  store.policyByApiKey.set(apiKey, preset);
+  scheduleFlush();
+  return preset;
 }

@@ -1,7 +1,7 @@
 import test, { beforeEach } from "node:test";
 import assert from "node:assert/strict";
 
-import { setPolicy, getPolicy, resetPolicy } from "../src/policy.js";
+import { applyPolicyPreset, listPolicyPresets, setPolicy, getPolicy, resetPolicy } from "../src/policy.js";
 import { getScore, postEvent } from "../src/service.js";
 import { resetStore } from "../src/store.js";
 import { resetPersistenceStateForTest } from "../src/persistence.js";
@@ -81,4 +81,21 @@ test("policy reset returns defaults", () => {
   assert.deepEqual(reset.allowedSources, []);
   assert.equal(current.minConfidence, 0);
   assert.deepEqual(current.allowedSources, []);
+});
+
+test("policy presets can be listed and applied", () => {
+  const apiKey = "demo_starter_key";
+  const listed = listPolicyPresets();
+  assert.equal(listed.recommended, "balanced");
+  assert.ok(listed.presets.strict);
+  assert.ok(listed.presets.open);
+
+  const applied = applyPolicyPreset(apiKey, "strict");
+  assert.equal(applied.preset, "strict");
+  assert.equal(applied.minConfidence, 0.75);
+  assert.equal(applied.sourceTypeMultipliers.unverified, 0);
+
+  const current = getPolicy(apiKey);
+  assert.equal(current.preset, "strict");
+  assert.equal(current.minConfidence, 0.75);
 });

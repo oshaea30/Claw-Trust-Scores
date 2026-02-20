@@ -79,6 +79,8 @@ Protected (`x-api-key` required):
 - `POST /v1/integrations/clawcredit/preflight`
 - `GET /v1/usage`
 - `GET /v1/policy`
+- `GET /v1/policy/presets`
+- `POST /v1/policy/presets/{open|balanced|strict}`
 - `POST /v1/policy`
 - `DELETE /v1/policy`
 - `GET /v1/audit/decisions?format=json|csv&limit=...`

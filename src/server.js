@@ -17,7 +17,7 @@ import { getHeroSnapshot } from "./public-signals.js";
 import { revokeUserApiKey, rotateUserApiKey } from "./key-store.js";
 import { ingestVerifiedEvent, rotateIngestSecret } from "./ingest.js";
 import { listIntegrationTemplates } from "./integration-templates.js";
-import { getPolicy, resetPolicy, setPolicy } from "./policy.js";
+import { applyPolicyPreset, getPolicy, listPolicyPresets, resetPolicy, setPolicy } from "./policy.js";
 
 const PORT = Number(process.env.PORT ?? 8080);
 const PUBLIC_DIR = path.resolve(process.cwd(), "public");
@@ -381,6 +381,21 @@ const server = http.createServer(async (request, response) => {
   // --- Policy controls ---
   if (request.method === "GET" && url.pathname === "/v1/policy") {
     return sendJson(response, 200, { policy: getPolicy(account.apiKey) });
+  }
+
+  if (request.method === "GET" && url.pathname === "/v1/policy/presets") {
+    return sendJson(response, 200, listPolicyPresets());
+  }
+
+  if (request.method === "POST" && url.pathname.startsWith("/v1/policy/presets/")) {
+    const presetName = url.pathname.split("/").pop();
+    try {
+      const policy = applyPolicyPreset(account.apiKey, presetName);
+      return sendJson(response, 200, { policy, presetApplied: presetName });
+    } catch (error) {
+      const message = error instanceof Error ? error.message : "Invalid policy preset.";
+      return sendJson(response, 400, { error: message });
+    }
   }
 
   if (request.method === "POST" && url.pathname === "/v1/policy") {
