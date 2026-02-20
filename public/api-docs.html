@@ -543,9 +543,23 @@
         </article>
         <article class="card">
           <h2>Copy/Paste Example</h2>
-          <pre><code>curl "https://clawtrustscores.com/v1/score?agentId=agent:demo:vendor-1" \
-  -H "x-api-key: YOUR_KEY"</code></pre>
-          <p class="small-note">Expected result: score + trust level + explanation in plain JSON.</p>
+          <pre><code># Terminal (fastest test)
+export CLAWTRUST_API_KEY="claw_paste_your_real_key_here"
+export AGENT_ID="agent:demo:vendor-1"
+
+curl "https://clawtrustscores.com/v1/score?agentId=${AGENT_ID}" \
+  -H "x-api-key: ${CLAWTRUST_API_KEY}"</code></pre>
+          <pre><code>// Node/Telegram bot backend
+const CLAWTRUST_API_KEY = process.env.CLAWTRUST_API_KEY;
+const agentId = "agent:demo:vendor-1";
+
+const res = await fetch(`https://clawtrustscores.com/v1/score?agentId=${encodeURIComponent(agentId)}`, {
+  headers: { "x-api-key": CLAWTRUST_API_KEY }
+});
+
+const data = await res.json();
+console.log(data);</code></pre>
+          <p class="small-note">Expected result: JSON with <span class="mono">score</span>, <span class="mono">level</span>, <span class="mono">explanation</span>, and recent history.</p>
         </article>
         <article class="card">
           <h2>Try It Now (No Coding)</h2>
