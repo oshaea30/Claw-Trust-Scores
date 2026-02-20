@@ -265,6 +265,39 @@
     }
     .hero-result.ok { color: var(--green); }
     .hero-result.bad { color: var(--danger); }
+    .key-result-box {
+      margin-top: 10px;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      border: 1px solid rgba(255,255,255,0.72);
+      background: rgba(255,255,255,0.84);
+      border-radius: 10px;
+      padding: 8px 10px;
+      box-shadow: 0 6px 16px rgba(30,22,18,0.08);
+      max-width: min(760px, 100%);
+    }
+    .key-result-box code {
+      font-family: var(--mono);
+      font-size: 0.84rem;
+      color: #1f1a16;
+      white-space: nowrap;
+      overflow-x: auto;
+      max-width: 520px;
+      display: block;
+    }
+    .copy-key-btn {
+      border: 1px solid rgba(0,0,0,0.08);
+      background: #fff;
+      color: #2d2620;
+      border-radius: 8px;
+      padding: 6px 10px;
+      font-size: 0.75rem;
+      font-weight: 700;
+      cursor: pointer;
+      white-space: nowrap;
+      font-family: var(--sans);
+    }
     .hero-quickstart {
       margin-top: 14px;
       width: min(760px, 100%);
@@ -1310,6 +1343,35 @@
     const quickEventBtn = document.getElementById("quickEventBtn");
     const quickResult = document.getElementById("quickResult");
 
+    function showApiKeyResult(targetEl, apiKey, label = "API key created") {
+      targetEl.className = "hero-result ok";
+      targetEl.textContent = "";
+      const box = document.createElement("div");
+      box.className = "key-result-box";
+
+      const keyCode = document.createElement("code");
+      keyCode.textContent = `${label}: ${apiKey}`;
+      box.appendChild(keyCode);
+
+      const copyBtn = document.createElement("button");
+      copyBtn.type = "button";
+      copyBtn.className = "copy-key-btn";
+      copyBtn.textContent = "Copy";
+      copyBtn.addEventListener("click", async () => {
+        try {
+          await navigator.clipboard.writeText(apiKey);
+          copyBtn.textContent = "Copied";
+          setTimeout(() => { copyBtn.textContent = "Copy"; }, 1200);
+        } catch {
+          copyBtn.textContent = "Copy failed";
+          setTimeout(() => { copyBtn.textContent = "Copy"; }, 1200);
+        }
+      });
+      box.appendChild(copyBtn);
+
+      targetEl.appendChild(box);
+    }
+
     heroForm.addEventListener("submit", async (e) => {
       e.preventDefault();
       const email = heroEmail.value.trim().toLowerCase();
@@ -1330,10 +1392,12 @@
           heroResult.textContent = data.error || "Could not create key.";
           return;
         }
-        heroResult.className = "hero-result ok";
-        heroResult.textContent = data.apiKey
-          ? `API key created: ${data.apiKey}`
-          : (data.message || "API key created — check your email.");
+        if (data.apiKey) {
+          showApiKeyResult(heroResult, data.apiKey, "API key created");
+        } else {
+          heroResult.className = "hero-result ok";
+          heroResult.textContent = data.message || "API key created — check your email.";
+        }
       } catch {
         heroResult.className = "hero-result bad";
         heroResult.textContent = "Network error. Try again.";
@@ -1426,7 +1490,7 @@
             eventType: "completed_task_on_time",
             source: "manual",
             confidence: 0.95,
-            note: "demo onboarding event"
+            details: `demo onboarding event ${Date.now()}`
           })
         });
         let data = {};
@@ -1468,10 +1532,21 @@
           body: JSON.stringify({ email })
         });
         const data = await res.json();
-        ctaResult.className = res.ok ? "cta-result ok" : "cta-result bad";
-        ctaResult.textContent = res.ok
-          ? (data.apiKey ? `API key created: ${data.apiKey}` : (data.message || "API key created — check your email."))
-          : (data.error || "Could not create key.");
+        if (!res.ok) {
+          ctaResult.className = "cta-result bad";
+          ctaResult.textContent = data.error || "Could not create key.";
+          return;
+        }
+        if (data.apiKey) {
+          ctaResult.className = "cta-result ok";
+          ctaResult.textContent = "";
+          const inline = document.createElement("span");
+          inline.textContent = `API key created: ${data.apiKey}`;
+          ctaResult.appendChild(inline);
+        } else {
+          ctaResult.className = "cta-result ok";
+          ctaResult.textContent = data.message || "API key created — check your email.";
+        }
       } catch {
         ctaResult.className = "cta-result bad";
         ctaResult.textContent = "Network error. Try again.";
