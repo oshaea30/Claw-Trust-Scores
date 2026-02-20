@@ -478,12 +478,32 @@
       font-family: var(--mono);
       line-height: 1.55;
     }
+    .policy-inline {
+      display: grid;
+      grid-template-columns: 1fr auto auto auto;
+      gap: 8px;
+      align-items: end;
+    }
+    .policy-inline .try-field {
+      margin: 0;
+    }
+    .policy-inline input {
+      width: 100%;
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      padding: 10px;
+      font-family: var(--mono);
+      font-size: 0.82rem;
+      color: var(--text);
+      background: #fff;
+    }
 
     @media (max-width: 900px) {
       .grid { grid-template-columns: 1fr; }
       .step-row { grid-template-columns: 1fr; }
       .top-links { display: none; }
       .try-grid { grid-template-columns: 1fr; }
+      .policy-inline { grid-template-columns: 1fr; }
     }
   </style>
 </head>
@@ -580,6 +600,15 @@ CLAWTRUST_API_KEY=INSERT_YOUR_API_KEY_HERE</code></pre>
               <button class="preset-btn" id="policyShowBtn" type="button">Show Current Policy</button>
               <button class="preset-btn" id="guardrailOnBtn" type="button">Enable Verified Guardrail</button>
               <button class="preset-btn" id="guardrailOffBtn" type="button">Disable Verified Guardrail</button>
+            </div>
+            <div class="policy-inline">
+              <div class="try-field">
+                <label for="minSignalQualityInput">Minimum signal quality (0-100)</label>
+                <input id="minSignalQualityInput" type="number" min="0" max="100" step="1" value="40" />
+              </div>
+              <button class="preset-btn" id="signalQuality40Btn" type="button">Set 40</button>
+              <button class="preset-btn" id="signalQuality70Btn" type="button">Set 70</button>
+              <button class="preset-btn primary" id="signalQualityApplyBtn" type="button">Apply value</button>
             </div>
             <pre id="policyResult" class="preset-result">Preset result will appear here.</pre>
           </div>
@@ -794,6 +823,10 @@ curl -X POST "https://clawtrustscores.com/v1/integrations/ingest/events" \
     const policyShowBtn = document.getElementById("policyShowBtn");
     const guardrailOnBtn = document.getElementById("guardrailOnBtn");
     const guardrailOffBtn = document.getElementById("guardrailOffBtn");
+    const minSignalQualityInput = document.getElementById("minSignalQualityInput");
+    const signalQuality40Btn = document.getElementById("signalQuality40Btn");
+    const signalQuality70Btn = document.getElementById("signalQuality70Btn");
+    const signalQualityApplyBtn = document.getElementById("signalQualityApplyBtn");
 
     async function runSimpleCheck() {
       const apiKey = (tryApiKey.value || "").trim();
@@ -864,6 +897,9 @@ curl -X POST "https://clawtrustscores.com/v1/integrations/ingest/events" \
           cache: "no-store",
         });
         const data = await res.json();
+        if (data?.policy && Number.isFinite(Number(data.policy.minSignalQuality))) {
+          minSignalQualityInput.value = String(Number(data.policy.minSignalQuality));
+        }
         policyResult.textContent = JSON.stringify(data, null, 2);
       } catch {
         policyResult.textContent = "Network error while loading policy.";
@@ -897,12 +933,47 @@ curl -X POST "https://clawtrustscores.com/v1/integrations/ingest/events" \
       }
     }
 
+    async function setMinSignalQuality(value) {
+      const apiKey = (policyApiKey.value || "").trim();
+      if (!apiKey) {
+        policyResult.textContent = "Please enter your API key.";
+        return;
+      }
+
+      const normalized = Math.max(0, Math.min(100, Number(value)));
+      if (!Number.isFinite(normalized)) {
+        policyResult.textContent = "minSignalQuality must be a number from 0 to 100.";
+        return;
+      }
+
+      minSignalQualityInput.value = String(normalized);
+      policyResult.textContent = `Setting minSignalQuality to ${normalized}...`;
+      try {
+        const res = await fetch("/v1/policy", {
+          method: "POST",
+          headers: {
+            "x-api-key": apiKey,
+            "Content-Type": "application/json",
+          },
+          cache: "no-store",
+          body: JSON.stringify({ minSignalQuality: normalized }),
+        });
+        const data = await res.json();
+        policyResult.textContent = JSON.stringify(data, null, 2);
+      } catch {
+        policyResult.textContent = "Network error while updating minSignalQuality.";
+      }
+    }
+
     presetOpenBtn.addEventListener("click", () => applyPreset("open"));
     presetBalancedBtn.addEventListener("click", () => applyPreset("balanced"));
     presetStrictBtn.addEventListener("click", () => applyPreset("strict"));
     policyShowBtn.addEventListener("click", showCurrentPolicy);
     guardrailOnBtn.addEventListener("click", () => setGuardrail(true));
     guardrailOffBtn.addEventListener("click", () => setGuardrail(false));
+    signalQuality40Btn.addEventListener("click", () => setMinSignalQuality(40));
+    signalQuality70Btn.addEventListener("click", () => setMinSignalQuality(70));
+    signalQualityApplyBtn.addEventListener("click", () => setMinSignalQuality(minSignalQualityInput.value));
   </script>
 </body>
 </html>
