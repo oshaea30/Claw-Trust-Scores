@@ -42,7 +42,10 @@ export const EVENT_WEIGHTS = {
   abuse_report: -25,
   api_key_leak: -35,
   impersonation_report: -22,
-  spam_report: -15
+  spam_report: -15,
+  missed_deadline: -9,
+  task_abandoned: -14,
+  subscription_canceled: -6,
 };
 
 export const SENSITIVE_EVENT_TYPES = new Set([
@@ -85,6 +88,62 @@ export const STRIPE_EVENT_TEMPLATE = {
     kind: "negative",
     eventType: "subscription_canceled",
     confidence: 0.9,
+  },
+};
+
+export const AUTH_EVENT_TEMPLATE = {
+  "signin.success": {
+    kind: "positive",
+    eventType: "verification_passed",
+    confidence: 0.9,
+  },
+  "mfa.challenge.failed": {
+    kind: "negative",
+    eventType: "security_flag",
+    confidence: 0.95,
+  },
+  "account.locked": {
+    kind: "negative",
+    eventType: "security_flag",
+    confidence: 0.95,
+  },
+  "token.exposed": {
+    kind: "negative",
+    eventType: "api_key_leak",
+    confidence: 0.98,
+  },
+  "impersonation.detected": {
+    kind: "negative",
+    eventType: "impersonation_report",
+    confidence: 0.97,
+  },
+};
+
+export const MARKETPLACE_EVENT_TEMPLATE = {
+  "task.completed_on_time": {
+    kind: "positive",
+    eventType: "completed_task_on_time",
+    confidence: 0.9,
+  },
+  "task.missed_deadline": {
+    kind: "negative",
+    eventType: "missed_deadline",
+    confidence: 0.9,
+  },
+  "task.abandoned": {
+    kind: "negative",
+    eventType: "task_abandoned",
+    confidence: 0.92,
+  },
+  "abuse.reported": {
+    kind: "negative",
+    eventType: "abuse_report",
+    confidence: 0.95,
+  },
+  "dispute.opened": {
+    kind: "negative",
+    eventType: "unresolved_dispute",
+    confidence: 0.94,
   },
 };
 

@@ -1,6 +1,6 @@
 import crypto from "node:crypto";
 
-import { STRIPE_EVENT_TEMPLATE } from "./config.js";
+import { mapProviderEvent } from "./integration-templates.js";
 import { scheduleFlush } from "./persistence.js";
 import { postEvent } from "./service.js";
 import { store } from "./store.js";
@@ -135,27 +135,25 @@ function confidenceForPayload(payload) {
   return payload.verified === true ? 0.95 : 0.8;
 }
 
-function mapStripePayload(payload) {
-  const providerType = String(
-    payload.providerEventType ?? payload.stripeEventType ?? ""
-  )
+function applyTemplateMapping(payload, source) {
+  const providerType = String(payload.providerEventType ?? payload.stripeEventType ?? "")
     .trim()
     .toLowerCase();
 
   if (!providerType) return { ok: true, payload };
 
-  const mapped = STRIPE_EVENT_TEMPLATE[providerType];
-  if (!mapped && (!payload.kind || !payload.eventType)) {
+  const mapped = mapProviderEvent({ source, providerEventType: providerType });
+  if (!mapped.ok && (!payload.kind || !payload.eventType)) {
     return {
       ok: false,
       error:
-        "Unsupported stripeEventType/providerEventType. Provide kind+eventType or use a supported Stripe event type.",
-      metadata: { providerType, supported: Object.keys(STRIPE_EVENT_TEMPLATE) },
+        "Unsupported providerEventType for this source. Provide kind+eventType or use /v1/integrations/templates.",
+      metadata: { providerType, supported: mapped.supportedEventTypes ?? [] },
     };
   }
 
   const detailsParts = [];
-  if (providerType) detailsParts.push(`stripe:${providerType}`);
+  detailsParts.push(`${source}:${providerType}`);
   if (Number.isFinite(Number(payload.amountUsd))) {
     detailsParts.push(`amountUsd=${Number(payload.amountUsd)}`);
   }
@@ -167,11 +165,11 @@ function mapStripePayload(payload) {
     ok: true,
     payload: {
       ...payload,
-      kind: payload.kind ?? mapped?.kind,
-      eventType: payload.eventType ?? mapped?.eventType,
+      kind: payload.kind ?? mapped?.mapping?.kind,
+      eventType: payload.eventType ?? mapped?.mapping?.eventType,
       confidence:
         payload.confidence ??
-        mapped?.confidence ??
+        mapped?.mapping?.confidence ??
         payload.confidence,
       details: payload.details ?? (detailsParts.length ? detailsParts.join(" | ") : undefined),
       providerEventType: providerType || undefined,
@@ -206,8 +204,8 @@ export async function ingestVerifiedEvent({
   }
 
   let normalizedPayload = { ...payload };
-  if (source === "stripe") {
-    const mapped = mapStripePayload(normalizedPayload);
+  if (source) {
+    const mapped = applyTemplateMapping(normalizedPayload, source);
     if (!mapped.ok) {
       return { status: 400, body: { error: mapped.error, ...mapped.metadata } };
     }

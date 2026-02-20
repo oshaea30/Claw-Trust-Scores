@@ -141,3 +141,30 @@ test("stripe template maps provider event type when kind/eventType are omitted",
   assert.equal(result.body.event.source, "stripe");
   assert.match(result.body.event.details, /stripe:payment_intent.payment_failed/i);
 });
+
+test("auth template maps provider event type when kind/eventType are omitted", async () => {
+  const account = { apiKey: "demo_starter_key", tier: "starter" };
+  const { ingestSecret } = rotateIngestSecret(account);
+  const timestamp = String(Math.floor(Date.now() / 1000));
+  const payload = {
+    source: "auth",
+    eventId: "evt_auth_1",
+    agentId: "agent:ingest:auth:1",
+    providerEventType: "impersonation.detected",
+  };
+
+  const signed = sign(ingestSecret, timestamp, payload);
+  const result = await ingestVerifiedEvent({
+    account,
+    payload,
+    rawBody: signed.raw,
+    signature: signed.signature,
+    timestamp,
+  });
+
+  assert.equal(result.status, 201);
+  assert.equal(result.body.event.kind, "negative");
+  assert.equal(result.body.event.eventType, "impersonation_report");
+  assert.equal(result.body.event.source, "auth");
+  assert.match(result.body.event.details, /auth:impersonation.detected/i);
+});

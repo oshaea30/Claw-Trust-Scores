@@ -16,7 +16,7 @@ import { createWebhook, deleteWebhook, getWebhooks } from "./webhooks.js";
 import { getHeroSnapshot } from "./public-signals.js";
 import { revokeUserApiKey, rotateUserApiKey } from "./key-store.js";
 import { ingestVerifiedEvent, rotateIngestSecret } from "./ingest.js";
-import { listIntegrationTemplates } from "./integration-templates.js";
+import { listIntegrationTemplates, mapProviderEvent } from "./integration-templates.js";
 import { applyPolicyPreset, getPolicy, listPolicyPresets, resetPolicy, setPolicy } from "./policy.js";
 
 const PORT = Number(process.env.PORT ?? 8080);
@@ -415,6 +415,25 @@ const server = http.createServer(async (request, response) => {
   if (request.method === "DELETE" && url.pathname === "/v1/policy") {
     const policy = resetPolicy(account.apiKey);
     return sendJson(response, 200, { policy, reset: true });
+  }
+
+  if (request.method === "POST" && url.pathname === "/v1/integrations/map-event") {
+    try {
+      const payload = await readJsonBody(request);
+      const result = mapProviderEvent({
+        source: payload.source,
+        providerEventType: payload.providerEventType ?? payload.stripeEventType,
+      });
+      if (!result.ok) {
+        return sendJson(response, 400, result);
+      }
+      return sendJson(response, 200, result);
+    } catch (error) {
+      if (error instanceof Error && error.message === "Payload too large") {
+        return sendJson(response, 413, { error: "Payload too large." });
+      }
+      return sendJson(response, 400, { error: "Invalid JSON body." });
+    }
   }
 
   // --- POST /v1/events ---

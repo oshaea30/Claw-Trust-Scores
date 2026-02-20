@@ -649,6 +649,10 @@
             <div><code>/v1/integrations/templates</code><span>List supported connector templates (Stripe mapping included)</span></div>
           </div>
           <div class="endpoint">
+            <span class="verb post">POST</span>
+            <div><code>/v1/integrations/map-event</code><span>Preview mapping from provider event type to trust event type</span></div>
+          </div>
+          <div class="endpoint">
             <span class="verb get">GET</span>
             <div><code>/v1/policy</code><span>Read per-key trust policy</span></div>
           </div>
@@ -697,11 +701,11 @@
       </section>
 
       <section class="card" style="margin-bottom:14px;">
-        <h2>Stripe Connector Quickstart</h2>
+        <h2>Connector Quickstart (Stripe/Auth/Marketplace)</h2>
         <ol class="setup-list">
           <li>Create your ingest secret with <span class="mono">POST /v1/integrations/ingest/secret</span>.</li>
-          <li>Send signed events to <span class="mono">POST /v1/integrations/ingest/events</span> with source <span class="mono">stripe</span>.</li>
-          <li>Use <span class="mono">stripeEventType</span> and let mapping auto-convert to trust events.</li>
+          <li>Send signed events to <span class="mono">POST /v1/integrations/ingest/events</span> with source <span class="mono">stripe</span>, <span class="mono">auth</span>, or <span class="mono">marketplace</span>.</li>
+          <li>Use <span class="mono">providerEventType</span> (or <span class="mono">stripeEventType</span>) and let mapping auto-convert to trust events.</li>
         </ol>
         <div style="height:10px"></div>
         <pre><code># 1) Rotate/create ingest secret (store securely)
@@ -719,7 +723,7 @@ curl -X POST "https://clawtrustscores.com/v1/integrations/ingest/secret" \
   "source": "stripe",
   "eventId": "evt_12345",
   "agentId": "agent:vendor:acme",
-  "stripeEventType": "payment_intent.payment_failed",
+  "providerEventType": "payment_intent.payment_failed",
   "amountUsd": 49.99,
   "currency": "usd",
   "chargeId": "ch_12345"
@@ -731,8 +735,8 @@ curl -X POST "https://clawtrustscores.com/v1/integrations/ingest/events" \
   -H "x-api-key: YOUR_KEY" \
   -H "x-ingest-timestamp: 1739980000" \
   -H "x-ingest-signature: sha256=YOUR_HEX_SIGNATURE" \
-  -d '{"source":"stripe","eventId":"evt_12345","agentId":"agent:vendor:acme","stripeEventType":"payment_intent.payment_failed","amountUsd":49.99,"currency":"usd","chargeId":"ch_12345"}'</code></pre>
-        <p class="small-note">Template mapping and supported provider event types are available at <span class="mono">GET /v1/integrations/templates</span>.</p>
+  -d '{"source":"stripe","eventId":"evt_12345","agentId":"agent:vendor:acme","providerEventType":"payment_intent.payment_failed","amountUsd":49.99,"currency":"usd","chargeId":"ch_12345"}'</code></pre>
+        <p class="small-note">Template mapping and supported provider event types are available at <span class="mono">GET /v1/integrations/templates</span>. You can preview any mapping with <span class="mono">POST /v1/integrations/map-event</span>.</p>
       </section>
 
       <section class="card">
