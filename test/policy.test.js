@@ -102,13 +102,15 @@ test("policy override can disable an event type", async () => {
 
 test("policy reset returns defaults", () => {
   const apiKey = "demo_starter_key";
-  setPolicy(apiKey, { minConfidence: 0.8, allowedSources: ["stripe"] });
+  setPolicy(apiKey, { minConfidence: 0.8, minSignalQuality: 75, allowedSources: ["stripe"] });
   const reset = resetPolicy(apiKey);
   const current = getPolicy(apiKey);
 
   assert.equal(reset.minConfidence, 0);
+  assert.equal(reset.minSignalQuality, 0);
   assert.deepEqual(reset.allowedSources, []);
   assert.equal(current.minConfidence, 0);
+  assert.equal(current.minSignalQuality, 0);
   assert.deepEqual(current.allowedSources, []);
 });
 
@@ -122,11 +124,13 @@ test("policy presets can be listed and applied", () => {
   const applied = applyPolicyPreset(apiKey, "strict");
   assert.equal(applied.preset, "strict");
   assert.equal(applied.minConfidence, 0.75);
+  assert.equal(applied.minSignalQuality, 70);
   assert.equal(applied.sourceTypeMultipliers.unverified, 0);
   assert.equal(applied.requireVerifiedSensitive, true);
 
   const current = getPolicy(apiKey);
   assert.equal(current.preset, "strict");
   assert.equal(current.minConfidence, 0.75);
+  assert.equal(current.minSignalQuality, 70);
   assert.equal(current.requireVerifiedSensitive, true);
 });

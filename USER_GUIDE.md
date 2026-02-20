@@ -8,7 +8,7 @@ Claw Trust Scores helps you decide if an agent/tool is safe enough before risky 
 
 You can:
 - Log trust events about an `agentId`
-- Read a trust score (`0-100`) and explanation
+- Read a trust score (`0-100`) plus signal quality and explanation
 - Run a preflight policy decision (`allow`, `review`, `block`)
 - Check usage/limits for your API key
 
@@ -226,7 +226,7 @@ if (!res.ok) {
 }
 
 const trust = await res.json();
-if (trust.score < 50) {
-  throw new Error(`Blocked by policy: score=${trust.score}`);
+if (trust.score < 50 || (trust.signalQuality?.score ?? 0) < 40) {
+  throw new Error(`Blocked by policy: score=${trust.score}, signalQuality=${trust.signalQuality?.score ?? 0}`);
 }
 ```

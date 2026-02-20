@@ -30,11 +30,12 @@ export function clawCreditPreflight({ payload, account }) {
     return { status: 400, body: { error: "agentId is required." } };
   }
 
-  const trust = scoreAgent(agentId, getAgentEvents(agentId), {
-    policy: account ? getPolicy(account.apiKey) : undefined,
-  });
+  const policy = account ? getPolicy(account.apiKey) : undefined;
+  const trust = scoreAgent(agentId, getAgentEvents(agentId), { policy });
   const riskPenalty = riskFromPayload(payload);
   const adjustedScore = Math.max(0, trust.score - riskPenalty);
+  const minSignalQuality = Number(policy?.minSignalQuality ?? 0);
+  const signalQualityScore = Number(trust.signalQuality?.score ?? 0);
 
   let decision = "allow";
   let reason = `Trust score ${trust.score} is acceptable for this action.`;
@@ -45,6 +46,11 @@ export function clawCreditPreflight({ payload, account }) {
   } else if (adjustedScore < 55) {
     decision = "review";
     reason = `Manual review required: adjusted score ${adjustedScore} is in caution band.`;
+  }
+
+  if (minSignalQuality > 0 && signalQualityScore < minSignalQuality && decision !== "block") {
+    decision = "review";
+    reason = `Manual review required: signal quality ${signalQualityScore} is below minimum ${minSignalQuality}.`;
   }
 
   if (account) {
@@ -74,11 +80,13 @@ export function clawCreditPreflight({ payload, account }) {
         agentId,
         score: trust.score,
         level: trust.level,
-        explanation: trust.explanation
+        explanation: trust.explanation,
+        signalQuality: trust.signalQuality,
       },
       policy: {
         adjustedScore,
         riskPenalty,
+        minSignalQuality,
         thresholds: {
           blockBelow: 35,
           reviewBelow: 55

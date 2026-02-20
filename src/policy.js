@@ -11,6 +11,7 @@ const DEFAULT_SOURCE_TYPE_MULTIPLIERS = {
 const POLICY_PRESETS = {
   open: {
     minConfidence: 0,
+    minSignalQuality: 0,
     allowedSources: [],
     sourceTypeMultipliers: {
       verified_integration: 1,
@@ -24,6 +25,7 @@ const POLICY_PRESETS = {
   },
   balanced: {
     minConfidence: 0.35,
+    minSignalQuality: 40,
     allowedSources: [],
     sourceTypeMultipliers: {
       verified_integration: 1,
@@ -37,6 +39,7 @@ const POLICY_PRESETS = {
   },
   strict: {
     minConfidence: 0.75,
+    minSignalQuality: 70,
     allowedSources: [],
     sourceTypeMultipliers: {
       verified_integration: 1,
@@ -53,6 +56,7 @@ const POLICY_PRESETS = {
 export function defaultPolicy() {
   return {
     minConfidence: 0,
+    minSignalQuality: 0,
     allowedSources: [],
     sourceTypeMultipliers: { ...DEFAULT_SOURCE_TYPE_MULTIPLIERS },
     eventOverrides: {},
@@ -65,6 +69,7 @@ function clonePreset(name) {
   if (!preset) return null;
   return {
     minConfidence: preset.minConfidence,
+    minSignalQuality: preset.minSignalQuality ?? 0,
     allowedSources: [...preset.allowedSources],
     sourceTypeMultipliers: { ...preset.sourceTypeMultipliers },
     eventOverrides: { ...preset.eventOverrides },
@@ -186,6 +191,14 @@ export function setPolicy(apiKey, payload) {
       throw new Error("minConfidence must be a number between 0 and 1.");
     }
     next.minConfidence = clamp(minConfidence, 0, 1);
+  }
+
+  if (payload.minSignalQuality !== undefined) {
+    const minSignalQuality = Number(payload.minSignalQuality);
+    if (!Number.isFinite(minSignalQuality)) {
+      throw new Error("minSignalQuality must be a number between 0 and 100.");
+    }
+    next.minSignalQuality = clamp(minSignalQuality, 0, 100);
   }
 
   const allowedSources = normalizeAllowedSources(payload.allowedSources);

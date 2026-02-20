@@ -109,7 +109,7 @@ Ops/Admin (`x-admin-token` required):
 - `402` plan quota exceeded
 - `429` rate limit exceeded
 
-`/v1/policy` supports guardrails such as `requireVerifiedSensitive` to require verified integration sources for sensitive payment/security event types.
+`/v1/policy` supports guardrails such as `requireVerifiedSensitive` (verified sources for sensitive events) and `minSignalQuality` (force review when signal quality is weak).
 
 ## For Developers (Local)
 
