@@ -16,6 +16,7 @@ import { createWebhook, deleteWebhook, getWebhooks } from "./webhooks.js";
 import { getHeroSnapshot } from "./public-signals.js";
 import { revokeUserApiKey, rotateUserApiKey } from "./key-store.js";
 import { ingestVerifiedEvent, rotateIngestSecret } from "./ingest.js";
+import { listIntegrationTemplates } from "./integration-templates.js";
 
 const PORT = Number(process.env.PORT ?? 8080);
 const PUBLIC_DIR = path.resolve(process.cwd(), "public");
@@ -244,6 +245,10 @@ const server = http.createServer(async (request, response) => {
   // --- Public hero snapshot (safe demo data for landing page) ---
   if (request.method === "GET" && url.pathname === "/v1/public/hero-snapshot") {
     return sendJson(response, 200, getHeroSnapshot());
+  }
+
+  if (request.method === "GET" && url.pathname === "/v1/integrations/templates") {
+    return sendJson(response, 200, listIntegrationTemplates());
   }
 
   if (request.method === "GET" && url.pathname === "/v1/admin/overview") {

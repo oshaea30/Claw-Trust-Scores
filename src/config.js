@@ -45,6 +45,39 @@ export const EVENT_WEIGHTS = {
   spam_report: -15
 };
 
+export const STRIPE_EVENT_TEMPLATE = {
+  "payment_intent.succeeded": {
+    kind: "positive",
+    eventType: "payment_success",
+    confidence: 0.98,
+  },
+  "payment_intent.payment_failed": {
+    kind: "negative",
+    eventType: "failed_payment",
+    confidence: 0.98,
+  },
+  "charge.dispute.created": {
+    kind: "negative",
+    eventType: "unresolved_dispute",
+    confidence: 0.95,
+  },
+  "charge.dispute.closed": {
+    kind: "neutral",
+    eventType: "dispute_closed",
+    confidence: 0.95,
+  },
+  "customer.subscription.created": {
+    kind: "positive",
+    eventType: "verification_passed",
+    confidence: 0.9,
+  },
+  "customer.subscription.deleted": {
+    kind: "negative",
+    eventType: "subscription_canceled",
+    confidence: 0.9,
+  },
+};
+
 export const SCORE_BASELINE = 50;
 export const SCORE_MIN = 0;
 export const SCORE_MAX = 100;

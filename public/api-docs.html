@@ -571,14 +571,18 @@
         <details class="advanced">
           <summary>Advanced and account-management endpoints</summary>
           <div class="endpoint-list" style="margin-top:10px;">
-            <div class="endpoint">
-              <span class="verb get">GET</span>
-              <div><code>/v1/plans</code><span>Public plan limits</span></div>
-            </div>
-            <div class="endpoint">
-              <span class="verb post">POST</span>
-              <div><code>/v1/keys/rotate</code><span>Rotate current dynamic API key</span></div>
-            </div>
+          <div class="endpoint">
+            <span class="verb get">GET</span>
+            <div><code>/v1/plans</code><span>Public plan limits</span></div>
+          </div>
+          <div class="endpoint">
+            <span class="verb get">GET</span>
+            <div><code>/v1/integrations/templates</code><span>List supported connector templates (Stripe mapping included)</span></div>
+          </div>
+          <div class="endpoint">
+            <span class="verb post">POST</span>
+            <div><code>/v1/keys/rotate</code><span>Rotate current dynamic API key</span></div>
+          </div>
             <div class="endpoint">
               <span class="verb post">POST</span>
               <div><code>/v1/keys/revoke</code><span>Revoke current dynamic API key</span></div>

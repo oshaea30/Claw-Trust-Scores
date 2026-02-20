@@ -1,5 +1,6 @@
 import crypto from "node:crypto";
 
+import { STRIPE_EVENT_TEMPLATE } from "./config.js";
 import { scheduleFlush } from "./persistence.js";
 import { postEvent } from "./service.js";
 import { store } from "./store.js";
@@ -134,6 +135,50 @@ function confidenceForPayload(payload) {
   return payload.verified === true ? 0.95 : 0.8;
 }
 
+function mapStripePayload(payload) {
+  const providerType = String(
+    payload.providerEventType ?? payload.stripeEventType ?? ""
+  )
+    .trim()
+    .toLowerCase();
+
+  if (!providerType) return { ok: true, payload };
+
+  const mapped = STRIPE_EVENT_TEMPLATE[providerType];
+  if (!mapped && (!payload.kind || !payload.eventType)) {
+    return {
+      ok: false,
+      error:
+        "Unsupported stripeEventType/providerEventType. Provide kind+eventType or use a supported Stripe event type.",
+      metadata: { providerType, supported: Object.keys(STRIPE_EVENT_TEMPLATE) },
+    };
+  }
+
+  const detailsParts = [];
+  if (providerType) detailsParts.push(`stripe:${providerType}`);
+  if (Number.isFinite(Number(payload.amountUsd))) {
+    detailsParts.push(`amountUsd=${Number(payload.amountUsd)}`);
+  }
+  if (payload.currency) detailsParts.push(`currency=${String(payload.currency).toUpperCase()}`);
+  if (payload.chargeId) detailsParts.push(`chargeId=${String(payload.chargeId)}`);
+  if (payload.paymentIntentId) detailsParts.push(`paymentIntentId=${String(payload.paymentIntentId)}`);
+
+  return {
+    ok: true,
+    payload: {
+      ...payload,
+      kind: payload.kind ?? mapped?.kind,
+      eventType: payload.eventType ?? mapped?.eventType,
+      confidence:
+        payload.confidence ??
+        mapped?.confidence ??
+        payload.confidence,
+      details: payload.details ?? (detailsParts.length ? detailsParts.join(" | ") : undefined),
+      providerEventType: providerType || undefined,
+    },
+  };
+}
+
 export async function ingestVerifiedEvent({
   account,
   payload,
@@ -160,6 +205,15 @@ export async function ingestVerifiedEvent({
     return { status: 400, body: { error: "eventId is required." } };
   }
 
+  let normalizedPayload = { ...payload };
+  if (source === "stripe") {
+    const mapped = mapStripePayload(normalizedPayload);
+    if (!mapped.ok) {
+      return { status: 400, body: { error: mapped.error, ...mapped.metadata } };
+    }
+    normalizedPayload = mapped.payload;
+  }
+
   const processed = markProcessedInbound({ apiKey: account.apiKey, source, eventId });
   if (processed.duplicate) {
     return {
@@ -175,14 +229,14 @@ export async function ingestVerifiedEvent({
   const result = await postEvent({
     account,
     payload: {
-      agentId: payload.agentId,
-      kind: payload.kind,
-      eventType: payload.eventType,
-      details: payload.details,
-      occurredAt: payload.occurredAt,
+      agentId: normalizedPayload.agentId,
+      kind: normalizedPayload.kind,
+      eventType: normalizedPayload.eventType,
+      details: normalizedPayload.details,
+      occurredAt: normalizedPayload.occurredAt,
       source,
       sourceType: "verified_integration",
-      confidence: confidenceForPayload(payload),
+      confidence: confidenceForPayload(normalizedPayload),
       externalEventId: eventId,
     },
   });

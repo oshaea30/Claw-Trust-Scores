@@ -65,6 +65,7 @@ Public:
 - `GET /health`
 - `GET /status`
 - `GET /v1/plans`
+- `GET /v1/integrations/templates`
 - `POST /v1/users`
 - `GET /v1/upgrade/:apiKey?tier=starter|pro`
 - `POST /v1/stripe/webhook`

@@ -112,3 +112,32 @@ test("verified inbound event rejects stale timestamp", async () => {
   assert.equal(result.status, 401);
   assert.match(result.body.error, /timestamp expired/i);
 });
+
+test("stripe template maps provider event type when kind/eventType are omitted", async () => {
+  const account = { apiKey: "demo_starter_key", tier: "starter" };
+  const { ingestSecret } = rotateIngestSecret(account);
+  const timestamp = String(Math.floor(Date.now() / 1000));
+  const payload = {
+    source: "stripe",
+    eventId: "evt_mapped_1",
+    agentId: "agent:ingest:stripe:1",
+    stripeEventType: "payment_intent.payment_failed",
+    amountUsd: 49.99,
+    currency: "usd",
+  };
+
+  const signed = sign(ingestSecret, timestamp, payload);
+  const result = await ingestVerifiedEvent({
+    account,
+    payload,
+    rawBody: signed.raw,
+    signature: signed.signature,
+    timestamp,
+  });
+
+  assert.equal(result.status, 201);
+  assert.equal(result.body.event.kind, "negative");
+  assert.equal(result.body.event.eventType, "failed_payment");
+  assert.equal(result.body.event.source, "stripe");
+  assert.match(result.body.event.details, /stripe:payment_intent.payment_failed/i);
+});
