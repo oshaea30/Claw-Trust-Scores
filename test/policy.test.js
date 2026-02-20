@@ -40,6 +40,35 @@ test("policy can require confidence and allowed source", async () => {
   assert.equal(result.body.breakdown.policy.excludedByConfidence, 1);
 });
 
+test("policy can require verified source for sensitive event types", async () => {
+  const account = { apiKey: "demo_starter_key", tier: "starter" };
+  setPolicy(account.apiKey, {
+    requireVerifiedSensitive: true,
+  });
+
+  await postEvent({
+    account,
+    payload: {
+      agentId: "agent:policy:verified:1",
+      kind: "negative",
+      eventType: "failed_payment",
+      sourceType: "self_reported",
+      confidence: 1,
+    },
+  });
+
+  const result = getScore({
+    account,
+    agentId: "agent:policy:verified:1",
+    includeTrace: true,
+  });
+
+  assert.equal(result.status, 200);
+  assert.equal(result.body.score, 50);
+  assert.equal(result.body.breakdown.policy.excludedByVerification, 1);
+  assert.equal(result.body.trace[0].verificationStatus, "policy_excluded");
+});
+
 test("policy override can disable an event type", async () => {
   const account = { apiKey: "demo_starter_key", tier: "starter" };
   setPolicy(account.apiKey, {
@@ -94,8 +123,10 @@ test("policy presets can be listed and applied", () => {
   assert.equal(applied.preset, "strict");
   assert.equal(applied.minConfidence, 0.75);
   assert.equal(applied.sourceTypeMultipliers.unverified, 0);
+  assert.equal(applied.requireVerifiedSensitive, true);
 
   const current = getPolicy(apiKey);
   assert.equal(current.preset, "strict");
   assert.equal(current.minConfidence, 0.75);
+  assert.equal(current.requireVerifiedSensitive, true);
 });

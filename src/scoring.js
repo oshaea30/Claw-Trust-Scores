@@ -3,7 +3,8 @@ import {
   EVENT_WEIGHTS,
   SCORE_BASELINE,
   SCORE_MAX,
-  SCORE_MIN
+  SCORE_MIN,
+  SENSITIVE_EVENT_TYPES,
 } from "./config.js";
 
 const LN_2 = Math.log(2);
@@ -58,6 +59,7 @@ function normalizedPolicy(input) {
     allowedSources: [],
     sourceTypeMultipliers: { ...DEFAULT_SOURCE_TYPE_FACTORS },
     eventOverrides: {},
+    requireVerifiedSensitive: false,
   };
   if (!input || typeof input !== "object") return base;
   return {
@@ -81,9 +83,15 @@ function evaluatePolicy(event, policy, confidence) {
   const source = String(event.source ?? "").trim().toLowerCase();
   const sourceType = String(event.sourceType ?? "").trim().toLowerCase();
   const override = policy.eventOverrides[eventType] ?? null;
+  const isSensitive = SENSITIVE_EVENT_TYPES.has(eventType);
+  const verified = sourceType === "verified_integration";
 
   if (override?.enabled === false) {
     return { included: false, reason: "event_override_disabled" };
+  }
+
+  if (policy.requireVerifiedSensitive && isSensitive && !verified) {
+    return { included: false, reason: "unverified_sensitive_event" };
   }
 
   if (confidence < policy.minConfidence) {
@@ -146,6 +154,7 @@ export function scoreAgent(agentId, events, options = {}) {
     excludedByConfidence: 0,
     excludedBySource: 0,
     excludedByEventOverride: 0,
+    excludedByVerification: 0,
     included: 0,
   };
 
@@ -170,7 +179,15 @@ export function scoreAgent(agentId, events, options = {}) {
       policySummary.excludedBySource += 1;
     } else if (policyEffect.reason === "event_override_disabled") {
       policySummary.excludedByEventOverride += 1;
+    } else if (policyEffect.reason === "unverified_sensitive_event") {
+      policySummary.excludedByVerification += 1;
     }
+
+    const verificationStatus = policyEffect.included
+      ? (String(event.sourceType ?? "").trim().toLowerCase() === "verified_integration"
+          ? "verified"
+          : "unverified")
+      : "policy_excluded";
 
     if (ageDays <= 30) {
       if (event.kind === "positive") positive30d += 1;
@@ -186,6 +203,7 @@ export function scoreAgent(agentId, events, options = {}) {
         source: event.source,
         sourceType: event.sourceType,
         externalEventId: event.externalEventId,
+        verificationStatus,
         included: policyEffect.included,
         excludedReason: policyEffect.reason,
         baseWeight,
@@ -205,13 +223,17 @@ export function scoreAgent(agentId, events, options = {}) {
     .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
     .slice(0, 10)
     .map((event) => ({
-      id: event.id,
-      kind: event.kind,
       eventType: event.eventType,
-      details: event.details,
-      source: event.source,
+      kind: event.kind,
       sourceType: event.sourceType,
       confidence: event.confidence,
+      verificationStatus:
+        String(event.sourceType ?? "").trim().toLowerCase() === "verified_integration"
+          ? "verified"
+          : "unverified",
+      id: event.id,
+      details: event.details,
+      source: event.source,
       externalEventId: event.externalEventId,
       createdAt: event.createdAt
     }));

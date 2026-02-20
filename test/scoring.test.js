@@ -68,4 +68,8 @@ test("confidence and source type reduce low-trust signal impact and trace is ava
   assert.equal(strong.trace[0].sourceFactor, 1);
   assert.equal(strong.trace[0].confidenceFactor, 1);
   assert.ok(strong.trace[0].contribution < 0);
+  assert.equal(strong.trace[0].verificationStatus, "verified");
+  assert.equal(weak.trace[0].verificationStatus, "unverified");
+  assert.equal(strong.history[0].verificationStatus, "verified");
+  assert.equal(weak.history[0].verificationStatus, "unverified");
 });

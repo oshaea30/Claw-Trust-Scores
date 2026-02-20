@@ -577,10 +577,12 @@
               <button class="preset-btn" id="presetOpenBtn" type="button">Apply Open</button>
               <button class="preset-btn" id="presetStrictBtn" type="button">Apply Strict</button>
               <button class="preset-btn" id="policyShowBtn" type="button">Show Current Policy</button>
+              <button class="preset-btn" id="guardrailOnBtn" type="button">Enable Verified Guardrail</button>
+              <button class="preset-btn" id="guardrailOffBtn" type="button">Disable Verified Guardrail</button>
             </div>
             <pre id="policyResult" class="preset-result">Preset result will appear here.</pre>
           </div>
-          <p class="small-note">These actions call <span class="mono">/v1/policy/presets/*</span> and <span class="mono">/v1/policy</span>.</p>
+          <p class="small-note">These actions call <span class="mono">/v1/policy/presets/*</span> and <span class="mono">/v1/policy</span>. Guardrail means sensitive payment/security events must come from verified integrations.</p>
         </article>
         <article class="simple-callout">
           If you just want to launch fast, use only these endpoints first: <span class="mono">/v1/events</span>, <span class="mono">/v1/score</span>, and <span class="mono">/v1/integrations/clawcredit/preflight</span>.
@@ -776,6 +778,8 @@ curl -X POST "https://clawtrustscores.com/v1/integrations/ingest/events" \
     const presetBalancedBtn = document.getElementById("presetBalancedBtn");
     const presetStrictBtn = document.getElementById("presetStrictBtn");
     const policyShowBtn = document.getElementById("policyShowBtn");
+    const guardrailOnBtn = document.getElementById("guardrailOnBtn");
+    const guardrailOffBtn = document.getElementById("guardrailOffBtn");
 
     async function runSimpleCheck() {
       const apiKey = (tryApiKey.value || "").trim();
@@ -852,10 +856,39 @@ curl -X POST "https://clawtrustscores.com/v1/integrations/ingest/events" \
       }
     }
 
+    async function setGuardrail(enabled) {
+      const apiKey = (policyApiKey.value || "").trim();
+      if (!apiKey) {
+        policyResult.textContent = "Please enter your API key.";
+        return;
+      }
+
+      policyResult.textContent = enabled
+        ? "Enabling verified guardrail..."
+        : "Disabling verified guardrail...";
+      try {
+        const res = await fetch("/v1/policy", {
+          method: "POST",
+          headers: {
+            "x-api-key": apiKey,
+            "Content-Type": "application/json",
+          },
+          cache: "no-store",
+          body: JSON.stringify({ requireVerifiedSensitive: enabled }),
+        });
+        const data = await res.json();
+        policyResult.textContent = JSON.stringify(data, null, 2);
+      } catch {
+        policyResult.textContent = "Network error while updating guardrail setting.";
+      }
+    }
+
     presetOpenBtn.addEventListener("click", () => applyPreset("open"));
     presetBalancedBtn.addEventListener("click", () => applyPreset("balanced"));
     presetStrictBtn.addEventListener("click", () => applyPreset("strict"));
     policyShowBtn.addEventListener("click", showCurrentPolicy);
+    guardrailOnBtn.addEventListener("click", () => setGuardrail(true));
+    guardrailOffBtn.addEventListener("click", () => setGuardrail(false));
   </script>
 </body>
 </html>

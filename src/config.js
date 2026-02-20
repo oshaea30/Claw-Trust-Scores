@@ -45,6 +45,16 @@ export const EVENT_WEIGHTS = {
   spam_report: -15
 };
 
+export const SENSITIVE_EVENT_TYPES = new Set([
+  "payment_success",
+  "failed_payment",
+  "security_flag",
+  "abuse_report",
+  "api_key_leak",
+  "impersonation_report",
+  "unresolved_dispute",
+]);
+
 export const STRIPE_EVENT_TEMPLATE = {
   "payment_intent.succeeded": {
     kind: "positive",

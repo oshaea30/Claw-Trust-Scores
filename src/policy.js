@@ -19,6 +19,7 @@ const POLICY_PRESETS = {
       manual: 1,
     },
     eventOverrides: {},
+    requireVerifiedSensitive: false,
     description: "Accept broad signals. Best for fast onboarding and experimentation.",
   },
   balanced: {
@@ -31,6 +32,7 @@ const POLICY_PRESETS = {
       manual: 0.75,
     },
     eventOverrides: {},
+    requireVerifiedSensitive: true,
     description: "Default production posture: verified signals favored, low-confidence noise reduced.",
   },
   strict: {
@@ -43,6 +45,7 @@ const POLICY_PRESETS = {
       manual: 0.4,
     },
     eventOverrides: {},
+    requireVerifiedSensitive: true,
     description: "High-assurance mode: only high-confidence signals have meaningful impact.",
   },
 };
@@ -53,6 +56,7 @@ export function defaultPolicy() {
     allowedSources: [],
     sourceTypeMultipliers: { ...DEFAULT_SOURCE_TYPE_MULTIPLIERS },
     eventOverrides: {},
+    requireVerifiedSensitive: false,
   };
 }
 
@@ -64,6 +68,7 @@ function clonePreset(name) {
     allowedSources: [...preset.allowedSources],
     sourceTypeMultipliers: { ...preset.sourceTypeMultipliers },
     eventOverrides: { ...preset.eventOverrides },
+    requireVerifiedSensitive: preset.requireVerifiedSensitive,
     preset: name,
     presetDescription: preset.description,
   };
@@ -200,6 +205,13 @@ export function setPolicy(apiKey, payload) {
       ...current.eventOverrides,
       ...eventOverrides,
     };
+  }
+
+  if (payload.requireVerifiedSensitive !== undefined) {
+    if (typeof payload.requireVerifiedSensitive !== "boolean") {
+      throw new Error("requireVerifiedSensitive must be boolean.");
+    }
+    next.requireVerifiedSensitive = payload.requireVerifiedSensitive;
   }
 
   next.updatedAt = new Date().toISOString();
