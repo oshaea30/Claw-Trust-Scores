@@ -529,15 +529,15 @@
           <div class="simple-steps">
             <div class="simple-step">
               <strong>1. Get your API key</strong>
-              <p>Use the signup form on the homepage. You will get a key like <span class="mono">claw_xxx</span>.</p>
+              <p>Use the signup form on the homepage. You will get a key like <span class="mono">claw_xxx</span>. Put this in your backend/server config as an environment variable (for example <span class="mono">CLAWTRUST_API_KEY</span>).</p>
             </div>
             <div class="simple-step">
               <strong>2. Ask for a trust score</strong>
-              <p>Send an agent ID. You get back a score from 0 to 100 plus a short explanation.</p>
+              <p>Your backend sends the API call with header <span class="mono">x-api-key</span>. You get back a score from 0 to 100 plus a short explanation.</p>
             </div>
             <div class="simple-step">
               <strong>3. Make a decision</strong>
-              <p>Use the score or preflight endpoint to allow, review, or block the action.</p>
+              <p>Use the score or preflight endpoint to allow, review, or block. Trigger this before risky actions (payment, key share, tool execution).</p>
             </div>
           </div>
         </article>
@@ -586,6 +586,9 @@
         </article>
         <article class="simple-callout">
           If you just want to launch fast, use only these endpoints first: <span class="mono">/v1/events</span>, <span class="mono">/v1/score</span>, and <span class="mono">/v1/integrations/clawcredit/preflight</span>.
+        </article>
+        <article class="simple-callout">
+          Where to add your key: in your app/backend env vars, bot server config, or workflow tool secrets (Zapier/Make/n8n). Do not paste API keys into public frontend code or chat messages.
         </article>
       </section>
     </div>

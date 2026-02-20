@@ -55,9 +55,19 @@
     </div>
 
     <div class="card">
+      <h2>Where to put your API key</h2>
+      <ul>
+        <li>Put it in your server/backend environment variables (for example <code>CLAWTRUST_API_KEY</code>).</li>
+        <li>If you run a Telegram or Discord bot, add it to the bot server config where API secrets are stored.</li>
+        <li>If you use browser automation/workflows, store it in platform secrets (Zapier/Make/n8n), not in page JavaScript.</li>
+      </ul>
+      <p class="muted" style="margin-top:10px;">Your app/bot sends the key in request header <code>x-api-key</code>. End users never need to see the key.</p>
+    </div>
+
+    <div class="card">
       <h2>3 quick steps</h2>
       <div class="steps">
-        <div class="step"><strong>1. Get an API key</strong><br /><span class="muted">Use the homepage form or create one with <code>POST /v1/users</code>.</span></div>
+        <div class="step"><strong>1. Get an API key</strong><br /><span class="muted">Use the homepage form or create one with <code>POST /v1/users</code>, then store it in your backend env vars.</span></div>
         <div class="step"><strong>2. Pick your source</strong><br /><span class="muted">Choose Stripe, Auth, or Marketplace and use its event type names.</span></div>
         <div class="step"><strong>3. Start sending trusted events</strong><br /><span class="muted">Use signed ingest so your score is fed automatically from real systems.</span></div>
       </div>
