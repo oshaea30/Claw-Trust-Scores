@@ -436,6 +436,48 @@
       font-family: var(--mono);
       line-height: 1.55;
     }
+    .preset-actions {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+    .preset-btn {
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      padding: 10px 12px;
+      background: #fff;
+      color: var(--text);
+      font-family: var(--sans);
+      font-size: 0.84rem;
+      font-weight: 700;
+      cursor: pointer;
+    }
+    .preset-btn:hover {
+      border-color: #dfc6b5;
+      background: #fff9f5;
+    }
+    .preset-btn.primary {
+      background: var(--text);
+      color: #fff;
+      border-color: var(--text);
+    }
+    .preset-btn.primary:hover {
+      background: #31261f;
+      border-color: #31261f;
+    }
+    .preset-result {
+      margin: 0;
+      border-radius: 10px;
+      border: 1px solid #2c231e;
+      background: #171210;
+      color: #f7efe6;
+      padding: 12px;
+      font-size: 0.78rem;
+      min-height: 86px;
+      overflow: auto;
+      font-family: var(--mono);
+      line-height: 1.55;
+    }
 
     @media (max-width: 900px) {
       .grid { grid-template-columns: 1fr; }
@@ -522,6 +564,23 @@
             <pre id="tryResult" class="try-result">Result will appear here.</pre>
           </div>
           <p class="small-note">This calls <span class="mono">GET /v1/score</span> using your key.</p>
+        </article>
+        <article class="card">
+          <h2>Set Trust Policy (No Coding)</h2>
+          <div class="try-box">
+            <div class="try-field">
+              <label for="policyApiKey">Your API key</label>
+              <input id="policyApiKey" type="password" placeholder="claw_xxx" autocomplete="off" />
+            </div>
+            <div class="preset-actions">
+              <button class="preset-btn primary" id="presetBalancedBtn" type="button">Apply Balanced (Recommended)</button>
+              <button class="preset-btn" id="presetOpenBtn" type="button">Apply Open</button>
+              <button class="preset-btn" id="presetStrictBtn" type="button">Apply Strict</button>
+              <button class="preset-btn" id="policyShowBtn" type="button">Show Current Policy</button>
+            </div>
+            <pre id="policyResult" class="preset-result">Preset result will appear here.</pre>
+          </div>
+          <p class="small-note">These actions call <span class="mono">/v1/policy/presets/*</span> and <span class="mono">/v1/policy</span>.</p>
         </article>
         <article class="simple-callout">
           If you just want to launch fast, use only these endpoints first: <span class="mono">/v1/events</span>, <span class="mono">/v1/score</span>, and <span class="mono">/v1/integrations/clawcredit/preflight</span>.
@@ -711,6 +770,12 @@ curl -X POST "https://clawtrustscores.com/v1/integrations/ingest/events" \
     const tryApiKey = document.getElementById("tryApiKey");
     const tryAgentId = document.getElementById("tryAgentId");
     const tryResult = document.getElementById("tryResult");
+    const policyApiKey = document.getElementById("policyApiKey");
+    const policyResult = document.getElementById("policyResult");
+    const presetOpenBtn = document.getElementById("presetOpenBtn");
+    const presetBalancedBtn = document.getElementById("presetBalancedBtn");
+    const presetStrictBtn = document.getElementById("presetStrictBtn");
+    const policyShowBtn = document.getElementById("policyShowBtn");
 
     async function runSimpleCheck() {
       const apiKey = (tryApiKey.value || "").trim();
@@ -745,6 +810,52 @@ curl -X POST "https://clawtrustscores.com/v1/integrations/ingest/events" \
     }
 
     tryBtn.addEventListener("click", runSimpleCheck);
+
+    async function applyPreset(preset) {
+      const apiKey = (policyApiKey.value || "").trim();
+      if (!apiKey) {
+        policyResult.textContent = "Please enter your API key.";
+        return;
+      }
+
+      policyResult.textContent = `Applying ${preset} preset...`;
+      try {
+        const res = await fetch(`/v1/policy/presets/${encodeURIComponent(preset)}`, {
+          method: "POST",
+          headers: { "x-api-key": apiKey },
+          cache: "no-store",
+        });
+        const data = await res.json();
+        policyResult.textContent = JSON.stringify(data, null, 2);
+      } catch {
+        policyResult.textContent = "Network error while applying preset.";
+      }
+    }
+
+    async function showCurrentPolicy() {
+      const apiKey = (policyApiKey.value || "").trim();
+      if (!apiKey) {
+        policyResult.textContent = "Please enter your API key.";
+        return;
+      }
+
+      policyResult.textContent = "Loading current policy...";
+      try {
+        const res = await fetch("/v1/policy", {
+          headers: { "x-api-key": apiKey },
+          cache: "no-store",
+        });
+        const data = await res.json();
+        policyResult.textContent = JSON.stringify(data, null, 2);
+      } catch {
+        policyResult.textContent = "Network error while loading policy.";
+      }
+    }
+
+    presetOpenBtn.addEventListener("click", () => applyPreset("open"));
+    presetBalancedBtn.addEventListener("click", () => applyPreset("balanced"));
+    presetStrictBtn.addEventListener("click", () => applyPreset("strict"));
+    policyShowBtn.addEventListener("click", showCurrentPolicy);
   </script>
 </body>
 </html>
