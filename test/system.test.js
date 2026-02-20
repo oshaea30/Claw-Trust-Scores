@@ -144,3 +144,28 @@ test("webhook fires once on downward crossing and includes valid signature", asy
     globalThis.fetch = originalFetch;
   }
 });
+
+test("score endpoint can return trace contributions", async () => {
+  const account = { apiKey: "demo_starter_key", tier: "starter" };
+  await postEvent({
+    account,
+    payload: {
+      agentId: "agent:trace:1",
+      kind: "positive",
+      eventType: "payment_success",
+      sourceType: "verified_integration",
+      confidence: 1,
+      details: "verified signal",
+    },
+  });
+
+  const score = getScore({
+    account,
+    agentId: "agent:trace:1",
+    includeTrace: true,
+    traceLimit: 3,
+  });
+  assert.equal(score.status, 200);
+  assert.ok(Array.isArray(score.body.trace));
+  assert.ok(score.body.trace.length >= 1);
+});

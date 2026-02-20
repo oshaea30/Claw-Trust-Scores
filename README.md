@@ -75,6 +75,7 @@ Protected (`x-api-key` required):
 
 - `POST /v1/events`
 - `GET /v1/score?agentId=...`
+- `GET /v1/score?agentId=...&includeTrace=1&traceLimit=5` (optional decision trace)
 - `POST /v1/integrations/clawcredit/preflight`
 - `GET /v1/usage`
 - `GET /v1/audit/decisions?format=json|csv&limit=...`

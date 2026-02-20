@@ -394,7 +394,11 @@ const server = http.createServer(async (request, response) => {
   // --- GET /v1/score ---
   if (request.method === "GET" && url.pathname === "/v1/score") {
     const agentId = url.searchParams.get("agentId");
-    const result = getScore({ account, agentId });
+    const includeTrace =
+      url.searchParams.get("includeTrace") === "1" ||
+      url.searchParams.get("trace") === "1";
+    const traceLimit = Number(url.searchParams.get("traceLimit") ?? 5);
+    const result = getScore({ account, agentId, includeTrace, traceLimit });
 
     if (result.status === 200 && result.body?.agentId) {
       logDecision({

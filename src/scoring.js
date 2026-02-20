@@ -32,6 +32,20 @@ function weightOf(event) {
   return 0;
 }
 
+function sourceTrustFactor(event) {
+  const sourceType = String(event.sourceType ?? "").trim().toLowerCase();
+  if (sourceType === "verified_integration") return 1;
+  if (sourceType === "self_reported") return 0.75;
+  if (sourceType === "unverified") return 0.6;
+  return 1;
+}
+
+function confidenceFactor(event) {
+  const confidence = Number(event.confidence);
+  if (!Number.isFinite(confidence)) return 1;
+  return clamp(confidence, 0, 1);
+}
+
 function levelFor(score) {
   if (score >= 90) return "Very High";
   if (score >= 75) return "High";
@@ -52,21 +66,46 @@ function explanation(level, positive30d, negative30d) {
   return `${level}: ${positive30d} positive vs ${negative30d} negative events in 30 days.`;
 }
 
-export function scoreAgent(agentId, events) {
+export function scoreAgent(agentId, events, options = {}) {
+  const includeTrace = options.includeTrace === true;
+  const traceLimit = clamp(Number(options.traceLimit ?? 5), 1, 20);
   const nowMs = Date.now();
   let scoreValue = SCORE_BASELINE;
   let positive30d = 0;
   let neutral30d = 0;
   let negative30d = 0;
+  const trace = [];
 
   for (const event of events) {
     const ageDays = daysSince(event.createdAt, nowMs);
-    scoreValue += weightOf(event) * decay(ageDays);
+    const baseWeight = weightOf(event);
+    const decayFactor = decay(ageDays);
+    const sourceFactor = sourceTrustFactor(event);
+    const confidence = confidenceFactor(event);
+    const contribution = baseWeight * decayFactor * sourceFactor * confidence;
+    scoreValue += contribution;
 
     if (ageDays <= 30) {
       if (event.kind === "positive") positive30d += 1;
       if (event.kind === "neutral") neutral30d += 1;
       if (event.kind === "negative") negative30d += 1;
+    }
+
+    if (includeTrace) {
+      trace.push({
+        id: event.id,
+        kind: event.kind,
+        eventType: event.eventType,
+        source: event.source,
+        sourceType: event.sourceType,
+        externalEventId: event.externalEventId,
+        baseWeight,
+        decayFactor: Number(decayFactor.toFixed(4)),
+        sourceFactor: Number(sourceFactor.toFixed(4)),
+        confidenceFactor: Number(confidence.toFixed(4)),
+        contribution: Number(contribution.toFixed(4)),
+        createdAt: event.createdAt,
+      });
     }
   }
 
@@ -87,7 +126,7 @@ export function scoreAgent(agentId, events) {
       createdAt: event.createdAt
     }));
 
-  return {
+  const result = {
     agentId,
     score,
     level,
@@ -100,4 +139,12 @@ export function scoreAgent(agentId, events) {
     },
     history
   };
+
+  if (includeTrace) {
+    result.trace = trace
+      .sort((a, b) => Math.abs(b.contribution) - Math.abs(a.contribution))
+      .slice(0, traceLimit);
+  }
+
+  return result;
 }

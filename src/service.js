@@ -157,7 +157,7 @@ export async function postEvent({ account, payload }) {
   };
 }
 
-export function getScore({ account, agentId }) {
+export function getScore({ account, agentId, includeTrace = false, traceLimit = 5 }) {
   if (rateLimited({ apiKey: account.apiKey, tier: account.tier, action: "scoreReads" })) {
     return { status: 429, body: { error: "Rate limit exceeded for score checks." } };
   }
@@ -189,6 +189,9 @@ export function getScore({ account, agentId }) {
 
   return {
     status: 200,
-    body: scoreAgent(normalizedAgentId, getAgentEvents(normalizedAgentId))
+    body: scoreAgent(normalizedAgentId, getAgentEvents(normalizedAgentId), {
+      includeTrace,
+      traceLimit,
+    })
   };
 }

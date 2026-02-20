@@ -39,3 +39,33 @@ test("score decreases with severe negative events", () => {
   assert.ok(result.score < 50);
   assert.equal(result.breakdown.negative30d, 1);
 });
+
+test("confidence and source type reduce low-trust signal impact and trace is available", () => {
+  const now = new Date();
+  const highConfidenceVerified = {
+    id: "high",
+    agentId: "agent-z",
+    kind: "negative",
+    eventType: "failed_payment",
+    details: "",
+    sourceType: "verified_integration",
+    confidence: 1,
+    createdAt: now.toISOString(),
+  };
+  const lowConfidenceSelfReported = {
+    ...highConfidenceVerified,
+    id: "low",
+    sourceType: "self_reported",
+    confidence: 0.2,
+  };
+
+  const strong = scoreAgent("agent-z", [highConfidenceVerified], { includeTrace: true });
+  const weak = scoreAgent("agent-z", [lowConfidenceSelfReported], { includeTrace: true });
+
+  assert.ok(strong.score < weak.score, "verified high-confidence negative event should lower score more");
+  assert.ok(Array.isArray(strong.trace));
+  assert.equal(strong.trace.length, 1);
+  assert.equal(strong.trace[0].sourceFactor, 1);
+  assert.equal(strong.trace[0].confidenceFactor, 1);
+  assert.ok(strong.trace[0].contribution < 0);
+});
