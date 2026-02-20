@@ -5,6 +5,7 @@ import { scheduleFlush } from "./persistence.js";
 import { scoreAgent } from "./scoring.js";
 import { appendEvent, getAgentEvents, getMonthKey, getUsage, store } from "./store.js";
 import { emitScoreAlerts } from "./webhooks.js";
+import { getPolicy } from "./policy.js";
 
 function normalizeAgentId(agentId) {
   return String(agentId).trim().toLowerCase();
@@ -80,6 +81,7 @@ export async function postEvent({ account, payload }) {
   const plan = PLANS[account.tier];
   const monthKey = getMonthKey();
   const usage = getUsage(monthKey, account.apiKey);
+  const policy = getPolicy(account.apiKey);
 
   const agentId = normalizeAgentId(payload.agentId ?? "");
   const eventType = normalizeEventType(payload.eventType ?? "");
@@ -111,7 +113,7 @@ export async function postEvent({ account, payload }) {
     return { status: 400, body: { error: "occurredAt must be valid ISO-8601 if provided." } };
   }
 
-  const oldScore = scoreAgent(agentId, getAgentEvents(agentId)).score;
+  const oldScore = scoreAgent(agentId, getAgentEvents(agentId), { policy }).score;
 
   const event = {
     id: crypto.randomUUID(),
@@ -135,7 +137,7 @@ export async function postEvent({ account, payload }) {
   usage.eventsLogged += 1;
   usage.trackedAgents.add(agentId);
 
-  const score = scoreAgent(agentId, getAgentEvents(agentId));
+  const score = scoreAgent(agentId, getAgentEvents(agentId), { policy });
   scheduleFlush();
   await emitScoreAlerts({
     account,
@@ -186,12 +188,14 @@ export function getScore({ account, agentId, includeTrace = false, traceLimit = 
   usage.scoreChecks += 1;
   usage.trackedAgents.add(normalizedAgentId);
   scheduleFlush();
+  const policy = getPolicy(account.apiKey);
 
   return {
     status: 200,
     body: scoreAgent(normalizedAgentId, getAgentEvents(normalizedAgentId), {
       includeTrace,
       traceLimit,
+      policy,
     })
   };
 }

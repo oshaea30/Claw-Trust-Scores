@@ -7,6 +7,12 @@ import {
 } from "./config.js";
 
 const LN_2 = Math.log(2);
+const DEFAULT_SOURCE_TYPE_FACTORS = {
+  verified_integration: 1,
+  self_reported: 0.75,
+  unverified: 0.6,
+  manual: 1,
+};
 
 function clamp(value, min, max) {
   return Math.max(min, Math.min(max, value));
@@ -46,6 +52,66 @@ function confidenceFactor(event) {
   return clamp(confidence, 0, 1);
 }
 
+function normalizedPolicy(input) {
+  const base = {
+    minConfidence: 0,
+    allowedSources: [],
+    sourceTypeMultipliers: { ...DEFAULT_SOURCE_TYPE_FACTORS },
+    eventOverrides: {},
+  };
+  if (!input || typeof input !== "object") return base;
+  return {
+    ...base,
+    ...input,
+    sourceTypeMultipliers: {
+      ...base.sourceTypeMultipliers,
+      ...(input.sourceTypeMultipliers ?? {}),
+    },
+    eventOverrides: {
+      ...(input.eventOverrides ?? {}),
+    },
+    allowedSources: Array.isArray(input.allowedSources)
+      ? input.allowedSources.map((value) => String(value).trim().toLowerCase()).filter(Boolean)
+      : [],
+  };
+}
+
+function evaluatePolicy(event, policy, confidence) {
+  const eventType = String(event.eventType ?? "").trim().toLowerCase();
+  const source = String(event.source ?? "").trim().toLowerCase();
+  const sourceType = String(event.sourceType ?? "").trim().toLowerCase();
+  const override = policy.eventOverrides[eventType] ?? null;
+
+  if (override?.enabled === false) {
+    return { included: false, reason: "event_override_disabled" };
+  }
+
+  if (confidence < policy.minConfidence) {
+    return { included: false, reason: "below_min_confidence" };
+  }
+
+  if (policy.allowedSources.length > 0 && (!source || !policy.allowedSources.includes(source))) {
+    return { included: false, reason: "source_not_allowed" };
+  }
+
+  const sourceFactor = Number(policy.sourceTypeMultipliers[sourceType]);
+  const normalizedSourceFactor = Number.isFinite(sourceFactor)
+    ? clamp(sourceFactor, 0, 2)
+    : sourceTrustFactor(event);
+
+  const overrideMultiplier = Number(override?.multiplier);
+  const eventMultiplier = Number.isFinite(overrideMultiplier)
+    ? clamp(overrideMultiplier, 0, 3)
+    : 1;
+
+  return {
+    included: true,
+    reason: null,
+    sourceFactor: normalizedSourceFactor,
+    eventMultiplier,
+  };
+}
+
 function levelFor(score) {
   if (score >= 90) return "Very High";
   if (score >= 75) return "High";
@@ -69,21 +135,42 @@ function explanation(level, positive30d, negative30d) {
 export function scoreAgent(agentId, events, options = {}) {
   const includeTrace = options.includeTrace === true;
   const traceLimit = clamp(Number(options.traceLimit ?? 5), 1, 20);
+  const policy = normalizedPolicy(options.policy);
   const nowMs = Date.now();
   let scoreValue = SCORE_BASELINE;
   let positive30d = 0;
   let neutral30d = 0;
   let negative30d = 0;
   const trace = [];
+  const policySummary = {
+    excludedByConfidence: 0,
+    excludedBySource: 0,
+    excludedByEventOverride: 0,
+    included: 0,
+  };
 
   for (const event of events) {
     const ageDays = daysSince(event.createdAt, nowMs);
     const baseWeight = weightOf(event);
     const decayFactor = decay(ageDays);
-    const sourceFactor = sourceTrustFactor(event);
     const confidence = confidenceFactor(event);
-    const contribution = baseWeight * decayFactor * sourceFactor * confidence;
-    scoreValue += contribution;
+    const policyEffect = evaluatePolicy(event, policy, confidence);
+
+    let sourceFactor = policyEffect.sourceFactor ?? sourceTrustFactor(event);
+    let eventMultiplier = policyEffect.eventMultiplier ?? 1;
+    let contribution = 0;
+
+    if (policyEffect.included) {
+      contribution = baseWeight * decayFactor * sourceFactor * confidence * eventMultiplier;
+      scoreValue += contribution;
+      policySummary.included += 1;
+    } else if (policyEffect.reason === "below_min_confidence") {
+      policySummary.excludedByConfidence += 1;
+    } else if (policyEffect.reason === "source_not_allowed") {
+      policySummary.excludedBySource += 1;
+    } else if (policyEffect.reason === "event_override_disabled") {
+      policySummary.excludedByEventOverride += 1;
+    }
 
     if (ageDays <= 30) {
       if (event.kind === "positive") positive30d += 1;
@@ -99,10 +186,13 @@ export function scoreAgent(agentId, events, options = {}) {
         source: event.source,
         sourceType: event.sourceType,
         externalEventId: event.externalEventId,
+        included: policyEffect.included,
+        excludedReason: policyEffect.reason,
         baseWeight,
         decayFactor: Number(decayFactor.toFixed(4)),
         sourceFactor: Number(sourceFactor.toFixed(4)),
         confidenceFactor: Number(confidence.toFixed(4)),
+        eventMultiplier: Number(eventMultiplier.toFixed(4)),
         contribution: Number(contribution.toFixed(4)),
         createdAt: event.createdAt,
       });
@@ -135,7 +225,8 @@ export function scoreAgent(agentId, events, options = {}) {
       positive30d,
       neutral30d,
       negative30d,
-      lifetimeEvents: events.length
+      lifetimeEvents: events.length,
+      policy: policySummary,
     },
     history
   };

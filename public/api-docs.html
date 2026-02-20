@@ -588,6 +588,18 @@
             <div><code>/v1/integrations/templates</code><span>List supported connector templates (Stripe mapping included)</span></div>
           </div>
           <div class="endpoint">
+            <span class="verb get">GET</span>
+            <div><code>/v1/policy</code><span>Read per-key trust policy</span></div>
+          </div>
+          <div class="endpoint">
+            <span class="verb post">POST</span>
+            <div><code>/v1/policy</code><span>Set per-key trust policy (sources/confidence/overrides)</span></div>
+          </div>
+          <div class="endpoint">
+            <span class="verb post">DELETE</span>
+            <div><code>/v1/policy</code><span>Reset trust policy back to defaults</span></div>
+          </div>
+          <div class="endpoint">
             <span class="verb post">POST</span>
             <div><code>/v1/keys/rotate</code><span>Rotate current dynamic API key</span></div>
           </div>

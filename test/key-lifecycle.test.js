@@ -8,6 +8,7 @@ import {
   rotateUserApiKey,
 } from "../src/key-store.js";
 import { rotateIngestSecret } from "../src/ingest.js";
+import { setPolicy } from "../src/policy.js";
 import { appendDecisionLog, getMonthKey, getUsage, putWebhooks, resetStore, store } from "../src/store.js";
 
 beforeEach(() => {
@@ -28,6 +29,7 @@ test("rotateUserApiKey migrates account data and invalidates old key", () => {
   appendDecisionLog(oldKey, { action: "score_check", agentId: "agent:1", outcome: "scored", score: 70, reason: "ok" });
   rotateIngestSecret({ apiKey: oldKey, tier: "free" });
   store.processedInboundEvents.set(`${oldKey}:stripe:evt_1`, Date.now());
+  setPolicy(oldKey, { minConfidence: 0.8, allowedSources: ["stripe"] });
 
   const rotated = rotateUserApiKey(oldKey);
   assert.equal(rotated.ok, true);
@@ -43,6 +45,8 @@ test("rotateUserApiKey migrates account data and invalidates old key", () => {
   assert.equal(store.inboundSecretsByApiKey.has(newKey), true);
   assert.equal(store.processedInboundEvents.has(`${oldKey}:stripe:evt_1`), false);
   assert.equal(store.processedInboundEvents.has(`${newKey}:stripe:evt_1`), true);
+  assert.equal(store.policyByApiKey.has(oldKey), false);
+  assert.equal(store.policyByApiKey.has(newKey), true);
   assert.equal(store.usageByMonthAndApiKey.has(`${monthKey}:${oldKey}`), false);
   assert.equal(store.usageByMonthAndApiKey.has(`${monthKey}:${newKey}`), true);
 });
@@ -60,6 +64,7 @@ test("revokeUserApiKey removes user and key-scoped data", () => {
   appendDecisionLog(apiKey, { action: "score_check", agentId: "agent:1", outcome: "scored", score: 44, reason: "ok" });
   rotateIngestSecret({ apiKey, tier: "free" });
   store.processedInboundEvents.set(`${apiKey}:stripe:evt_2`, Date.now());
+  setPolicy(apiKey, { minConfidence: 0.5 });
 
   const revoked = revokeUserApiKey(apiKey);
   assert.equal(revoked.ok, true);
@@ -69,6 +74,7 @@ test("revokeUserApiKey removes user and key-scoped data", () => {
   assert.equal(store.decisionLogsByApiKey.has(apiKey), false);
   assert.equal(store.inboundSecretsByApiKey.has(apiKey), false);
   assert.equal(store.processedInboundEvents.has(`${apiKey}:stripe:evt_2`), false);
+  assert.equal(store.policyByApiKey.has(apiKey), false);
   assert.equal(store.usageByMonthAndApiKey.has(`${monthKey}:${apiKey}`), false);
   assert.equal(store.webhookDeliveries.has("hook-2"), false);
   assert.equal(store.webhookSuppression.has("hook-2:agent:1"), false);

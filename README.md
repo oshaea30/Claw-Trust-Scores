@@ -78,6 +78,9 @@ Protected (`x-api-key` required):
 - `GET /v1/score?agentId=...&includeTrace=1&traceLimit=5` (optional decision trace)
 - `POST /v1/integrations/clawcredit/preflight`
 - `GET /v1/usage`
+- `GET /v1/policy`
+- `POST /v1/policy`
+- `DELETE /v1/policy`
 - `GET /v1/audit/decisions?format=json|csv&limit=...`
 - `POST /v1/keys/rotate`
 - `POST /v1/keys/revoke` with `{"confirm":"REVOKE"}`

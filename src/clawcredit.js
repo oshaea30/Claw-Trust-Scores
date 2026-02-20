@@ -1,6 +1,7 @@
 import { logDecision } from "./audit.js";
 import { getAgentEvents } from "./store.js";
 import { scoreAgent } from "./scoring.js";
+import { getPolicy } from "./policy.js";
 
 function toNumber(value, fallback = 0) {
   const num = Number(value);
@@ -29,7 +30,9 @@ export function clawCreditPreflight({ payload, account }) {
     return { status: 400, body: { error: "agentId is required." } };
   }
 
-  const trust = scoreAgent(agentId, getAgentEvents(agentId));
+  const trust = scoreAgent(agentId, getAgentEvents(agentId), {
+    policy: account ? getPolicy(account.apiKey) : undefined,
+  });
   const riskPenalty = riskFromPayload(payload);
   const adjustedScore = Math.max(0, trust.score - riskPenalty);
 

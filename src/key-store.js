@@ -194,6 +194,11 @@ function moveApiKeyScopedMaps(oldApiKey, newApiKey) {
     store.decisionLogsByApiKey.delete(oldApiKey);
   }
 
+  if (store.policyByApiKey?.has(oldApiKey)) {
+    store.policyByApiKey.set(newApiKey, store.policyByApiKey.get(oldApiKey));
+    store.policyByApiKey.delete(oldApiKey);
+  }
+
   if (store.inboundSecretsByApiKey.has(oldApiKey)) {
     store.inboundSecretsByApiKey.set(newApiKey, store.inboundSecretsByApiKey.get(oldApiKey));
     store.inboundSecretsByApiKey.delete(oldApiKey);
@@ -211,6 +216,7 @@ function purgeApiKeyScopedData(apiKey) {
   const hooks = store.webhooksByApiKey.get(apiKey) ?? [];
   store.webhooksByApiKey.delete(apiKey);
   store.decisionLogsByApiKey.delete(apiKey);
+  store.policyByApiKey?.delete(apiKey);
   store.inboundSecretsByApiKey.delete(apiKey);
 
   for (const [usageKey] of [...store.usageByMonthAndApiKey.entries()]) {

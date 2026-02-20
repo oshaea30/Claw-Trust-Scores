@@ -17,6 +17,7 @@ import { getHeroSnapshot } from "./public-signals.js";
 import { revokeUserApiKey, rotateUserApiKey } from "./key-store.js";
 import { ingestVerifiedEvent, rotateIngestSecret } from "./ingest.js";
 import { listIntegrationTemplates } from "./integration-templates.js";
+import { getPolicy, resetPolicy, setPolicy } from "./policy.js";
 
 const PORT = Number(process.env.PORT ?? 8080);
 const PUBLIC_DIR = path.resolve(process.cwd(), "public");
@@ -375,6 +376,30 @@ const server = http.createServer(async (request, response) => {
     return sendJson(response, 401, {
       error: "Unauthorized. Provide a valid x-api-key header.",
     });
+  }
+
+  // --- Policy controls ---
+  if (request.method === "GET" && url.pathname === "/v1/policy") {
+    return sendJson(response, 200, { policy: getPolicy(account.apiKey) });
+  }
+
+  if (request.method === "POST" && url.pathname === "/v1/policy") {
+    try {
+      const payload = await readJsonBody(request);
+      const policy = setPolicy(account.apiKey, payload);
+      return sendJson(response, 200, { policy });
+    } catch (error) {
+      if (error instanceof Error && error.message === "Payload too large") {
+        return sendJson(response, 413, { error: "Payload too large." });
+      }
+      const message = error instanceof Error ? error.message : "Invalid policy payload.";
+      return sendJson(response, 400, { error: message });
+    }
+  }
+
+  if (request.method === "DELETE" && url.pathname === "/v1/policy") {
+    const policy = resetPolicy(account.apiKey);
+    return sendJson(response, 200, { policy, reset: true });
   }
 
   // --- POST /v1/events ---

@@ -7,6 +7,7 @@ export const store = {
   recentEventHashes: new Map(),
   inboundSecretsByApiKey: new Map(),
   processedInboundEvents: new Map(),
+  policyByApiKey: new Map(),
   webhooksByApiKey: new Map(),
   webhookDeliveries: new Map(),
   webhookSuppression: new Map(),
@@ -21,6 +22,7 @@ export function resetStore() {
   store.recentEventHashes = new Map();
   store.inboundSecretsByApiKey = new Map();
   store.processedInboundEvents = new Map();
+  store.policyByApiKey = new Map();
   store.webhooksByApiKey = new Map();
   store.webhookDeliveries = new Map();
   store.webhookSuppression = new Map();
