@@ -298,28 +298,28 @@
       animation: floatIn 0.7s ease-out forwards, floatBob 8.1s ease-in-out infinite, driftRight 12s ease-in-out infinite;
     }
     .float-card.left-mid {
-      left: 20%;
+      left: 10%;
       top: 58%;
       --rot: -3deg;
       animation: floatIn 0.7s ease-out forwards, floatBob 9.2s ease-in-out infinite;
       animation-delay: 0.45s, 1.6s;
     }
     .float-card.right-mid {
-      right: 20%;
+      right: 10%;
       top: 55%;
       --rot: 2.5deg;
       animation: floatIn 0.7s ease-out forwards, floatBob 8.7s ease-in-out infinite;
       animation-delay: 0.6s, 1.9s;
     }
     @keyframes driftLeft {
-      0% { left: 10%; }
-      50% { left: 11.8%; }
-      100% { left: 10%; }
+      0% { left: 3.5%; }
+      50% { left: 5.2%; }
+      100% { left: 3.5%; }
     }
     @keyframes driftRight {
-      0% { right: 10%; }
-      50% { right: 11.8%; }
-      100% { right: 10%; }
+      0% { right: 3.5%; }
+      50% { right: 5.2%; }
+      100% { right: 3.5%; }
     }
     .float-card .fc-label { font-size: 0.68rem; color: var(--text-muted); font-weight: 500; margin-bottom: 4px; }
     .float-card .fc-score { font-size: 1.5rem; font-weight: 800; letter-spacing: -1px; }
@@ -709,8 +709,8 @@
     @media (max-width: 1200px) {
       .float-card.left { left: 7%; }
       .float-card.right { right: 7%; }
-      .float-card.left-mid { left: 13%; }
-      .float-card.right-mid { right: 13%; }
+      .float-card.left-mid { left: 9%; }
+      .float-card.right-mid { right: 9%; }
     }
     @media (max-width: 700px) {
       .nav-links { display: none; }
