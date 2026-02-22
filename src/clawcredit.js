@@ -1,14 +1,11 @@
-import { logDecision } from "./audit.js";
-import { getAgentEvents } from "./store.js";
-import { scoreAgent } from "./scoring.js";
-import { getPolicy } from "./policy.js";
+import { scoreForAccountAgent } from "./service.js";
 
 function toNumber(value, fallback = 0) {
   const num = Number(value);
   return Number.isFinite(num) ? num : fallback;
 }
 
-export function riskFromPayload(payload) {
+function riskFromPayload(payload) {
   let risk = 0;
 
   const amountUsd = toNumber(payload.amountUsd, 0);
@@ -24,18 +21,15 @@ export function riskFromPayload(payload) {
   return Math.min(risk, 60);
 }
 
-export function clawCreditPreflight({ payload, account }) {
+export function clawCreditPreflight({ account, payload }) {
   const agentId = String(payload.agentId ?? "").trim().toLowerCase();
   if (!agentId) {
     return { status: 400, body: { error: "agentId is required." } };
   }
 
-  const policy = account ? getPolicy(account.apiKey) : undefined;
-  const trust = scoreAgent(agentId, getAgentEvents(agentId), { policy });
+  const trust = scoreForAccountAgent({ account, agentId });
   const riskPenalty = riskFromPayload(payload);
   const adjustedScore = Math.max(0, trust.score - riskPenalty);
-  const minSignalQuality = Number(policy?.minSignalQuality ?? 0);
-  const signalQualityScore = Number(trust.signalQuality?.score ?? 0);
 
   let decision = "allow";
   let reason = `Trust score ${trust.score} is acceptable for this action.`;
@@ -48,28 +42,6 @@ export function clawCreditPreflight({ payload, account }) {
     reason = `Manual review required: adjusted score ${adjustedScore} is in caution band.`;
   }
 
-  if (minSignalQuality > 0 && signalQualityScore < minSignalQuality && decision !== "block") {
-    decision = "review";
-    reason = `Manual review required: signal quality ${signalQualityScore} is below minimum ${minSignalQuality}.`;
-  }
-
-  if (account) {
-    logDecision({
-      account,
-      action: "clawcredit_preflight",
-      agentId,
-      outcome: decision,
-      score: adjustedScore,
-      reason,
-      metadata: {
-        trustScore: trust.score,
-        amountUsd: Number(payload.amountUsd ?? 0),
-        newPayee: payload.newPayee === true,
-        firstTimeCounterparty: payload.firstTimeCounterparty === true,
-      },
-    });
-  }
-
   return {
     status: 200,
     body: {
@@ -80,13 +52,11 @@ export function clawCreditPreflight({ payload, account }) {
         agentId,
         score: trust.score,
         level: trust.level,
-        explanation: trust.explanation,
-        signalQuality: trust.signalQuality,
+        explanation: trust.explanation
       },
       policy: {
         adjustedScore,
         riskPenalty,
-        minSignalQuality,
         thresholds: {
           blockBelow: 35,
           reviewBelow: 55

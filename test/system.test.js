@@ -13,7 +13,7 @@ import {
   loadStoreFromDisk,
   resetPersistenceStateForTest
 } from "../src/persistence.js";
-import { createWebhook } from "../src/webhooks.js";
+import { createWebhook, resetDnsLookupForTest, setDnsLookupForTest } from "../src/webhooks.js";
 
 beforeEach(() => {
   resetStore();
@@ -80,6 +80,7 @@ test("webhook fires once on downward crossing and includes valid signature", asy
   const secret = "supersecret123";
   const calls = [];
   const originalFetch = globalThis.fetch;
+  setDnsLookupForTest(async () => [{ address: "93.184.216.34", family: 4 }]);
   globalThis.fetch = async (url, options) => {
     calls.push({ url, options });
     return { ok: true, status: 204 };
@@ -141,31 +142,32 @@ test("webhook fires once on downward crossing and includes valid signature", asy
 
     assert.equal(calls.length, 1);
   } finally {
+    resetDnsLookupForTest();
     globalThis.fetch = originalFetch;
   }
 });
 
-test("score endpoint can return trace contributions", async () => {
-  const account = { apiKey: "demo_starter_key", tier: "starter" };
+test("events and scores are isolated per API key namespace", async () => {
+  const accountA = { apiKey: "demo_starter_key", tier: "starter" };
+  const accountB = { apiKey: "demo_pro_key", tier: "pro" };
+  const sharedAgent = "agent:shared:vendor";
+
   await postEvent({
-    account,
+    account: accountA,
     payload: {
-      agentId: "agent:trace:1",
-      kind: "positive",
-      eventType: "payment_success",
-      sourceType: "verified_integration",
-      confidence: 1,
-      details: "verified signal",
-    },
+      agentId: sharedAgent,
+      kind: "negative",
+      eventType: "api_key_leak",
+      details: "only for account A"
+    }
   });
 
-  const score = getScore({
-    account,
-    agentId: "agent:trace:1",
-    includeTrace: true,
-    traceLimit: 3,
-  });
-  assert.equal(score.status, 200);
-  assert.ok(Array.isArray(score.body.trace));
-  assert.ok(score.body.trace.length >= 1);
+  const scoreA = getScore({ account: accountA, agentId: sharedAgent });
+  const scoreB = getScore({ account: accountB, agentId: sharedAgent });
+
+  assert.equal(scoreA.status, 200);
+  assert.equal(scoreB.status, 200);
+  assert.ok(scoreA.body.score < 50);
+  assert.equal(scoreB.body.score, 50);
+  assert.equal(scoreB.body.breakdown.lifetimeEvents, 0);
 });

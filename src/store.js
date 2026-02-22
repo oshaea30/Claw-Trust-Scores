@@ -1,18 +1,13 @@
-import crypto from "node:crypto";
-
 export const store = {
   eventsByAgentId: new Map(),
   usageByMonthAndApiKey: new Map(),
   rateCounterByWindowAndKey: new Map(),
   recentEventHashes: new Map(),
-  inboundSecretsByApiKey: new Map(),
-  processedInboundEvents: new Map(),
-  policyByApiKey: new Map(),
+  managedApiKeys: new Map(),
+  revokedApiKeys: new Set(),
   webhooksByApiKey: new Map(),
   webhookDeliveries: new Map(),
-  webhookSuppression: new Map(),
-  users: new Map(),
-  decisionLogsByApiKey: new Map(),
+  webhookSuppression: new Map()
 };
 
 export function resetStore() {
@@ -20,14 +15,11 @@ export function resetStore() {
   store.usageByMonthAndApiKey = new Map();
   store.rateCounterByWindowAndKey = new Map();
   store.recentEventHashes = new Map();
-  store.inboundSecretsByApiKey = new Map();
-  store.processedInboundEvents = new Map();
-  store.policyByApiKey = new Map();
+  store.managedApiKeys = new Map();
+  store.revokedApiKeys = new Set();
   store.webhooksByApiKey = new Map();
   store.webhookDeliveries = new Map();
   store.webhookSuppression = new Map();
-  store.users = new Map();
-  store.decisionLogsByApiKey = new Map();
 }
 
 export function getMonthKey(now = new Date()) {
@@ -50,10 +42,10 @@ export function getUsage(monthKey, apiKey) {
   return usage;
 }
 
-export function appendEvent(event) {
-  const existing = store.eventsByAgentId.get(event.agentId) ?? [];
+export function appendEvent(scopeId, event) {
+  const existing = store.eventsByAgentId.get(scopeId) ?? [];
   existing.push(event);
-  store.eventsByAgentId.set(event.agentId, existing);
+  store.eventsByAgentId.set(scopeId, existing);
 }
 
 export function getAgentEvents(agentId) {
@@ -72,20 +64,4 @@ export function appendWebhookDelivery(webhookId, delivery) {
   const existing = store.webhookDeliveries.get(webhookId) ?? [];
   existing.unshift(delivery);
   store.webhookDeliveries.set(webhookId, existing.slice(0, 20));
-}
-
-export function appendDecisionLog(apiKey, entry, maxItems = 5000) {
-  const existing = store.decisionLogsByApiKey.get(apiKey) ?? [];
-  const enriched = {
-    id: crypto.randomUUID(),
-    timestamp: new Date().toISOString(),
-    ...entry,
-  };
-  existing.unshift(enriched);
-  store.decisionLogsByApiKey.set(apiKey, existing.slice(0, maxItems));
-  return enriched;
-}
-
-export function listDecisionLogs(apiKey) {
-  return store.decisionLogsByApiKey.get(apiKey) ?? [];
 }

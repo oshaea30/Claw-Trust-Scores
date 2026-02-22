@@ -7,10 +7,7 @@ let flushTimer = null;
 let loaded = false;
 
 function currentDataDir() {
-  const dir = process.env.DATA_DIR;
-  // Guard against literal "undefined" — an older bug wrote to an "undefined/" folder
-  if (!dir || dir === "undefined") return path.resolve(process.cwd(), "data");
-  return dir;
+  return process.env.DATA_DIR ?? path.resolve(process.cwd(), "data");
 }
 
 function currentStatePath() {
@@ -60,15 +57,8 @@ export function loadStoreFromDisk() {
     store.webhooksByApiKey = loadObjectMap(parsed.webhooksByApiKey);
     store.webhookDeliveries = loadObjectMap(parsed.webhookDeliveries);
     store.webhookSuppression = loadObjectMap(parsed.webhookSuppression);
-    store.inboundSecretsByApiKey = loadObjectMap(parsed.inboundSecretsByApiKey);
-    store.processedInboundEvents = loadObjectMap(parsed.processedInboundEvents);
-    store.policyByApiKey = loadObjectMap(parsed.policyByApiKey);
-
-    // Self-serve users (added in v0.2)
-    store.users = loadObjectMap(parsed.users);
-
-    // Decision logs (added in v0.3)
-    store.decisionLogsByApiKey = loadObjectMap(parsed.decisionLogsByApiKey);
+    store.managedApiKeys = loadObjectMap(parsed.managedApiKeys);
+    store.revokedApiKeys = new Set(Array.isArray(parsed.revokedApiKeys) ? parsed.revokedApiKeys : []);
   } catch {
     // Ignore broken state and start fresh.
   }
@@ -96,11 +86,8 @@ export function flushStoreToDisk() {
       webhooksByApiKey: toObjectMap(store.webhooksByApiKey),
       webhookDeliveries: toObjectMap(store.webhookDeliveries),
       webhookSuppression: toObjectMap(store.webhookSuppression),
-      inboundSecretsByApiKey: toObjectMap(store.inboundSecretsByApiKey ?? new Map()),
-      processedInboundEvents: toObjectMap(store.processedInboundEvents ?? new Map()),
-      policyByApiKey: toObjectMap(store.policyByApiKey ?? new Map()),
-      users: toObjectMap(store.users ?? new Map()),
-      decisionLogsByApiKey: toObjectMap(store.decisionLogsByApiKey ?? new Map()),
+      managedApiKeys: toObjectMap(store.managedApiKeys),
+      revokedApiKeys: [...store.revokedApiKeys]
     };
 
     fs.writeFileSync(statePath, JSON.stringify(payload), "utf8");
