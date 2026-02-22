@@ -1,0 +1,26 @@
+{
+  "name": "claw-trust-scores",
+  "version": "0.1.0",
+  "title": "Claw Trust Scores - Agent Risk Guard",
+  "description": "Gate risky agent actions with trust score + signal quality + preflight policy.",
+  "entry": "./SKILL.md",
+  "env": [
+    {
+      "name": "CLAWTRUST_API_KEY",
+      "required": true,
+      "description": "API key from https://clawtrustscores.com"
+    },
+    {
+      "name": "CLAWTRUST_BASE_URL",
+      "required": false,
+      "default": "https://clawtrustscores.com"
+    }
+  ],
+  "tools": [
+    "get_score",
+    "log_event",
+    "preflight_payment",
+    "connector_readiness"
+  ],
+  "tags": ["security", "compliance", "fraud", "payments", "trust"]
+}

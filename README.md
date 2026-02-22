@@ -100,6 +100,10 @@ Ops/Admin (`x-admin-token` required):
 - `GET /v1/admin/agents?limit=100`
 - `GET /v1/admin/decisions/recent?limit=100`
 
+Skill wrapper:
+
+- Official OpenClaw skill bundle: `skills/claw-trust-scores/`
+
 ## Plans
 
 - Free: 5 agents, 100 events/month, 200 score checks/month

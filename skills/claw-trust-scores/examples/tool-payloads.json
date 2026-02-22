@@ -1,0 +1,23 @@
+{
+  "get_score": {
+    "agentId": "agent:vendor:example-1",
+    "includeTrace": false
+  },
+  "log_event": {
+    "agentId": "agent:vendor:example-1",
+    "kind": "positive",
+    "eventType": "completed_task_on_time",
+    "source": "marketplace",
+    "sourceType": "verified_integration",
+    "confidence": 0.95
+  },
+  "preflight_payment": {
+    "agentId": "agent:vendor:example-1",
+    "amountUsd": 2500,
+    "newPayee": true,
+    "firstTimeCounterparty": true
+  },
+  "connector_readiness": {
+    "source": "stripe"
+  }
+}
