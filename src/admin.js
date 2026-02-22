@@ -1,5 +1,6 @@
 import { store } from "./store.js";
 import { getAllUsers } from "./key-store.js";
+import { scoreAgent } from "./scoring.js";
 
 function monthFromIso(iso) {
   if (!iso || typeof iso !== "string") return "unknown";
@@ -90,5 +91,67 @@ export function getAdminOverview() {
     signupsByMonth,
     recentUsers,
     topUsage,
+  };
+}
+
+export function getAdminAgentSnapshot({ limit = 50 } = {}) {
+  const normalizedLimit = Math.max(1, Math.min(200, Number(limit) || 50));
+  const rows = [];
+
+  for (const [agentId, events] of store.eventsByAgentId.entries()) {
+    const score = scoreAgent(agentId, events);
+    const sorted = [...events].sort(
+      (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+    );
+    const latest = sorted[0];
+
+    rows.push({
+      agentId,
+      score: score.score,
+      level: score.level,
+      signalQuality: score.signalQuality,
+      lifetimeEvents: score.breakdown.lifetimeEvents,
+      negative30d: score.breakdown.negative30d,
+      positive30d: score.breakdown.positive30d,
+      lastEventType: latest?.eventType ?? null,
+      lastSource: latest?.source ?? null,
+      lastSeenAt: latest?.createdAt ?? null,
+    });
+  }
+
+  rows.sort((a, b) => {
+    const aTs = a.lastSeenAt ? new Date(a.lastSeenAt).getTime() : 0;
+    const bTs = b.lastSeenAt ? new Date(b.lastSeenAt).getTime() : 0;
+    return bTs - aTs;
+  });
+
+  return {
+    generatedAt: new Date().toISOString(),
+    count: rows.length,
+    rows: rows.slice(0, normalizedLimit),
+  };
+}
+
+export function getRecentDecisionFeed({ limit = 100 } = {}) {
+  const normalizedLimit = Math.max(1, Math.min(500, Number(limit) || 100));
+  const entries = [];
+
+  for (const [apiKey, rows] of store.decisionLogsByApiKey.entries()) {
+    for (const row of rows) {
+      entries.push({
+        ...row,
+        apiKey,
+      });
+    }
+  }
+
+  entries.sort(
+    (a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
+  );
+
+  return {
+    generatedAt: new Date().toISOString(),
+    count: entries.length,
+    rows: entries.slice(0, normalizedLimit),
   };
 }

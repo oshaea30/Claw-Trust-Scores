@@ -3,7 +3,7 @@ import path from "node:path";
 import http from "node:http";
 import { URL } from "node:url";
 
-import { getAdminOverview } from "./admin.js";
+import { getAdminAgentSnapshot, getAdminOverview, getRecentDecisionFeed } from "./admin.js";
 import { authenticate } from "./auth.js";
 import { getDecisionLogs, logDecision } from "./audit.js";
 import { clawCreditPreflight } from "./clawcredit.js";
@@ -15,7 +15,7 @@ import { getUsageSnapshot } from "./usage.js";
 import { createWebhook, deleteWebhook, getWebhooks } from "./webhooks.js";
 import { getHeroSnapshot } from "./public-signals.js";
 import { revokeUserApiKey, rotateUserApiKey } from "./key-store.js";
-import { ingestVerifiedEvent, rotateIngestSecret } from "./ingest.js";
+import { getIngestSecretStatus, ingestVerifiedEvent, rotateIngestSecret } from "./ingest.js";
 import { listIntegrationTemplates, mapProviderEvent } from "./integration-templates.js";
 import { applyPolicyPreset, getPolicy, listPolicyPresets, resetPolicy, setPolicy } from "./policy.js";
 
@@ -24,6 +24,7 @@ const PUBLIC_DIR = path.resolve(process.cwd(), "public");
 const LANDING_PATH = path.resolve(process.cwd(), "public", "index.html");
 const CLEAN_PAGE_ROUTES = new Map([
   ["/api-docs", "api-docs.html"],
+  ["/admin-dashboard", "admin-dashboard.html"],
   ["/getting-started", "getting-started.html"],
   ["/privacy", "privacy.html"],
   ["/terms", "terms.html"],
@@ -36,6 +37,20 @@ const LEGACY_HTML_REDIRECTS = new Map(
     cleanPath,
   ])
 );
+
+function authenticateAdminRequest(request, response) {
+  const adminToken = process.env.ADMIN_TOKEN ?? "";
+  if (!adminToken) {
+    sendJson(response, 503, { error: "Admin endpoint is not configured." });
+    return null;
+  }
+  const received = request.headers["x-admin-token"]?.trim() ?? "";
+  if (!received || received !== adminToken) {
+    sendJson(response, 401, { error: "Unauthorized admin token." });
+    return null;
+  }
+  return { ok: true };
+}
 
 loadStoreFromDisk();
 
@@ -253,15 +268,20 @@ const server = http.createServer(async (request, response) => {
   }
 
   if (request.method === "GET" && url.pathname === "/v1/admin/overview") {
-    const adminToken = process.env.ADMIN_TOKEN ?? "";
-    if (!adminToken) {
-      return sendJson(response, 503, { error: "Admin endpoint is not configured." });
-    }
-    const received = request.headers["x-admin-token"]?.trim() ?? "";
-    if (!received || received !== adminToken) {
-      return sendJson(response, 401, { error: "Unauthorized admin token." });
-    }
+    if (!authenticateAdminRequest(request, response)) return;
     return sendJson(response, 200, getAdminOverview());
+  }
+
+  if (request.method === "GET" && url.pathname === "/v1/admin/agents") {
+    if (!authenticateAdminRequest(request, response)) return;
+    const limit = Number(url.searchParams.get("limit") ?? "50");
+    return sendJson(response, 200, getAdminAgentSnapshot({ limit }));
+  }
+
+  if (request.method === "GET" && url.pathname === "/v1/admin/decisions/recent") {
+    if (!authenticateAdminRequest(request, response)) return;
+    const limit = Number(url.searchParams.get("limit") ?? "100");
+    return sendJson(response, 200, getRecentDecisionFeed({ limit }));
   }
 
   // --- Self-serve signup (public, no auth required) ---
@@ -434,6 +454,71 @@ const server = http.createServer(async (request, response) => {
       }
       return sendJson(response, 400, { error: "Invalid JSON body." });
     }
+  }
+
+  if (request.method === "GET" && url.pathname === "/v1/integrations/readiness") {
+    const account = authenticate(request);
+    if (!account) {
+      return sendJson(response, 401, {
+        error: "Unauthorized. Provide a valid x-api-key header.",
+      });
+    }
+    const source = String(url.searchParams.get("source") ?? "stripe").trim().toLowerCase();
+    const templates = listIntegrationTemplates().templates;
+    if (!templates[source]) {
+      return sendJson(response, 400, {
+        error: "Unsupported source.",
+        supportedSources: Object.keys(templates),
+      });
+    }
+    const ingest = getIngestSecretStatus(account);
+    const policy = getPolicy(account.apiKey);
+    const minSignalQuality = Number(policy.minSignalQuality ?? 0);
+    const requireVerifiedSensitive = policy.requireVerifiedSensitive === true;
+    const recommendedMinSignalQuality = source === "marketplace" ? 50 : 40;
+    const recommendedVerification = true;
+    const ready = ingest.configured && requireVerifiedSensitive && minSignalQuality >= recommendedMinSignalQuality;
+
+    const checklist = [
+      {
+        key: "ingest_secret",
+        label: "Ingest secret configured",
+        ok: ingest.configured,
+        action: "POST /v1/integrations/ingest/secret",
+      },
+      {
+        key: "verified_guardrail",
+        label: "Verified sensitive guardrail enabled",
+        ok: requireVerifiedSensitive,
+        action: "POST /v1/policy {\"requireVerifiedSensitive\":true}",
+      },
+      {
+        key: "signal_quality_floor",
+        label: `Minimum signal quality >= ${recommendedMinSignalQuality}`,
+        ok: minSignalQuality >= recommendedMinSignalQuality,
+        action: `POST /v1/policy {"minSignalQuality":${recommendedMinSignalQuality}}`,
+      },
+    ];
+
+    return sendJson(response, 200, {
+      source,
+      ready,
+      template: templates[source],
+      ingest,
+      policy: {
+        minSignalQuality,
+        requireVerifiedSensitive,
+      },
+      recommended: {
+        minSignalQuality: recommendedMinSignalQuality,
+        requireVerifiedSensitive: recommendedVerification,
+      },
+      checklist,
+      next:
+        ready
+          ? "Ready to ingest signed events."
+          : "Complete failed checklist items, then start signed ingest events.",
+    });
   }
 
   // --- POST /v1/events ---

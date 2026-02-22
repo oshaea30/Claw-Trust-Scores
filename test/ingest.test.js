@@ -2,7 +2,7 @@ import crypto from "node:crypto";
 import test, { beforeEach } from "node:test";
 import assert from "node:assert/strict";
 
-import { ingestVerifiedEvent, rotateIngestSecret } from "../src/ingest.js";
+import { getIngestSecretStatus, ingestVerifiedEvent, rotateIngestSecret } from "../src/ingest.js";
 import { resetStore } from "../src/store.js";
 import { resetPersistenceStateForTest } from "../src/persistence.js";
 
@@ -167,4 +167,15 @@ test("auth template maps provider event type when kind/eventType are omitted", a
   assert.equal(result.body.event.eventType, "impersonation_report");
   assert.equal(result.body.event.source, "auth");
   assert.match(result.body.event.details, /auth:impersonation.detected/i);
+});
+
+test("ingest secret status reflects rotation", () => {
+  const account = { apiKey: "demo_starter_key", tier: "starter" };
+  const before = getIngestSecretStatus(account);
+  assert.equal(before.configured, false);
+
+  rotateIngestSecret(account);
+  const after = getIngestSecretStatus(account);
+  assert.equal(after.configured, true);
+  assert.equal(typeof after.rotatedAt, "string");
 });

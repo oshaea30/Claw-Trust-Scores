@@ -1,0 +1,255 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Admin Dashboard | Claw Trust Scores</title>
+  <meta name="robots" content="noindex,nofollow" />
+  <link rel="icon" type="image/png" href="/logo-mark.png" />
+  <style>
+    :root {
+      --bg: #f7f3ee;
+      --surface: #fff;
+      --line: #e7ddd4;
+      --text: #1f1a16;
+      --muted: #6f6257;
+      --accent: #d4532a;
+      --mono: ui-monospace, SFMono-Regular, Menlo, monospace;
+    }
+    * { box-sizing: border-box; }
+    body { margin: 0; font-family: ui-sans-serif, system-ui, -apple-system, sans-serif; background: var(--bg); color: var(--text); }
+    .wrap { width: min(1200px, 94vw); margin: 0 auto; padding: 20px 0 40px; }
+    .row { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; }
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      padding: 14px;
+      margin-bottom: 10px;
+    }
+    h1, h2, h3 { margin: 0 0 8px; }
+    h1 { font-size: 1.6rem; }
+    .muted { color: var(--muted); }
+    .top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 8px;
+    }
+    .auth {
+      display: flex;
+      gap: 8px;
+      align-items: end;
+      flex-wrap: wrap;
+    }
+    label { display: block; font-size: 0.78rem; color: var(--muted); margin-bottom: 4px; }
+    input {
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      padding: 10px;
+      min-width: 280px;
+      font-family: var(--mono);
+      font-size: 0.82rem;
+    }
+    button {
+      border: 1px solid var(--line);
+      background: #fff;
+      color: var(--text);
+      border-radius: 10px;
+      padding: 10px 12px;
+      font-size: 0.84rem;
+      font-weight: 700;
+      cursor: pointer;
+    }
+    button.primary { background: #1f1a16; color: #fff; border-color: #1f1a16; }
+    table { width: 100%; border-collapse: collapse; font-size: 0.84rem; }
+    th, td { text-align: left; padding: 8px; border-bottom: 1px solid var(--line); vertical-align: top; }
+    th { color: var(--muted); font-weight: 600; font-size: 0.78rem; text-transform: uppercase; letter-spacing: .04em; }
+    .pill { display: inline-block; border-radius: 999px; padding: 3px 8px; background: #f6ede6; border: 1px solid #e4d1c2; font-size: .75rem; }
+    .mono { font-family: var(--mono); }
+    .status { font-size: 0.82rem; margin-top: 6px; }
+    .ok { color: #1c7d57; }
+    .bad { color: #bf3a3a; }
+    .small { font-size: .78rem; color: var(--muted); }
+    pre { margin: 0; font-family: var(--mono); font-size: 0.76rem; white-space: pre-wrap; word-break: break-word; }
+    @media (max-width: 980px) {
+      .row { grid-template-columns: 1fr; }
+      input { min-width: 220px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="top">
+      <div>
+        <h1>Admin Dashboard</h1>
+        <p class="muted">Internal only. Requires <span class="mono">x-admin-token</span>.</p>
+      </div>
+      <a class="small" href="/api-docs">API Docs</a>
+    </div>
+
+    <div class="card">
+      <div class="auth">
+        <div>
+          <label for="adminToken">Admin token</label>
+          <input id="adminToken" type="password" placeholder="paste ADMIN_TOKEN" autocomplete="off" />
+        </div>
+        <button class="primary" id="loadBtn" type="button">Load dashboard</button>
+        <button id="clearBtn" type="button">Clear token</button>
+      </div>
+      <div id="status" class="status muted">Enter admin token and click load.</div>
+    </div>
+
+    <div class="row">
+      <div class="card">
+        <h2>Totals</h2>
+        <pre id="totalsView" class="small">Not loaded yet.</pre>
+      </div>
+      <div class="card">
+        <h2>Recent Users</h2>
+        <pre id="usersView" class="small">Not loaded yet.</pre>
+      </div>
+      <div class="card">
+        <h2>Top Usage</h2>
+        <pre id="usageView" class="small">Not loaded yet.</pre>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>Agents (score + quality)</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>Agent</th>
+            <th>Score</th>
+            <th>Signal Quality</th>
+            <th>30d</th>
+            <th>Last Event</th>
+          </tr>
+        </thead>
+        <tbody id="agentsTable">
+          <tr><td colspan="5" class="small">Not loaded yet.</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="card">
+      <h2>Recent Decisions</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>Time</th>
+            <th>Action</th>
+            <th>Outcome</th>
+            <th>Agent</th>
+            <th>Reason</th>
+          </tr>
+        </thead>
+        <tbody id="decisionsTable">
+          <tr><td colspan="5" class="small">Not loaded yet.</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <script>
+    const tokenInput = document.getElementById("adminToken");
+    const loadBtn = document.getElementById("loadBtn");
+    const clearBtn = document.getElementById("clearBtn");
+    const statusEl = document.getElementById("status");
+    const totalsView = document.getElementById("totalsView");
+    const usersView = document.getElementById("usersView");
+    const usageView = document.getElementById("usageView");
+    const agentsTable = document.getElementById("agentsTable");
+    const decisionsTable = document.getElementById("decisionsTable");
+
+    tokenInput.value = sessionStorage.getItem("cts_admin_token") || "";
+
+    function setStatus(text, ok = false) {
+      statusEl.textContent = text;
+      statusEl.className = `status ${ok ? "ok" : "bad"}`;
+    }
+
+    async function getJson(path) {
+      const token = tokenInput.value.trim();
+      const res = await fetch(path, {
+        headers: { "x-admin-token": token },
+        cache: "no-store",
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        throw new Error(data.error || `Request failed: ${path}`);
+      }
+      return data;
+    }
+
+    function renderAgents(rows) {
+      if (!rows.length) {
+        agentsTable.innerHTML = '<tr><td colspan="5" class="small">No agents yet.</td></tr>';
+        return;
+      }
+      agentsTable.innerHTML = rows.map((row) => {
+        const sq = row.signalQuality || {};
+        return `<tr>
+          <td class="mono">${row.agentId}</td>
+          <td><strong>${row.score}</strong> <span class="small">(${row.level})</span></td>
+          <td><span class="pill">${sq.score ?? 0}</span> <span class="small">${sq.level || "n/a"} · ${sq.verifiedPercent ?? 0}% verified</span></td>
+          <td class="small">+${row.positive30d} / -${row.negative30d}</td>
+          <td class="small">${row.lastEventType || "n/a"}<br/>${row.lastSeenAt || ""}</td>
+        </tr>`;
+      }).join("");
+    }
+
+    function renderDecisions(rows) {
+      if (!rows.length) {
+        decisionsTable.innerHTML = '<tr><td colspan="5" class="small">No decision logs yet.</td></tr>';
+        return;
+      }
+      decisionsTable.innerHTML = rows.map((row) => `<tr>
+        <td class="small">${row.timestamp || ""}</td>
+        <td class="mono">${row.action || ""}</td>
+        <td><span class="pill">${row.outcome || ""}</span></td>
+        <td class="mono">${row.agentId || ""}</td>
+        <td class="small">${row.reason || ""}</td>
+      </tr>`).join("");
+    }
+
+    async function loadDashboard() {
+      const token = tokenInput.value.trim();
+      if (!token) {
+        setStatus("Admin token is required.");
+        return;
+      }
+      sessionStorage.setItem("cts_admin_token", token);
+      loadBtn.disabled = true;
+      setStatus("Loading...", true);
+      try {
+        const [overview, agents, decisions] = await Promise.all([
+          getJson("/v1/admin/overview"),
+          getJson("/v1/admin/agents?limit=100"),
+          getJson("/v1/admin/decisions/recent?limit=100"),
+        ]);
+
+        totalsView.textContent = JSON.stringify(overview.totals, null, 2);
+        usersView.textContent = JSON.stringify(overview.recentUsers || [], null, 2);
+        usageView.textContent = JSON.stringify(overview.topUsage || [], null, 2);
+        renderAgents(agents.rows || []);
+        renderDecisions(decisions.rows || []);
+        setStatus(`Loaded at ${new Date().toISOString()}`, true);
+      } catch (err) {
+        setStatus(err.message || "Failed to load dashboard.");
+      } finally {
+        loadBtn.disabled = false;
+      }
+    }
+
+    loadBtn.addEventListener("click", loadDashboard);
+    clearBtn.addEventListener("click", () => {
+      sessionStorage.removeItem("cts_admin_token");
+      tokenInput.value = "";
+      setStatus("Token cleared.", true);
+    });
+  </script>
+</body>
+</html>

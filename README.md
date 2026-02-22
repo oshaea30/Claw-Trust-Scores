@@ -89,6 +89,7 @@ Protected (`x-api-key` required):
 - `POST /v1/integrations/ingest/secret` rotate inbound ingest secret
 - `POST /v1/integrations/ingest/events` ingest signed verified events
 - `POST /v1/integrations/map-event` preview provider event mapping (source + providerEventType)
+- `GET /v1/integrations/readiness?source=stripe|auth|marketplace` setup checklist (secret + policy hardening)
 - `POST /v1/webhooks`
 - `GET /v1/webhooks`
 - `DELETE /v1/webhooks/{webhookId}`
@@ -96,6 +97,8 @@ Protected (`x-api-key` required):
 Ops/Admin (`x-admin-token` required):
 
 - `GET /v1/admin/overview`
+- `GET /v1/admin/agents?limit=100`
+- `GET /v1/admin/decisions/recent?limit=100`
 
 ## Plans
 

@@ -683,6 +683,10 @@ CLAWTRUST_API_KEY=INSERT_YOUR_API_KEY_HERE</code></pre>
             <div><code>/v1/integrations/templates</code><span>List supported connector templates (Stripe mapping included)</span></div>
           </div>
           <div class="endpoint">
+            <span class="verb get">GET</span>
+            <div><code>/v1/integrations/readiness?source=...</code><span>Check connector setup readiness (secret + policy hardening)</span></div>
+          </div>
+          <div class="endpoint">
             <span class="verb post">POST</span>
             <div><code>/v1/integrations/map-event</code><span>Preview mapping from provider event type to trust event type</span></div>
           </div>
@@ -737,22 +741,42 @@ CLAWTRUST_API_KEY=INSERT_YOUR_API_KEY_HERE</code></pre>
       <section class="card" style="margin-bottom:14px;">
         <h2>Connector Quickstart (Stripe/Auth/Marketplace)</h2>
         <ol class="setup-list">
+          <li>Run readiness check: <span class="mono">GET /v1/integrations/readiness?source=stripe|auth|marketplace</span>.</li>
           <li>Create your ingest secret with <span class="mono">POST /v1/integrations/ingest/secret</span>.</li>
           <li>Preview event mappings with <span class="mono">POST /v1/integrations/map-event</span> before wiring webhooks.</li>
           <li>Send signed events to <span class="mono">POST /v1/integrations/ingest/events</span> with source <span class="mono">stripe</span>, <span class="mono">auth</span>, or <span class="mono">marketplace</span>.</li>
         </ol>
         <div style="height:10px"></div>
-        <pre><code># 1) Rotate/create ingest secret (store securely)
+        <div class="try-box">
+          <div class="try-grid">
+            <div class="try-field">
+              <label for="readinessApiKey">Your API key</label>
+              <input id="readinessApiKey" type="password" placeholder="claw_xxx" autocomplete="off" />
+            </div>
+            <div class="try-field">
+              <label for="readinessSource">Source</label>
+              <input id="readinessSource" type="text" value="stripe" />
+            </div>
+            <button class="try-btn" id="readinessBtn" type="button">Run readiness check</button>
+          </div>
+          <pre id="readinessResult" class="try-result">Readiness result will appear here.</pre>
+        </div>
+        <div style="height:10px"></div>
+        <pre><code># 1) Run readiness check first
+curl "https://clawtrustscores.com/v1/integrations/readiness?source=stripe" \
+  -H "x-api-key: YOUR_KEY"</code></pre>
+        <div style="height:10px"></div>
+        <pre><code># 2) Rotate/create ingest secret (store securely)
 curl -X POST "https://clawtrustscores.com/v1/integrations/ingest/secret" \
   -H "x-api-key: YOUR_KEY"</code></pre>
         <div style="height:10px"></div>
-        <pre><code># 2) Preview mapping before ingesting events
+        <pre><code># 3) Preview mapping before ingesting events
 curl -X POST "https://clawtrustscores.com/v1/integrations/map-event" \
   -H "Content-Type: application/json" \
   -H "x-api-key: YOUR_KEY" \
   -d '{"source":"stripe","providerEventType":"payment_intent.payment_failed"}'</code></pre>
         <div style="height:10px"></div>
-        <pre><code># 3a) Stripe example payload
+        <pre><code># 4a) Stripe example payload
 curl -X POST "https://clawtrustscores.com/v1/integrations/ingest/events" \
   -H "Content-Type: application/json" \
   -H "x-api-key: YOUR_KEY" \
@@ -760,7 +784,7 @@ curl -X POST "https://clawtrustscores.com/v1/integrations/ingest/events" \
   -H "x-ingest-signature: sha256=YOUR_HEX_SIGNATURE" \
   -d '{"source":"stripe","eventId":"evt_12345","agentId":"agent:vendor:acme","providerEventType":"payment_intent.payment_failed","amountUsd":49.99,"currency":"usd","chargeId":"ch_12345"}'</code></pre>
         <div style="height:10px"></div>
-        <pre><code># 3b) Auth provider example payload
+        <pre><code># 4b) Auth provider example payload
 curl -X POST "https://clawtrustscores.com/v1/integrations/ingest/events" \
   -H "Content-Type: application/json" \
   -H "x-api-key: YOUR_KEY" \
@@ -768,7 +792,7 @@ curl -X POST "https://clawtrustscores.com/v1/integrations/ingest/events" \
   -H "x-ingest-signature: sha256=YOUR_HEX_SIGNATURE" \
   -d '{"source":"auth","eventId":"auth_evt_9001","agentId":"agent:vendor:acme","providerEventType":"impersonation.detected","ip":"203.0.113.8"}'</code></pre>
         <div style="height:10px"></div>
-        <pre><code># 3c) Marketplace example payload
+        <pre><code># 4c) Marketplace example payload
 curl -X POST "https://clawtrustscores.com/v1/integrations/ingest/events" \
   -H "Content-Type: application/json" \
   -H "x-api-key: YOUR_KEY" \
@@ -823,6 +847,10 @@ curl -X POST "https://clawtrustscores.com/v1/integrations/ingest/events" \
     const policyShowBtn = document.getElementById("policyShowBtn");
     const guardrailOnBtn = document.getElementById("guardrailOnBtn");
     const guardrailOffBtn = document.getElementById("guardrailOffBtn");
+    const readinessApiKey = document.getElementById("readinessApiKey");
+    const readinessSource = document.getElementById("readinessSource");
+    const readinessBtn = document.getElementById("readinessBtn");
+    const readinessResult = document.getElementById("readinessResult");
     const minSignalQualityInput = document.getElementById("minSignalQualityInput");
     const signalQuality40Btn = document.getElementById("signalQuality40Btn");
     const signalQuality70Btn = document.getElementById("signalQuality70Btn");
@@ -861,6 +889,38 @@ curl -X POST "https://clawtrustscores.com/v1/integrations/ingest/events" \
     }
 
     tryBtn.addEventListener("click", runSimpleCheck);
+
+    async function runReadinessCheck() {
+      const apiKey = (readinessApiKey.value || "").trim();
+      const source = (readinessSource.value || "").trim().toLowerCase();
+      if (!apiKey) {
+        readinessResult.textContent = "Please enter your API key.";
+        return;
+      }
+      if (!source) {
+        readinessResult.textContent = "Please enter source (stripe, auth, or marketplace).";
+        return;
+      }
+
+      readinessBtn.disabled = true;
+      readinessBtn.textContent = "Checking...";
+      readinessResult.textContent = "Running readiness check...";
+      try {
+        const res = await fetch(`/v1/integrations/readiness?source=${encodeURIComponent(source)}`, {
+          headers: { "x-api-key": apiKey },
+          cache: "no-store",
+        });
+        const data = await res.json();
+        readinessResult.textContent = JSON.stringify(data, null, 2);
+      } catch {
+        readinessResult.textContent = "Network error while checking readiness.";
+      } finally {
+        readinessBtn.disabled = false;
+        readinessBtn.textContent = "Run readiness check";
+      }
+    }
+
+    readinessBtn.addEventListener("click", runReadinessCheck);
 
     async function applyPreset(preset) {
       const apiKey = (policyApiKey.value || "").trim();

@@ -85,6 +85,23 @@ export function rotateIngestSecret(account) {
   };
 }
 
+export function getIngestSecretStatus(account) {
+  ensureIngestStores();
+  const record = store.inboundSecretsByApiKey.get(account.apiKey);
+  if (!record?.secret) {
+    return {
+      configured: false,
+      createdAt: null,
+      rotatedAt: null,
+    };
+  }
+  return {
+    configured: true,
+    createdAt: record.createdAt ?? null,
+    rotatedAt: record.rotatedAt ?? null,
+  };
+}
+
 function verifyInboundSignature({ apiKey, rawBody, signature, timestamp }) {
   ensureIngestStores();
   const record = store.inboundSecretsByApiKey.get(apiKey);
