@@ -1,11 +1,15 @@
 import crypto from "node:crypto";
+import dns from "node:dns/promises";
 import net from "node:net";
 
 import { appendWebhookDelivery, listWebhooks, putWebhooks, store } from "./store.js";
 import { scheduleFlush } from "./persistence.js";
+import { logSecurityEvent } from "./security-log.js";
+import { decryptSecret, encryptSecret } from "./secrets.js";
 
 const WEBHOOK_TIMEOUT_MS = 5000;
 const WEBHOOK_COOLDOWN_MS = 60 * 60 * 1000;
+let dnsLookup = dns.lookup;
 
 function isPrivateIpv4(host) {
   const parts = host.split(".").map((value) => Number(value));
@@ -74,6 +78,27 @@ function sign(secret, bodyString) {
   return crypto.createHmac("sha256", secret).update(bodyString).digest("hex");
 }
 
+async function resolvesToBlockedAddress(hostname) {
+  try {
+    const addresses = await dnsLookup(hostname, { all: true, verbatim: true });
+    if (!Array.isArray(addresses) || addresses.length === 0) {
+      return true;
+    }
+
+    return addresses.some((entry) => isBlockedHostname(entry.address));
+  } catch {
+    return true;
+  }
+}
+
+export function setDnsLookupForTest(fn) {
+  dnsLookup = fn;
+}
+
+export function resetDnsLookupForTest() {
+  dnsLookup = dns.lookup;
+}
+
 export function createWebhook({ account, payload }) {
   if (account.tier === "free") {
     return { status: 403, body: { error: "Webhooks are available on Starter and Pro only." } };
@@ -110,7 +135,7 @@ export function createWebhook({ account, payload }) {
     id: crypto.randomUUID(),
     url: parsedUrl.toString(),
     threshold: Math.round(threshold),
-    secret,
+    secret: encryptSecret(secret),
     createdAt: new Date().toISOString(),
     enabled: true
   };
@@ -147,8 +172,19 @@ export function deleteWebhook({ account, webhookId }) {
 }
 
 async function postWebhook(webhook, bodyString, signature) {
+  const targetHost = new URL(webhook.url).hostname;
+  if (await resolvesToBlockedAddress(targetHost)) {
+    logSecurityEvent("webhook_target_blocked", { webhookId: webhook.id, host: targetHost });
+    return {
+      ok: false,
+      status: 0,
+      error: "Blocked webhook target (resolves to non-public address)."
+    };
+  }
+
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), WEBHOOK_TIMEOUT_MS);
+  const sentAt = new Date().toISOString();
 
   try {
     const response = await fetch(webhook.url, {
@@ -156,10 +192,12 @@ async function postWebhook(webhook, bodyString, signature) {
       headers: {
         "content-type": "application/json",
         "x-trust-signature": signature,
-        "x-trust-webhook-id": webhook.id
+        "x-trust-webhook-id": webhook.id,
+        "x-trust-sent-at": sentAt
       },
       body: bodyString,
-      signal: controller.signal
+      signal: controller.signal,
+      redirect: "error"
     });
 
     return {
@@ -206,7 +244,23 @@ export async function emitScoreAlerts({ account, agentId, score, previousScore }
     };
 
     const bodyString = JSON.stringify(body);
-    const signature = sign(webhook.secret, bodyString);
+    let secret;
+    try {
+      secret = decryptSecret(webhook.secret);
+    } catch {
+      appendWebhookDelivery(webhook.id, {
+        sentAt: body.sentAt,
+        agentId,
+        score,
+        status: 0,
+        ok: false,
+        error: "Webhook secret decryption failed."
+      });
+      scheduleFlush();
+      continue;
+    }
+
+    const signature = sign(secret, bodyString);
     const delivery = await postWebhook(webhook, bodyString, signature);
 
     appendWebhookDelivery(webhook.id, {

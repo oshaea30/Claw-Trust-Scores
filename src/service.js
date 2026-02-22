@@ -5,10 +5,13 @@ import { scheduleFlush } from "./persistence.js";
 import { scoreAgent } from "./scoring.js";
 import { appendEvent, getAgentEvents, getMonthKey, getUsage, store } from "./store.js";
 import { emitScoreAlerts } from "./webhooks.js";
-import { getPolicy } from "./policy.js";
 
 function normalizeAgentId(agentId) {
   return String(agentId).trim().toLowerCase();
+}
+
+function scopedAgentId(apiKey, agentId) {
+  return `${apiKey}::${agentId}`;
 }
 
 function normalizeEventType(eventType) {
@@ -17,12 +20,6 @@ function normalizeEventType(eventType) {
 
 function kindValid(kind) {
   return kind === "positive" || kind === "neutral" || kind === "negative";
-}
-
-function clampConfidence(value) {
-  const numeric = Number(value);
-  if (!Number.isFinite(numeric)) return undefined;
-  return Math.max(0, Math.min(1, numeric));
 }
 
 function prettyTier(tier) {
@@ -81,9 +78,9 @@ export async function postEvent({ account, payload }) {
   const plan = PLANS[account.tier];
   const monthKey = getMonthKey();
   const usage = getUsage(monthKey, account.apiKey);
-  const policy = getPolicy(account.apiKey);
 
   const agentId = normalizeAgentId(payload.agentId ?? "");
+  const agentScope = scopedAgentId(account.apiKey, agentId);
   const eventType = normalizeEventType(payload.eventType ?? "");
   const kind = payload.kind;
 
@@ -113,7 +110,7 @@ export async function postEvent({ account, payload }) {
     return { status: 400, body: { error: "occurredAt must be valid ISO-8601 if provided." } };
   }
 
-  const oldScore = scoreAgent(agentId, getAgentEvents(agentId), { policy }).score;
+  const oldScore = scoreAgent(agentId, getAgentEvents(agentScope)).score;
 
   const event = {
     id: crypto.randomUUID(),
@@ -121,10 +118,6 @@ export async function postEvent({ account, payload }) {
     kind,
     eventType,
     details: typeof payload.details === "string" ? payload.details.trim().slice(0, 300) : undefined,
-    source: typeof payload.source === "string" ? payload.source.trim().toLowerCase().slice(0, 80) : undefined,
-    sourceType: typeof payload.sourceType === "string" ? payload.sourceType.trim().toLowerCase().slice(0, 40) : undefined,
-    confidence: clampConfidence(payload.confidence),
-    externalEventId: typeof payload.externalEventId === "string" ? payload.externalEventId.trim().slice(0, 120) : undefined,
     sourceApiKey: account.apiKey,
     createdAt: createdAt.toISOString()
   };
@@ -133,11 +126,11 @@ export async function postEvent({ account, payload }) {
     return { status: 409, body: { error: "Duplicate event rejected (same event submitted too quickly)." } };
   }
 
-  appendEvent(event);
+  appendEvent(agentScope, event);
   usage.eventsLogged += 1;
   usage.trackedAgents.add(agentId);
 
-  const score = scoreAgent(agentId, getAgentEvents(agentId), { policy });
+  const score = scoreAgent(agentId, getAgentEvents(agentScope));
   scheduleFlush();
   await emitScoreAlerts({
     account,
@@ -159,12 +152,13 @@ export async function postEvent({ account, payload }) {
   };
 }
 
-export function getScore({ account, agentId, includeTrace = false, traceLimit = 5 }) {
+export function getScore({ account, agentId }) {
   if (rateLimited({ apiKey: account.apiKey, tier: account.tier, action: "scoreReads" })) {
     return { status: 429, body: { error: "Rate limit exceeded for score checks." } };
   }
 
   const normalizedAgentId = normalizeAgentId(agentId ?? "");
+  const agentScope = scopedAgentId(account.apiKey, normalizedAgentId);
   if (!normalizedAgentId) {
     return { status: 400, body: { error: "agentId query param is required." } };
   }
@@ -188,14 +182,17 @@ export function getScore({ account, agentId, includeTrace = false, traceLimit = 
   usage.scoreChecks += 1;
   usage.trackedAgents.add(normalizedAgentId);
   scheduleFlush();
-  const policy = getPolicy(account.apiKey);
 
   return {
     status: 200,
-    body: scoreAgent(normalizedAgentId, getAgentEvents(normalizedAgentId), {
-      includeTrace,
-      traceLimit,
-      policy,
-    })
+    body: scoreAgent(normalizedAgentId, getAgentEvents(agentScope))
   };
+}
+
+export function scoreForAccountAgent({ account, agentId }) {
+  const normalizedAgentId = normalizeAgentId(agentId ?? "");
+  if (!normalizedAgentId) {
+    return null;
+  }
+  return scoreAgent(normalizedAgentId, getAgentEvents(scopedAgentId(account.apiKey, normalizedAgentId)));
 }
