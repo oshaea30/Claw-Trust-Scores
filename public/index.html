@@ -43,7 +43,7 @@
     }
 
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-    html { scroll-behavior: smooth; }
+    html { scroll-behavior: smooth; font-size: 17px; }
     body {
       font-family: var(--sans); color: var(--text); background: var(--bg);
       line-height: 1.55; -webkit-font-smoothing: antialiased;
@@ -582,7 +582,7 @@
       display: inline-flex;
       align-items: center;
       gap: 8px;
-      font-size: 0.75rem;
+      font-size: 0.84rem;
       text-transform: uppercase;
       letter-spacing: 0.04em;
       color: var(--text-secondary);
@@ -599,12 +599,12 @@
     .model-dot.behavior { background: #148a7b; }
     .model-dot.decision { background: #9a6510; }
     .model-card h3 {
-      font-size: 1.1rem;
+      font-size: 1.5rem;
       margin-bottom: 8px;
     }
     .model-card p {
       color: var(--text-secondary);
-      font-size: 0.92rem;
+      font-size: 1.06rem;
       line-height: 1.6;
       margin-bottom: 12px;
     }
@@ -614,7 +614,7 @@
       list-style: none;
     }
     .model-list li {
-      font-size: 0.85rem;
+      font-size: 0.98rem;
       color: #4a4139;
       line-height: 1.4;
       padding-left: 16px;
@@ -650,10 +650,10 @@
     .sec-pill .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--coral); }
     .sec-head { text-align: center; margin-bottom: 42px; }
     .sec-head h2 {
-      margin-top: 14px; font-size: clamp(1.6rem, 3.4vw, 2.6rem);
+      margin-top: 14px; font-size: clamp(1.9rem, 3.7vw, 2.95rem);
       font-weight: 800; letter-spacing: -1px; line-height: 1.1;
     }
-    .sec-head p { margin-top: 12px; color: var(--text-secondary); max-width: 560px; margin-left: auto; margin-right: auto; font-size: 0.98rem; }
+    .sec-head p { margin-top: 12px; color: var(--text-secondary); max-width: 620px; margin-left: auto; margin-right: auto; font-size: 1.08rem; }
 
     /* ── BENTO FEATURES ── */
     .bento {
@@ -903,6 +903,7 @@
       .float-card.right-mid { right: 9%; }
     }
     @media (max-width: 700px) {
+      html { font-size: 16px; }
       .nav-links { display: none; }
       .mobile-nav-toggle { display: inline-flex; }
       .mobile-menu { display: block; }
