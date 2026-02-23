@@ -340,6 +340,9 @@ CLAWTRUST_BASE_URL=https://clawtrustscores.com
 # log_event(agentId, kind, eventType)
 ```
 
+Direct download option:
+- `https://clawtrustscores.com/claw-trust-scores-skill.zip`
+
 ## 5-minute integration snippet (Node)
 
 ```js
