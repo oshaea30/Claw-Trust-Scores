@@ -85,6 +85,23 @@ function listForApiKey(apiKey) {
   return next;
 }
 
+export function getMissingAttestations({ apiKey, agentId, requiredTypes }) {
+  const normalizedAgentId = normalizeAgentId(agentId);
+  const needed = Array.isArray(requiredTypes)
+    ? requiredTypes.map(normalizeType).filter(Boolean)
+    : [];
+  if (!normalizedAgentId || needed.length === 0) return [];
+
+  const list = listForApiKey(apiKey);
+  const active = new Set(
+    list
+      .filter((entry) => entry.agentId === normalizedAgentId)
+      .filter((entry) => currentStatus(entry) === "active")
+      .map((entry) => entry.type)
+  );
+  return needed.filter((type) => !active.has(type));
+}
+
 function currentStatus(attestation) {
   if (attestation.status === "revoked") return "revoked";
   if (attestation.expiresAt && Date.parse(attestation.expiresAt) <= Date.now()) return "expired";

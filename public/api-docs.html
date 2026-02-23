@@ -614,6 +614,7 @@ CLAWTRUST_API_KEY=INSERT_YOUR_API_KEY_HERE</code></pre>
           </div>
           <p class="small-note">These actions call <span class="mono">/v1/policy/presets/*</span> and <span class="mono">/v1/policy</span>. Guardrail means sensitive payment/security events must come from verified integrations.</p>
           <p class="small-note">You can also set <span class="mono">minSignalQuality</span> (0-100) in <span class="mono">POST /v1/policy</span> to force review when score quality is too weak.</p>
+          <p class="small-note">For high-risk actions, you can require portable credentials by setting <span class="mono">requiredAttestations</span>, <span class="mono">requireAttestationsForRiskAbove</span>, and <span class="mono">attestationFailureDecision</span> in <span class="mono">POST /v1/policy</span>.</p>
         </article>
         <article class="simple-callout">
           If you just want to launch fast, start with: <span class="mono">/v1/events</span>, <span class="mono">/v1/score</span>, <span class="mono">/v1/integrations/clawcredit/preflight</span>, and <span class="mono">/v1/usage</span>.
@@ -705,6 +706,22 @@ CLAWTRUST_API_KEY=INSERT_YOUR_API_KEY_HERE</code></pre>
           <div class="endpoint">
             <span class="verb post">POST</span>
             <div><code>/v1/policy</code><span>Set per-key trust policy (sources/confidence/signal-quality/overrides)</span></div>
+          </div>
+          <div class="endpoint">
+            <span class="verb post">POST</span>
+            <div><code>/v1/attestations</code><span>Issue signed portable attestation for an agent (e.g., connector.stripe.verified)</span></div>
+          </div>
+          <div class="endpoint">
+            <span class="verb get">GET</span>
+            <div><code>/v1/attestations?agentId=...&amp;type=...</code><span>List attestations by agent/type/status</span></div>
+          </div>
+          <div class="endpoint">
+            <span class="verb post">POST</span>
+            <div><code>/v1/attestations/verify</code><span>Verify attestation token signature + active/revoked/expired status</span></div>
+          </div>
+          <div class="endpoint">
+            <span class="verb post">POST</span>
+            <div><code>/v1/attestations/{id}/revoke</code><span>Revoke attestation by ID</span></div>
           </div>
           <div class="endpoint">
             <span class="verb post">DELETE</span>

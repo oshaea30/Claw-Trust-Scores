@@ -127,10 +127,25 @@ test("policy presets can be listed and applied", () => {
   assert.equal(applied.minSignalQuality, 70);
   assert.equal(applied.sourceTypeMultipliers.unverified, 0);
   assert.equal(applied.requireVerifiedSensitive, true);
+  assert.equal(applied.attestationFailureDecision, "block");
+  assert.equal(applied.requireAttestationsForRiskAbove, 20);
 
   const current = getPolicy(apiKey);
   assert.equal(current.preset, "strict");
   assert.equal(current.minConfidence, 0.75);
   assert.equal(current.minSignalQuality, 70);
   assert.equal(current.requireVerifiedSensitive, true);
+});
+
+test("policy can set required attestations and gate mode", () => {
+  const apiKey = "demo_starter_key";
+  const updated = setPolicy(apiKey, {
+    requiredAttestations: ["connector.stripe.verified", "operator.kya.completed"],
+    requireAttestationsForRiskAbove: 18,
+    attestationFailureDecision: "review",
+  });
+
+  assert.deepEqual(updated.requiredAttestations, ["connector.stripe.verified", "operator.kya.completed"]);
+  assert.equal(updated.requireAttestationsForRiskAbove, 18);
+  assert.equal(updated.attestationFailureDecision, "review");
 });

@@ -1,5 +1,7 @@
 import { scoreForAccountAgent } from "./service.js";
 import { logDecision } from "./audit.js";
+import { getPolicy } from "./policy.js";
+import { getMissingAttestations } from "./attestations.js";
 
 function toNumber(value, fallback = 0) {
   const num = Number(value);
@@ -31,6 +33,7 @@ export function clawCreditPreflight({ account, payload }) {
   const trust = scoreForAccountAgent({ account, agentId });
   const behavior = trust.behavior;
   const riskPenalty = riskFromPayload(payload);
+  const policyConfig = getPolicy(account.apiKey);
   let behaviorPenalty = 0;
   let behaviorCredit = 0;
   if (behavior.score < 40) behaviorPenalty = 12;
@@ -56,6 +59,25 @@ export function clawCreditPreflight({ account, payload }) {
     reason = `Manual review required: decision score ${adjustedScore} is in caution band.`;
   }
 
+  const requiredAttestations = policyConfig.requiredAttestations ?? [];
+  const attestationRiskThreshold = Number(policyConfig.requireAttestationsForRiskAbove ?? 25);
+  const attestationGateApplies = requiredAttestations.length > 0 && riskPenalty >= attestationRiskThreshold;
+  const missingAttestations = attestationGateApplies
+    ? getMissingAttestations({
+        apiKey: account.apiKey,
+        agentId,
+        requiredTypes: requiredAttestations,
+      })
+    : [];
+
+  if (missingAttestations.length > 0) {
+    const failDecision = policyConfig.attestationFailureDecision === "block" ? "block" : "review";
+    if (decision !== "block") {
+      decision = failDecision;
+      reason = `${failDecision === "block" ? "Blocked" : "Manual review required"}: missing required attestations for high-risk action (${missingAttestations.join(", ")}).`;
+    }
+  }
+
   const result = {
     status: 200,
     body: {
@@ -78,6 +100,13 @@ export function clawCreditPreflight({ account, payload }) {
         riskPenalty,
         behaviorPenalty,
         behaviorCredit,
+        attestationGate: {
+          applies: attestationGateApplies,
+          threshold: attestationRiskThreshold,
+          required: requiredAttestations,
+          missing: missingAttestations,
+          failureDecision: policyConfig.attestationFailureDecision ?? "review",
+        },
         thresholds: {
           blockBelow: 35,
           reviewBelow: 55

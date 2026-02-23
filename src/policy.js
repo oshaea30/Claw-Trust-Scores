@@ -21,6 +21,9 @@ const POLICY_PRESETS = {
     },
     eventOverrides: {},
     requireVerifiedSensitive: false,
+    requiredAttestations: [],
+    requireAttestationsForRiskAbove: 25,
+    attestationFailureDecision: "review",
     description: "Accept broad signals. Best for fast onboarding and experimentation.",
   },
   balanced: {
@@ -35,6 +38,9 @@ const POLICY_PRESETS = {
     },
     eventOverrides: {},
     requireVerifiedSensitive: true,
+    requiredAttestations: [],
+    requireAttestationsForRiskAbove: 25,
+    attestationFailureDecision: "review",
     description: "Default production posture: verified signals favored, low-confidence noise reduced.",
   },
   strict: {
@@ -49,6 +55,9 @@ const POLICY_PRESETS = {
     },
     eventOverrides: {},
     requireVerifiedSensitive: true,
+    requiredAttestations: [],
+    requireAttestationsForRiskAbove: 20,
+    attestationFailureDecision: "block",
     description: "High-assurance mode: only high-confidence signals have meaningful impact.",
   },
 };
@@ -61,6 +70,9 @@ export function defaultPolicy() {
     sourceTypeMultipliers: { ...DEFAULT_SOURCE_TYPE_MULTIPLIERS },
     eventOverrides: {},
     requireVerifiedSensitive: false,
+    requiredAttestations: [],
+    requireAttestationsForRiskAbove: 25,
+    attestationFailureDecision: "review",
   };
 }
 
@@ -74,6 +86,9 @@ function clonePreset(name) {
     sourceTypeMultipliers: { ...preset.sourceTypeMultipliers },
     eventOverrides: { ...preset.eventOverrides },
     requireVerifiedSensitive: preset.requireVerifiedSensitive,
+    requiredAttestations: [...(preset.requiredAttestations ?? [])],
+    requireAttestationsForRiskAbove: Number(preset.requireAttestationsForRiskAbove ?? 25),
+    attestationFailureDecision: preset.attestationFailureDecision ?? "review",
     preset: name,
     presetDescription: preset.description,
   };
@@ -92,6 +107,10 @@ function normalizeEventType(value) {
 }
 
 function normalizeSourceType(value) {
+  return String(value ?? "").trim().toLowerCase();
+}
+
+function normalizeAttestationType(value) {
   return String(value ?? "").trim().toLowerCase();
 }
 
@@ -150,6 +169,20 @@ function normalizeEventOverrides(input) {
     output[eventType] = normalized;
   }
   return output;
+}
+
+function normalizeRequiredAttestations(input) {
+  if (input === undefined) return undefined;
+  if (!Array.isArray(input)) {
+    throw new Error("requiredAttestations must be an array of attestation type strings.");
+  }
+  const values = [...new Set(input.map(normalizeAttestationType).filter(Boolean))].slice(0, 20);
+  for (const value of values) {
+    if (!/^[a-z0-9._:-]{2,64}$/.test(value)) {
+      throw new Error(`Invalid attestation type "${value}". Use [a-z0-9._:-]{2,64}.`);
+    }
+  }
+  return values;
 }
 
 function ensurePolicyMap() {
@@ -225,6 +258,27 @@ export function setPolicy(apiKey, payload) {
       throw new Error("requireVerifiedSensitive must be boolean.");
     }
     next.requireVerifiedSensitive = payload.requireVerifiedSensitive;
+  }
+
+  const requiredAttestations = normalizeRequiredAttestations(payload.requiredAttestations);
+  if (requiredAttestations !== undefined) {
+    next.requiredAttestations = requiredAttestations;
+  }
+
+  if (payload.requireAttestationsForRiskAbove !== undefined) {
+    const minRisk = Number(payload.requireAttestationsForRiskAbove);
+    if (!Number.isFinite(minRisk)) {
+      throw new Error("requireAttestationsForRiskAbove must be a number between 0 and 100.");
+    }
+    next.requireAttestationsForRiskAbove = clamp(minRisk, 0, 100);
+  }
+
+  if (payload.attestationFailureDecision !== undefined) {
+    const decision = String(payload.attestationFailureDecision).trim().toLowerCase();
+    if (decision !== "review" && decision !== "block") {
+      throw new Error("attestationFailureDecision must be one of: review, block.");
+    }
+    next.attestationFailureDecision = decision;
   }
 
   next.updatedAt = new Date().toISOString();
