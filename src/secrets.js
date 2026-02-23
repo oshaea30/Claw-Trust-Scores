@@ -10,6 +10,9 @@ function derivedFallbackSecret() {
 function encryptionKey() {
   const raw = process.env.DATA_ENCRYPTION_KEY?.trim();
   if (!raw) {
+    if (process.env.NODE_ENV === "production") {
+      throw new Error("DATA_ENCRYPTION_KEY is required in production.");
+    }
     if (!warnedFallback) {
       warnedFallback = true;
       // eslint-disable-next-line no-console

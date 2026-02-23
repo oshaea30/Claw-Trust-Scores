@@ -79,6 +79,34 @@ const CORS_HEADERS = {
   "access-control-allow-headers": "Content-Type, x-api-key, x-admin-token, x-ingest-signature, x-ingest-timestamp"
 };
 
+function hasValidTrustApiKeys(raw) {
+  if (!raw || !raw.trim()) return false;
+  return raw
+    .split(",")
+    .map((entry) => entry.trim())
+    .some((entry) => {
+      const [key, tier] = entry.split(":").map((part) => part.trim());
+      return Boolean(key) && (tier === "free" || tier === "starter" || tier === "pro");
+    });
+}
+
+function assertProductionSecurityConfig() {
+  if (process.env.NODE_ENV !== "production") return;
+
+  const trustApiKeys = process.env.TRUST_API_KEYS;
+  if (!hasValidTrustApiKeys(trustApiKeys)) {
+    throw new Error(
+      "TRUST_API_KEYS is required in production and must contain at least one valid api_key:tier entry."
+    );
+  }
+
+  const dataEncryptionKey = process.env.DATA_ENCRYPTION_KEY?.trim();
+  if (!dataEncryptionKey) {
+    throw new Error("DATA_ENCRYPTION_KEY is required in production.");
+  }
+}
+
+assertProductionSecurityConfig();
 loadStoreFromDisk();
 
 function sendJson(response, statusCode, body) {

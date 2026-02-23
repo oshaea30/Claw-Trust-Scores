@@ -320,3 +320,9 @@ Copy `.env.example` and set:
 - `PORT` (default: `8080`)
 - `DATA_DIR` (default: `./data`)
 - `TRUST_API_KEYS` format: `api_key:tier,api_key:tier`
+- `DATA_ENCRYPTION_KEY` (required in production; use a long random secret)
+- `NODE_ENV=production` in production deployments
+
+Production hard-fail behavior:
+- Service will not start in production unless `TRUST_API_KEYS` has at least one valid `api_key:tier` entry.
+- Service will not start in production unless `DATA_ENCRYPTION_KEY` is set.
