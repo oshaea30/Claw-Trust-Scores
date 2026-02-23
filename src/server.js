@@ -1,5 +1,7 @@
 import http from "node:http";
 import crypto from "node:crypto";
+import fs from "node:fs";
+import path from "node:path";
 import { URL } from "node:url";
 
 import { authenticate, issueApiKey, listApiKeys, revokeApiKey, rotateApiKey } from "./auth.js";
@@ -8,12 +10,39 @@ import { PLANS } from "./config.js";
 import { flushStoreToDisk, loadStoreFromDisk } from "./persistence.js";
 import { logSecurityEvent } from "./security-log.js";
 import { getScore, postEvent } from "./service.js";
+import { getUsageSnapshot } from "./usage.js";
 import { createWebhook, deleteWebhook, getWebhooks } from "./webhooks.js";
 
 const PORT = Number(process.env.PORT ?? 8080);
 const MAX_BODY_BYTES = 1_000_000;
 const MAX_UNAUTH_PER_MINUTE = 60;
 const unauthRateByWindowAndIp = new Map();
+const PUBLIC_DIR = path.resolve(process.cwd(), "public");
+
+const STATIC_ROUTES = {
+  "/": "index.html",
+  "/api-docs": "api-docs.html",
+  "/getting-started": "getting-started.html",
+  "/changelog": "changelog.html",
+  "/status": "status.html",
+  "/privacy": "privacy.html",
+  "/terms": "terms.html"
+};
+
+const MIME_TYPES = {
+  ".html": "text/html; charset=utf-8",
+  ".css": "text/css; charset=utf-8",
+  ".js": "application/javascript; charset=utf-8",
+  ".json": "application/json; charset=utf-8",
+  ".png": "image/png",
+  ".jpg": "image/jpeg",
+  ".jpeg": "image/jpeg",
+  ".webp": "image/webp",
+  ".svg": "image/svg+xml",
+  ".mp4": "video/mp4",
+  ".ico": "image/x-icon",
+  ".txt": "text/plain; charset=utf-8"
+};
 
 loadStoreFromDisk();
 
@@ -27,6 +56,17 @@ function sendJson(response, statusCode, body) {
     "content-security-policy": "default-src 'none'; frame-ancestors 'none'; base-uri 'none'"
   });
   response.end(JSON.stringify(body));
+}
+
+function sendTyped(response, statusCode, contentType, body) {
+  response.writeHead(statusCode, {
+    "content-type": contentType,
+    "cache-control": statusCode === 200 ? "public, max-age=300" : "no-store",
+    "x-content-type-options": "nosniff",
+    "x-frame-options": "SAMEORIGIN",
+    "referrer-policy": "strict-origin-when-cross-origin"
+  });
+  response.end(body);
 }
 
 function readJsonBody(request) {
@@ -105,6 +145,27 @@ function unauthRateLimited(request) {
   return false;
 }
 
+function safeStaticPath(urlPathname) {
+  const mapped = STATIC_ROUTES[urlPathname] ?? urlPathname.slice(1);
+  if (!mapped) return null;
+  const normalized = path.normalize(mapped).replace(/^(\.\.(\/|\\|$))+/, "");
+  if (!normalized) return null;
+  const full = path.resolve(PUBLIC_DIR, normalized);
+  if (!full.startsWith(PUBLIC_DIR)) return null;
+  return full;
+}
+
+function tryServeStatic(response, urlPathname) {
+  const full = safeStaticPath(urlPathname);
+  if (!full) return false;
+  if (!fs.existsSync(full) || !fs.statSync(full).isFile()) return false;
+  const ext = path.extname(full).toLowerCase();
+  const mime = MIME_TYPES[ext] ?? "application/octet-stream";
+  const content = fs.readFileSync(full);
+  sendTyped(response, 200, mime, content);
+  return true;
+}
+
 const server = http.createServer(async (request, response) => {
   const url = new URL(request.url ?? "/", `http://${request.headers.host ?? "localhost"}`);
 
@@ -163,6 +224,9 @@ const server = http.createServer(async (request, response) => {
   }
 
   if (!url.pathname.startsWith("/v1/")) {
+    if (request.method === "GET" && tryServeStatic(response, url.pathname)) {
+      return;
+    }
     return sendJson(response, 404, { error: "Not Found" });
   }
 
@@ -193,6 +257,11 @@ const server = http.createServer(async (request, response) => {
     const includeTrace =
       String(url.searchParams.get("includeTrace") ?? "").trim().toLowerCase() === "true";
     const result = getScore({ account, agentId: url.searchParams.get("agentId"), includeTrace });
+    return sendJson(response, result.status, result.body);
+  }
+
+  if (request.method === "GET" && url.pathname === "/v1/usage") {
+    const result = getUsageSnapshot({ account });
     return sendJson(response, result.status, result.body);
   }
 
