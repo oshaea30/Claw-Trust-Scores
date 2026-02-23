@@ -175,6 +175,11 @@ Use this flow so teams do not manually submit events:
 
 This gives you verified integration signals with replay protection and source-aware mapping.
 
+Additional live connector sources:
+- `wallet`
+- `prediction_market`
+- `runtime`
+
 ## Persistence
 
 State is persisted to JSON on disk and reloaded on startup.
@@ -314,6 +319,10 @@ curl -X POST "http://localhost:8080/v1/attestations" \
     "ttlDays":90,
     "claims":{"provider":"stripe","mode":"live"}
   }'
+
+# 5) Apply money movement safety preset
+curl -X POST "http://localhost:8080/v1/policy/presets/money_movement_strict" \
+  -H "x-api-key: demo_starter_key"
 ```
 
 ## OpenClaw wrapper install (10 lines)

@@ -521,7 +521,15 @@ const server = http.createServer(async (request, response) => {
     const policy = getPolicy(account.apiKey);
     const minSignalQuality = Number(policy.minSignalQuality ?? 0);
     const requireVerifiedSensitive = policy.requireVerifiedSensitive === true;
-    const recommendedMinSignalQuality = source === "marketplace" ? 50 : 40;
+    const recommendedBySource = {
+      stripe: 40,
+      auth: 45,
+      marketplace: 50,
+      wallet: 65,
+      prediction_market: 60,
+      runtime: 55,
+    };
+    const recommendedMinSignalQuality = recommendedBySource[source] ?? 40;
     const ready = ingest.configured && requireVerifiedSensitive && minSignalQuality >= recommendedMinSignalQuality;
 
     const checklist = [

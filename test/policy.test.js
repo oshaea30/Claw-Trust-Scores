@@ -120,6 +120,8 @@ test("policy presets can be listed and applied", () => {
   assert.equal(listed.recommended, "balanced");
   assert.ok(listed.presets.strict);
   assert.ok(listed.presets.open);
+  assert.ok(listed.presets.wallet_guarded);
+  assert.ok(listed.presets.money_movement_strict);
 
   const applied = applyPolicyPreset(apiKey, "strict");
   assert.equal(applied.preset, "strict");
@@ -135,6 +137,18 @@ test("policy presets can be listed and applied", () => {
   assert.equal(current.minConfidence, 0.75);
   assert.equal(current.minSignalQuality, 70);
   assert.equal(current.requireVerifiedSensitive, true);
+
+  const walletPreset = applyPolicyPreset(apiKey, "wallet_guarded");
+  assert.equal(walletPreset.preset, "wallet_guarded");
+  assert.equal(walletPreset.minSignalQuality, 65);
+  assert.deepEqual(walletPreset.requiredAttestations, ["connector.wallet.verified", "operator.kya.completed"]);
+  assert.equal(walletPreset.attestationFailureDecision, "block");
+
+  const moneyPreset = applyPolicyPreset(apiKey, "money_movement_strict");
+  assert.equal(moneyPreset.preset, "money_movement_strict");
+  assert.equal(moneyPreset.minSignalQuality, 75);
+  assert.deepEqual(moneyPreset.requiredAttestations, ["connector.payment.verified", "operator.kya.completed"]);
+  assert.equal(moneyPreset.requireAttestationsForRiskAbove, 5);
 });
 
 test("policy can set required attestations and gate mode", () => {

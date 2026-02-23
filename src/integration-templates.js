@@ -1,7 +1,10 @@
 import {
   AUTH_EVENT_TEMPLATE,
   MARKETPLACE_EVENT_TEMPLATE,
+  PREDICTION_MARKET_EVENT_TEMPLATE,
+  RUNTIME_EVENT_TEMPLATE,
   STRIPE_EVENT_TEMPLATE,
+  WALLET_EVENT_TEMPLATE,
 } from "./config.js";
 
 const TEMPLATES = {
@@ -22,6 +25,24 @@ const TEMPLATES = {
     status: "live",
     description: "Map task and abuse moderation events to trust signals.",
     mappings: MARKETPLACE_EVENT_TEMPLATE,
+  },
+  wallet: {
+    source: "wallet",
+    status: "live",
+    description: "Map on-chain wallet transaction and security events to trust signals.",
+    mappings: WALLET_EVENT_TEMPLATE,
+  },
+  prediction_market: {
+    source: "prediction_market",
+    status: "live",
+    description: "Map prediction-market settlement and abuse/security events to trust signals.",
+    mappings: PREDICTION_MARKET_EVENT_TEMPLATE,
+  },
+  runtime: {
+    source: "runtime",
+    status: "live",
+    description: "Map agent runtime execution and sandbox events to trust signals.",
+    mappings: RUNTIME_EVENT_TEMPLATE,
   },
 };
 

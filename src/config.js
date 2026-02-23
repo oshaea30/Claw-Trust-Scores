@@ -161,6 +161,85 @@ export const MARKETPLACE_EVENT_TEMPLATE = {
   },
 };
 
+export const WALLET_EVENT_TEMPLATE = {
+  "wallet.tx.succeeded": {
+    kind: "positive",
+    eventType: "payment_success",
+    confidence: 0.97,
+  },
+  "wallet.tx.failed": {
+    kind: "negative",
+    eventType: "failed_payment",
+    confidence: 0.97,
+  },
+  "wallet.tx.disputed": {
+    kind: "negative",
+    eventType: "unresolved_dispute",
+    confidence: 0.95,
+  },
+  "wallet.counterparty.flagged": {
+    kind: "negative",
+    eventType: "security_flag",
+    confidence: 0.95,
+  },
+  "wallet.secret.exposed": {
+    kind: "negative",
+    eventType: "api_key_leak",
+    confidence: 0.99,
+  },
+};
+
+export const PREDICTION_MARKET_EVENT_TEMPLATE = {
+  "bet.settled_profit": {
+    kind: "positive",
+    eventType: "payment_success",
+    confidence: 0.9,
+  },
+  "bet.settled_loss": {
+    kind: "negative",
+    eventType: "failed_payment",
+    confidence: 0.9,
+  },
+  "market.manipulation_flag": {
+    kind: "negative",
+    eventType: "abuse_report",
+    confidence: 0.95,
+  },
+  "wallet.unauthorized_access": {
+    kind: "negative",
+    eventType: "security_flag",
+    confidence: 0.97,
+  },
+};
+
+export const RUNTIME_EVENT_TEMPLATE = {
+  "task.completed_on_time": {
+    kind: "positive",
+    eventType: "completed_task_on_time",
+    confidence: 0.88,
+  },
+  "task.missed_deadline": {
+    kind: "negative",
+    eventType: "missed_deadline",
+    confidence: 0.88,
+  },
+  "task.abandoned": {
+    kind: "negative",
+    eventType: "task_abandoned",
+    confidence: 0.9,
+  },
+  "sandbox.escape_detected": {
+    kind: "negative",
+    eventType: "security_flag",
+    confidence: 0.99,
+  },
+  "credential.exposure_detected": {
+    kind: "negative",
+    eventType: "api_key_leak",
+    confidence: 0.99,
+  },
+};
+
 export const SCORE_BASELINE = 50;
 export const SCORE_MIN = 0;
 export const SCORE_MAX = 100;

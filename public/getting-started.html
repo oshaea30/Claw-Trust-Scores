@@ -7,7 +7,7 @@
   <meta name="description" content="Get started with Claw Trust Scores in 5 minutes: set your API key, send events, and read trust + behavior scores." />
   <link rel="canonical" href="https://clawtrustscores.com/getting-started" />
   <meta property="og:title" content="Getting Started | Claw Trust Scores" />
-  <meta property="og:description" content="A source-first quickstart for Stripe, auth providers, and marketplaces." />
+  <meta property="og:description" content="A source-first quickstart for Stripe, auth, marketplace, wallet, prediction-market, and runtime connectors." />
   <meta property="og:type" content="website" />
   <meta property="og:url" content="https://clawtrustscores.com/getting-started" />
   <meta name="twitter:card" content="summary_large_image" />
@@ -95,7 +95,7 @@ log_event(agentId, kind, eventType)</code></pre>
       <p class="muted">Apply the balanced preset before production traffic. It enforces verified-sensitive guardrails and a quality floor.</p>
       <pre><code>curl -X POST "https://clawtrustscores.com/v1/policy/presets/balanced" \
   -H "x-api-key: YOUR_KEY"</code></pre>
-      <p class="muted" style="margin-top:10px;">Then confirm current settings with <code>GET /v1/policy</code>.</p>
+      <p class="muted" style="margin-top:10px;">For money movement, use <code>wallet_guarded</code> or <code>money_movement_strict</code>. Then confirm settings with <code>GET /v1/policy</code>.</p>
     </div>
 
     <div class="card">
@@ -115,6 +115,21 @@ log_event(agentId, kind, eventType)</code></pre>
           <h3>Marketplace</h3>
           <p class="muted">Task completion quality and abuse signals.</p>
           <a href="#source-marketplace">Open Marketplace quickstart</a>
+        </div>
+        <div class="source">
+          <h3>Wallet</h3>
+          <p class="muted">On-chain tx and wallet security signals.</p>
+          <a href="#source-wallet">Open Wallet quickstart</a>
+        </div>
+        <div class="source">
+          <h3>Prediction Market</h3>
+          <p class="muted">Settlement and manipulation/security signals.</p>
+          <a href="#source-prediction">Open Prediction quickstart</a>
+        </div>
+        <div class="source">
+          <h3>Runtime</h3>
+          <p class="muted">Execution reliability and sandbox risk events.</p>
+          <a href="#source-runtime">Open Runtime quickstart</a>
         </div>
       </div>
     </div>
@@ -165,6 +180,45 @@ log_event(agentId, kind, eventType)</code></pre>
   -H "x-ingest-timestamp: 1739980000" \
   -H "x-ingest-signature: sha256=YOUR_HEX_SIGNATURE" \
   -d '{"source":"marketplace","eventId":"mk_evt_1002","agentId":"agent:vendor:acme","providerEventType":"task.abandoned","taskId":"task_1002"}'</code></pre>
+    </div>
+
+    <div class="card" id="source-wallet">
+      <h2>Wallet quickstart</h2>
+      <h3>No-code setup first</h3>
+      <ul>
+        <li>Run readiness: <code>GET /v1/integrations/readiness?source=wallet</code></li>
+        <li>Preview mapping: <code>POST /v1/integrations/map-event</code> with <code>{"source":"wallet","providerEventType":"wallet.secret.exposed"}</code></li>
+      </ul>
+      <pre><code>curl -X POST "https://clawtrustscores.com/v1/integrations/map-event" \
+  -H "Content-Type: application/json" \
+  -H "x-api-key: YOUR_KEY" \
+  -d '{"source":"wallet","providerEventType":"wallet.tx.failed"}'</code></pre>
+    </div>
+
+    <div class="card" id="source-prediction">
+      <h2>Prediction market quickstart</h2>
+      <h3>No-code setup first</h3>
+      <ul>
+        <li>Run readiness: <code>GET /v1/integrations/readiness?source=prediction_market</code></li>
+        <li>Preview mapping: <code>POST /v1/integrations/map-event</code> with <code>{"source":"prediction_market","providerEventType":"market.manipulation_flag"}</code></li>
+      </ul>
+      <pre><code>curl -X POST "https://clawtrustscores.com/v1/integrations/map-event" \
+  -H "Content-Type: application/json" \
+  -H "x-api-key: YOUR_KEY" \
+  -d '{"source":"prediction_market","providerEventType":"bet.settled_profit"}'</code></pre>
+    </div>
+
+    <div class="card" id="source-runtime">
+      <h2>Runtime quickstart</h2>
+      <h3>No-code setup first</h3>
+      <ul>
+        <li>Run readiness: <code>GET /v1/integrations/readiness?source=runtime</code></li>
+        <li>Preview mapping: <code>POST /v1/integrations/map-event</code> with <code>{"source":"runtime","providerEventType":"sandbox.escape_detected"}</code></li>
+      </ul>
+      <pre><code>curl -X POST "https://clawtrustscores.com/v1/integrations/map-event" \
+  -H "Content-Type: application/json" \
+  -H "x-api-key: YOUR_KEY" \
+  -d '{"source":"runtime","providerEventType":"credential.exposure_detected"}'</code></pre>
     </div>
   </div>
 </body>

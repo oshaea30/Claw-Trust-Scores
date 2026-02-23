@@ -60,6 +60,40 @@ const POLICY_PRESETS = {
     attestationFailureDecision: "block",
     description: "High-assurance mode: only high-confidence signals have meaningful impact.",
   },
+  wallet_guarded: {
+    minConfidence: 0.65,
+    minSignalQuality: 65,
+    allowedSources: [],
+    sourceTypeMultipliers: {
+      verified_integration: 1,
+      self_reported: 0.15,
+      unverified: 0,
+      manual: 0.35,
+    },
+    eventOverrides: {},
+    requireVerifiedSensitive: true,
+    requiredAttestations: ["connector.wallet.verified", "operator.kya.completed"],
+    requireAttestationsForRiskAbove: 10,
+    attestationFailureDecision: "block",
+    description: "Wallet-first safety mode: require verified wallet connector + KYA for risky actions.",
+  },
+  money_movement_strict: {
+    minConfidence: 0.75,
+    minSignalQuality: 75,
+    allowedSources: [],
+    sourceTypeMultipliers: {
+      verified_integration: 1,
+      self_reported: 0.1,
+      unverified: 0,
+      manual: 0.3,
+    },
+    eventOverrides: {},
+    requireVerifiedSensitive: true,
+    requiredAttestations: ["connector.payment.verified", "operator.kya.completed"],
+    requireAttestationsForRiskAbove: 5,
+    attestationFailureDecision: "block",
+    description: "Maximum safety for payments: only high-confidence verified signals and required attestations.",
+  },
 };
 
 export function defaultPolicy() {
@@ -309,7 +343,7 @@ export function applyPolicyPreset(apiKey, presetName) {
   const normalized = String(presetName ?? "").trim().toLowerCase();
   const preset = clonePreset(normalized);
   if (!preset) {
-    throw new Error("Unknown preset. Supported presets: open, balanced, strict.");
+    throw new Error("Unknown preset. Supported presets: open, balanced, strict, wallet_guarded, money_movement_strict.");
   }
   preset.updatedAt = new Date().toISOString();
   store.policyByApiKey.set(apiKey, preset);

@@ -597,6 +597,8 @@ CLAWTRUST_API_KEY=INSERT_YOUR_API_KEY_HERE</code></pre>
               <button class="preset-btn primary" id="presetBalancedBtn" type="button">Apply Balanced (Recommended)</button>
               <button class="preset-btn" id="presetOpenBtn" type="button">Apply Open</button>
               <button class="preset-btn" id="presetStrictBtn" type="button">Apply Strict</button>
+              <button class="preset-btn" id="presetWalletBtn" type="button">Apply Wallet Guarded</button>
+              <button class="preset-btn" id="presetMoneyBtn" type="button">Apply Money Movement Strict</button>
               <button class="preset-btn" id="policyShowBtn" type="button">Show Current Policy</button>
               <button class="preset-btn" id="guardrailOnBtn" type="button">Enable Verified Guardrail</button>
               <button class="preset-btn" id="guardrailOffBtn" type="button">Disable Verified Guardrail</button>
@@ -681,7 +683,7 @@ CLAWTRUST_API_KEY=INSERT_YOUR_API_KEY_HERE</code></pre>
           </div>
           <div class="endpoint">
             <span class="verb get">GET</span>
-            <div><code>/v1/integrations/templates</code><span>List supported connector templates (Stripe mapping included)</span></div>
+            <div><code>/v1/integrations/templates</code><span>List supported connector templates (stripe, auth, marketplace, wallet, prediction_market, runtime)</span></div>
           </div>
           <div class="endpoint">
             <span class="verb get">GET</span>
@@ -697,7 +699,7 @@ CLAWTRUST_API_KEY=INSERT_YOUR_API_KEY_HERE</code></pre>
           </div>
           <div class="endpoint">
             <span class="verb get">GET</span>
-            <div><code>/v1/policy/presets</code><span>List one-click policy presets (open, balanced, strict)</span></div>
+            <div><code>/v1/policy/presets</code><span>List one-click policy presets (open, balanced, strict, wallet_guarded, money_movement_strict)</span></div>
           </div>
           <div class="endpoint">
             <span class="verb post">POST</span>
@@ -756,12 +758,12 @@ CLAWTRUST_API_KEY=INSERT_YOUR_API_KEY_HERE</code></pre>
       </section>
 
       <section class="card" style="margin-bottom:14px;">
-        <h2>Connector Quickstart (Stripe/Auth/Marketplace)</h2>
+        <h2>Connector Quickstart (Stripe/Auth/Marketplace/Wallet/Prediction/Runtime)</h2>
         <ol class="setup-list">
-          <li>Run readiness check: <span class="mono">GET /v1/integrations/readiness?source=stripe|auth|marketplace</span>.</li>
+          <li>Run readiness check: <span class="mono">GET /v1/integrations/readiness?source=stripe|auth|marketplace|wallet|prediction_market|runtime</span>.</li>
           <li>Create your ingest secret with <span class="mono">POST /v1/integrations/ingest/secret</span>.</li>
           <li>Preview event mappings with <span class="mono">POST /v1/integrations/map-event</span> before wiring webhooks.</li>
-          <li>Send signed events to <span class="mono">POST /v1/integrations/ingest/events</span> with source <span class="mono">stripe</span>, <span class="mono">auth</span>, or <span class="mono">marketplace</span>.</li>
+          <li>Send signed events to <span class="mono">POST /v1/integrations/ingest/events</span> with source <span class="mono">stripe</span>, <span class="mono">auth</span>, <span class="mono">marketplace</span>, <span class="mono">wallet</span>, <span class="mono">prediction_market</span>, or <span class="mono">runtime</span>.</li>
         </ol>
         <div style="height:10px"></div>
         <div class="try-box">
@@ -816,6 +818,22 @@ curl -X POST "https://clawtrustscores.com/v1/integrations/ingest/events" \
   -H "x-ingest-timestamp: 1739980000" \
   -H "x-ingest-signature: sha256=YOUR_HEX_SIGNATURE" \
   -d '{"source":"marketplace","eventId":"mk_evt_1002","agentId":"agent:vendor:acme","providerEventType":"task.abandoned","taskId":"task_1002"}'</code></pre>
+        <div style="height:10px"></div>
+        <pre><code># 4d) Wallet example payload
+curl -X POST "https://clawtrustscores.com/v1/integrations/ingest/events" \
+  -H "Content-Type: application/json" \
+  -H "x-api-key: YOUR_KEY" \
+  -H "x-ingest-timestamp: 1739980000" \
+  -H "x-ingest-signature: sha256=YOUR_HEX_SIGNATURE" \
+  -d '{"source":"wallet","eventId":"wallet_evt_5001","agentId":"agent:vendor:acme","providerEventType":"wallet.tx.failed","txHash":"0xabc"}'</code></pre>
+        <div style="height:10px"></div>
+        <pre><code># 4e) Runtime example payload
+curl -X POST "https://clawtrustscores.com/v1/integrations/ingest/events" \
+  -H "Content-Type: application/json" \
+  -H "x-api-key: YOUR_KEY" \
+  -H "x-ingest-timestamp: 1739980000" \
+  -H "x-ingest-signature: sha256=YOUR_HEX_SIGNATURE" \
+  -d '{"source":"runtime","eventId":"rt_evt_2001","agentId":"agent:vendor:acme","providerEventType":"sandbox.escape_detected","runId":"run_2001"}'</code></pre>
         <p class="small-note">Template mapping and supported provider event types are available at <span class="mono">GET /v1/integrations/templates</span>. Use <span class="mono">POST /v1/integrations/map-event</span> to verify exact mapping behavior before sending live events.</p>
       </section>
 
@@ -869,6 +887,8 @@ CLAWTRUST_BASE_URL=https://clawtrustscores.com</code></pre>
     const presetOpenBtn = document.getElementById("presetOpenBtn");
     const presetBalancedBtn = document.getElementById("presetBalancedBtn");
     const presetStrictBtn = document.getElementById("presetStrictBtn");
+    const presetWalletBtn = document.getElementById("presetWalletBtn");
+    const presetMoneyBtn = document.getElementById("presetMoneyBtn");
     const policyShowBtn = document.getElementById("policyShowBtn");
     const guardrailOnBtn = document.getElementById("guardrailOnBtn");
     const guardrailOffBtn = document.getElementById("guardrailOffBtn");
@@ -923,7 +943,7 @@ CLAWTRUST_BASE_URL=https://clawtrustscores.com</code></pre>
         return;
       }
       if (!source) {
-        readinessResult.textContent = "Please enter source (stripe, auth, or marketplace).";
+        readinessResult.textContent = "Please enter source (stripe, auth, marketplace, wallet, prediction_market, or runtime).";
         return;
       }
 
@@ -1053,6 +1073,8 @@ CLAWTRUST_BASE_URL=https://clawtrustscores.com</code></pre>
     presetOpenBtn.addEventListener("click", () => applyPreset("open"));
     presetBalancedBtn.addEventListener("click", () => applyPreset("balanced"));
     presetStrictBtn.addEventListener("click", () => applyPreset("strict"));
+    presetWalletBtn.addEventListener("click", () => applyPreset("wallet_guarded"));
+    presetMoneyBtn.addEventListener("click", () => applyPreset("money_movement_strict"));
     policyShowBtn.addEventListener("click", showCurrentPolicy);
     guardrailOnBtn.addEventListener("click", () => setGuardrail(true));
     guardrailOffBtn.addEventListener("click", () => setGuardrail(false));
