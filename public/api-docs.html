@@ -804,6 +804,13 @@ curl -X POST "https://clawtrustscores.com/v1/integrations/ingest/events" \
 
       <section class="card">
         <h2>Full Guides</h2>
+        <pre><code># OpenClaw quick install
+npx clawhub@latest install claw-trust-scores
+
+# .env
+CLAWTRUST_API_KEY=claw_xxx
+CLAWTRUST_BASE_URL=https://clawtrustscores.com</code></pre>
+        <p class="small-note">After install, call <span class="mono">get_score</span>, <span class="mono">preflight_payment</span>, and <span class="mono">log_event</span> from your agent workflow.</p>
         <div class="guides">
           <a class="guide-link" href="/getting-started"><span>5-Minute Quickstart</span><span>OPEN</span></a>
           <a class="guide-link" href="https://github.com/oshaea30/Claw-Trust-Scores/tree/main/skills/claw-trust-scores" target="_blank" rel="noopener noreferrer"><span>OpenClaw Skill Wrapper</span><span>OPEN</span></a>

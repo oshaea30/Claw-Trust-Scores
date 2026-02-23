@@ -76,6 +76,29 @@ CLAWTRUST_API_KEY=claw_paste_your_real_key_here</code></pre>
     </div>
 
     <div class="card">
+      <h2>OpenClaw install (10 lines)</h2>
+      <pre><code>npx clawhub@latest install claw-trust-scores
+
+# .env
+CLAWTRUST_API_KEY=claw_paste_your_real_key_here
+CLAWTRUST_BASE_URL=https://clawtrustscores.com
+
+# call in your flow:
+get_score(agentId)
+preflight_payment(agentId, amountUsd, newPayee)
+log_event(agentId, kind, eventType)</code></pre>
+      <p class="muted" style="margin-top:10px;">Wrapper docs: <a href="https://github.com/oshaea30/Claw-Trust-Scores/tree/main/skills/claw-trust-scores" target="_blank" rel="noopener noreferrer">official skill bundle</a>.</p>
+    </div>
+
+    <div class="card">
+      <h2>Set policy in one call (recommended)</h2>
+      <p class="muted">Apply the balanced preset before production traffic. It enforces verified-sensitive guardrails and a quality floor.</p>
+      <pre><code>curl -X POST "https://clawtrustscores.com/v1/policy/presets/balanced" \
+  -H "x-api-key: YOUR_KEY"</code></pre>
+      <p class="muted" style="margin-top:10px;">Then confirm current settings with <code>GET /v1/policy</code>.</p>
+    </div>
+
+    <div class="card">
       <h2>Choose your source</h2>
       <div class="sources">
         <div class="source">

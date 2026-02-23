@@ -1,5 +1,6 @@
 import crypto from "node:crypto";
 
+import { getAllUsers, getKeyTier } from "./key-store.js";
 import { scheduleFlush } from "./persistence.js";
 import { logSecurityEvent } from "./security-log.js";
 import { store } from "./store.js";
@@ -38,9 +39,15 @@ function currentApiKeys() {
   return parseKeys(process.env.TRUST_API_KEYS);
 }
 
+function userApiKeys() {
+  const users = getAllUsers();
+  return Object.fromEntries(users.map((entry) => [entry.apiKey, entry.tier]));
+}
+
 function mergedApiKeys() {
   return {
     ...currentApiKeys(),
+    ...userApiKeys(),
     ...Object.fromEntries(store.managedApiKeys.entries())
   };
 }
@@ -60,13 +67,18 @@ function randomApiKey() {
 
 export function listApiKeys() {
   const envKeys = currentApiKeys();
+  const userKeys = userApiKeys();
   const managed = Object.fromEntries(store.managedApiKeys.entries());
-  const merged = { ...envKeys, ...managed };
+  const merged = { ...envKeys, ...userKeys, ...managed };
 
   return Object.entries(merged).map(([key, tier]) => ({
     keyMasked: maskKey(key),
     tier,
-    source: Object.prototype.hasOwnProperty.call(managed, key) ? "managed" : "env",
+    source: Object.prototype.hasOwnProperty.call(managed, key)
+      ? "managed"
+      : Object.prototype.hasOwnProperty.call(userKeys, key)
+        ? "self_serve"
+        : "env",
     revoked: store.revokedApiKeys.has(key)
   }));
 }
@@ -147,7 +159,7 @@ export function authenticate(request) {
     logSecurityEvent("revoked_key_attempt", { keyMasked: maskKey(key) });
     return null;
   }
-  const tier = mergedApiKeys()[key];
+  const tier = mergedApiKeys()[key] ?? getKeyTier(key);
   if (!tier) return null;
   return { apiKey: key, tier };
 }

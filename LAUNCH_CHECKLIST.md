@@ -18,9 +18,10 @@ Use this as a pass/fail checklist before announcing launch.
 ## 3) API Functionality
 
 - [ ] `POST /v1/events` succeeds with new key
-- [ ] `GET /v1/score` returns score + explanation + history
+- [ ] `GET /v1/score` returns trust + behavior + explanation + history
 - [ ] `POST /v1/integrations/clawcredit/preflight` returns allow/review/block
 - [ ] `GET /v1/usage` returns monthly usage + limits
+- [ ] `GET /v1/audit/decisions?format=json|csv` returns exportable decision logs
 
 ## 4) Security Lifecycle
 
@@ -48,19 +49,17 @@ Use this as a pass/fail checklist before announcing launch.
 - [ ] `GET /v1/admin/overview` with `x-admin-token` returns metrics
 - [ ] Railway log alerts configured for crashes/restarts
 
-## 8) Final Smoke Test Commands
+## 8) Connector Readiness (No manual event posting)
+
+- [ ] `GET /v1/integrations/templates` returns sources (`stripe`, `auth`, `marketplace`)
+- [ ] `GET /v1/integrations/readiness?source=stripe` returns checklist
+- [ ] `POST /v1/integrations/ingest/secret` returns ingest secret
+- [ ] `POST /v1/integrations/map-event` maps provider event type correctly
+- [ ] `POST /v1/integrations/ingest/events` accepts signed events and dedupes duplicates
+
+## 9) Final Smoke Test Commands
 
 ```bash
-BASE="https://claw-trust-scores-production.up.railway.app"
-
-curl -s "$BASE/health"
-curl -s "$BASE/v1/plans"
-curl -s -X POST "$BASE/v1/users" -H "Content-Type: application/json" -d '{"email":"you@example.com"}'
-
-# After you get your key:
-KEY="claw_..."
-curl -s -X POST "$BASE/v1/events" -H "x-api-key: $KEY" -H "Content-Type: application/json" -d '{"agentId":"agent:demo:1","kind":"positive","eventType":"completed_task_on_time"}'
-curl -s "$BASE/v1/score?agentId=agent:demo:1" -H "x-api-key: $KEY"
-curl -s "$BASE/v1/usage" -H "x-api-key: $KEY"
-curl -s -X POST "$BASE/v1/keys/rotate" -H "x-api-key: $KEY"
+cd "/Users/oshaealexis/Documents/New project/agent-trust-registry"
+BASE="https://clawtrustscores.com" KEY="demo_starter_key" ./scripts/smoke-live.sh
 ```

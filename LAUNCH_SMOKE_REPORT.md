@@ -1,55 +1,66 @@
 # Launch Smoke Report
 
-Date: February 19, 2026  
-Environment: Local verification against current code (`node src/server.js`)  
+Date: February 23, 2026  
+Scope: Route wiring validation + automated tests + runnable live smoke script
 
-## Scope
+## Executive result
 
-This smoke pass validated:
+- Backend routes now match published docs/site flows.
+- Self-serve API keys from `POST /v1/users` are now accepted by protected endpoints.
+- Full automated suite passes: `43/43`.
 
-- Clean docs/legal/status routes without `.html`
-- Redirect behavior from legacy `.html` routes
-- Core public endpoints
-- Basic auth behavior for protected endpoints
-- Signup flow response
-- Test suite health
+## Critical fixes completed in this pass
 
-## Results
+1. Restored missing API routes in `src/server.js`:
+- `/v1/users`
+- `/v1/public/hero-snapshot`
+- `/v1/policy`, `/v1/policy/presets/*`
+- `/v1/integrations/templates`
+- `/v1/integrations/map-event`
+- `/v1/integrations/readiness`
+- `/v1/integrations/ingest/secret`
+- `/v1/integrations/ingest/events`
+- `/v1/audit/decisions`
+- `/v1/keys/rotate`, `/v1/keys/revoke`
+- clean page routing and legacy `.html` redirects
 
-### Route and page checks
+2. Fixed auth mismatch in `src/auth.js`:
+- Authentication now recognizes self-serve keys from `key-store` (not just env/managed keys).
+- Admin key list now includes `self_serve` source entries.
 
-- `GET /` -> `200` PASS
-- `GET /api-docs` -> `200` PASS
-- `GET /getting-started` -> `200` PASS
-- `GET /terms` -> `200` PASS
-- `GET /privacy` -> `200` PASS
-- `GET /status` -> `200` PASS
-- `GET /changelog` -> `200` PASS
-- `GET /api-docs.html` -> `308` PASS (redirects to `/api-docs`)
+3. Added live smoke runner:
+- `scripts/smoke-live.sh` (12-endpoint sequence, including signup + score + preflight + connectors + audit export).
 
-### API checks
+## Automated verification
 
-- `GET /health` -> `200` PASS
-- `GET /v1/plans` -> `200` PASS
-- `POST /v1/users` (valid email) -> `201` PASS
-- `GET /v1/score` without API key -> `401` PASS
-- `GET /v1/usage` with `demo_free_key` -> `200` PASS
-- `GET /v1/score?agentId=agent:smoke:1` with `demo_free_key` -> `200` PASS
+- Command run: `npm test --silent`
+- Result: PASS
+- Summary: `43 passed, 0 failed`
 
-### Automated tests
+## Manual/live verification status
 
-- `npm test` -> PASS
-- Summary: `22 passed, 0 failed`
+This execution environment cannot perform outbound DNS resolution for your public domains and cannot bind local ports for runtime curl checks.  
+To close that gap, run:
 
-## Notes
+```bash
+cd "/Users/oshaealexis/Documents/New project/agent-trust-registry"
+BASE="https://clawtrustscores.com" KEY="demo_starter_key" ./scripts/smoke-live.sh
+```
 
-- Clean URL aliases are live in routing for:
-  - `/api-docs`
-  - `/getting-started`
-  - `/privacy`
-  - `/terms`
-  - `/status`
-  - `/changelog`
-- Legacy `.html` routes redirect to clean URLs.
-- Canonical and core social meta tags were added across all public pages for consistency.
-- Footer now includes: `Powered by Collocate`.
+Expected:
+- health/plans return `ok` JSON
+- signup returns `201` or idempotent `200`
+- score endpoint returns trust + behavior payload
+- preflight returns allow/review/block decision
+- templates/presets/readiness/audit endpoints return valid JSON
+
+## Launch-readiness checklist (non-Stripe)
+
+- [x] Core APIs reachable via one consistent server router
+- [x] Self-serve key generation and key auth path aligned
+- [x] Connector ingestion endpoints exposed
+- [x] Policy presets available for no-code setup
+- [x] OpenClaw wrapper install snippets added to docs/site
+- [x] Smoke script prepared for production validation
+- [ ] Run `scripts/smoke-live.sh` from your machine/network and save output
+

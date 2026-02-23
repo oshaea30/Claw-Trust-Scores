@@ -630,6 +630,86 @@
       border-radius: 50%;
       background: rgba(212,83,42,0.7);
     }
+
+    .connector-grid {
+      display: grid;
+      grid-template-columns: 1.35fr 1fr;
+      gap: 14px;
+      margin-top: 20px;
+    }
+    .connector-card {
+      background: rgba(255,255,255,0.9);
+      border: 1px solid var(--card-border);
+      border-radius: var(--radius);
+      padding: 20px;
+      box-shadow: 0 8px 26px rgba(27,20,16,0.05);
+    }
+    .connector-card h3 {
+      font-size: 1.25rem;
+      margin-bottom: 8px;
+    }
+    .connector-card p {
+      font-size: 0.98rem;
+      color: var(--text-secondary);
+      line-height: 1.6;
+      margin-bottom: 10px;
+    }
+    .connector-list {
+      list-style: none;
+      display: grid;
+      gap: 8px;
+      margin-top: 8px;
+    }
+    .connector-list li {
+      font-size: 0.92rem;
+      color: #4a4139;
+      line-height: 1.5;
+    }
+    .connector-list code {
+      font-family: var(--mono);
+      font-size: 0.83rem;
+      color: #2f2721;
+      background: #f4ede6;
+      border: 1px solid var(--card-border);
+      border-radius: 6px;
+      padding: 2px 5px;
+    }
+    .connector-snippet {
+      margin-top: 10px;
+      background: #171210;
+      color: #f7efe6;
+      border-radius: 12px;
+      padding: 12px;
+      font-family: var(--mono);
+      font-size: 0.85rem;
+      line-height: 1.5;
+      overflow-x: auto;
+      border: 1px solid #2b221d;
+    }
+    .connector-actions {
+      margin-top: 12px;
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+    .connector-link {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 9px 13px;
+      border-radius: 999px;
+      text-decoration: none;
+      font-weight: 700;
+      font-size: 0.86rem;
+      border: 1px solid var(--card-border);
+      color: var(--text);
+      background: #fff;
+    }
+    .connector-link.primary {
+      background: #1a1612;
+      color: #fff;
+      border-color: transparent;
+    }
     @keyframes marquee {
       0% { transform: translateX(0); }
       100% { transform: translateX(-50%); }
@@ -888,6 +968,7 @@
       .bento { grid-template-columns: 1fr; }
       .bento-wide-inner { grid-template-columns: 1fr; }
       .model-grid { grid-template-columns: 1fr; }
+      .connector-grid { grid-template-columns: 1fr; }
       .values-grid, .pricing-grid { grid-template-columns: 1fr 1fr; }
       .float-card { display: none; }
       .footer-grid { grid-template-columns: 1fr; }
@@ -1122,6 +1203,47 @@
             <li>Risk context can include amount, new payee status, and first-time counterparties.</li>
             <li>Every decision is logged and exportable for audit/compliance.</li>
           </ul>
+        </article>
+      </div>
+    </section>
+
+    <section class="section section-tight" id="integrations">
+      <div class="sec-head">
+        <div class="sec-pill"><span class="dot"></span> Integrations</div>
+        <h2>Auto-ingest trusted events in minutes</h2>
+        <p>Use signed connectors so your trust network updates automatically from real activity.</p>
+      </div>
+      <div class="connector-grid">
+        <article class="connector-card">
+          <h3>Verified Connector Quickstart</h3>
+          <p>Turn on signed ingest, map provider events, and start feeding trust+behavior without manual event posting.</p>
+          <ul class="connector-list">
+            <li>1. Check readiness: <code>GET /v1/integrations/readiness?source=stripe</code></li>
+            <li>2. Create secret: <code>POST /v1/integrations/ingest/secret</code></li>
+            <li>3. Validate mapping: <code>POST /v1/integrations/map-event</code></li>
+            <li>4. Send signed events: <code>POST /v1/integrations/ingest/events</code></li>
+          </ul>
+          <div class="connector-actions">
+            <a class="connector-link primary" href="/api-docs">Open API Docs</a>
+            <a class="connector-link" href="/getting-started">View Connector Quickstart</a>
+          </div>
+        </article>
+        <article class="connector-card">
+          <h3>OpenClaw 10-line install</h3>
+          <p>Install the official wrapper and gate risky actions with one policy preflight call.</p>
+          <pre class="connector-snippet"><code>npx clawhub@latest install claw-trust-scores
+
+# .env
+CLAWTRUST_API_KEY=claw_xxx
+CLAWTRUST_BASE_URL=https://clawtrustscores.com
+
+# tools
+get_score(agentId)
+preflight_payment(agentId, amountUsd, newPayee)
+log_event(agentId, kind, eventType)</code></pre>
+          <div class="connector-actions">
+            <a class="connector-link primary" href="https://github.com/oshaea30/Claw-Trust-Scores/tree/main/skills/claw-trust-scores" target="_blank" rel="noopener noreferrer">Open Wrapper</a>
+          </div>
         </article>
       </div>
     </section>

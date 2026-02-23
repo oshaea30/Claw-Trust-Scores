@@ -138,6 +138,17 @@ Headers:
 
 `GET /v1/plans`
 
+### 5) Connector readiness + signed ingest (recommended)
+
+Use this flow so teams do not manually submit events:
+
+- `GET /v1/integrations/readiness?source=stripe|auth|marketplace`
+- `POST /v1/integrations/ingest/secret`
+- `POST /v1/integrations/map-event`
+- `POST /v1/integrations/ingest/events`
+
+This gives you verified integration signals with replay protection and source-aware mapping.
+
 ## Persistence
 
 State is persisted to JSON on disk and reloaded on startup.
@@ -248,6 +259,39 @@ curl -X POST http://localhost:8080/v1/integrations/clawcredit/preflight \
     "highPrivilegeAction":false,
     "exposesApiKeys":false
   }'
+```
+
+### Verified connector quickstart (Stripe example)
+
+```bash
+# 1) Readiness check
+curl "http://localhost:8080/v1/integrations/readiness?source=stripe" \
+  -H "x-api-key: demo_starter_key"
+
+# 2) Rotate/create ingest secret (store securely)
+curl -X POST "http://localhost:8080/v1/integrations/ingest/secret" \
+  -H "x-api-key: demo_starter_key"
+
+# 3) Preview mapping
+curl -X POST "http://localhost:8080/v1/integrations/map-event" \
+  -H "Content-Type: application/json" \
+  -H "x-api-key: demo_starter_key" \
+  -d '{"source":"stripe","providerEventType":"payment_intent.payment_failed"}'
+```
+
+## OpenClaw wrapper install (10 lines)
+
+```bash
+npx clawhub@latest install claw-trust-scores
+
+# .env
+CLAWTRUST_API_KEY=claw_paste_your_real_key_here
+CLAWTRUST_BASE_URL=https://clawtrustscores.com
+
+# Use tool calls in your flow:
+# get_score(agentId)
+# preflight_payment(agentId, amountUsd, newPayee)
+# log_event(agentId, kind, eventType)
 ```
 
 ## 5-minute integration snippet (Node)
