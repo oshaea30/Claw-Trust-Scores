@@ -48,6 +48,20 @@ export const EVENT_WEIGHTS = {
   subscription_canceled: -6,
 };
 
+export const BEHAVIOR_EVENT_WEIGHTS = {
+  completed_task_on_time: 10,
+  payment_success: 3,
+  verification_passed: 2,
+  collaborative_feedback_positive: 4,
+  failed_payment: -2,
+  missed_deadline: -10,
+  task_abandoned: -14,
+  unresolved_dispute: -6,
+  abuse_report: -8,
+  spam_report: -5,
+  security_flag: -4,
+};
+
 export const SENSITIVE_EVENT_TYPES = new Set([
   "payment_success",
   "failed_payment",

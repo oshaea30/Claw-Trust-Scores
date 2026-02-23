@@ -190,7 +190,9 @@ const server = http.createServer(async (request, response) => {
   }
 
   if (request.method === "GET" && url.pathname === "/v1/score") {
-    const result = getScore({ account, agentId: url.searchParams.get("agentId") });
+    const includeTrace =
+      String(url.searchParams.get("includeTrace") ?? "").trim().toLowerCase() === "true";
+    const result = getScore({ account, agentId: url.searchParams.get("agentId"), includeTrace });
     return sendJson(response, result.status, result.body);
   }
 

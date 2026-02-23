@@ -102,4 +102,36 @@ test("score response includes signal quality with verified percentage", () => {
   assert.equal(typeof result.signalQuality.level, "string");
   assert.equal(result.signalQuality.sampleSize, 2);
   assert.equal(result.signalQuality.verifiedPercent, 50);
+  assert.equal(typeof result.behavior.score, "number");
+  assert.equal(typeof result.trust.baseScore, "number");
+  assert.equal(typeof result.trust.behaviorInfluence, "number");
+  assert.equal(result.scoreModel.coupling, "separate_base_scores_with_policy_layer");
+});
+
+test("severe trust events reduce behavior score through cross influence", () => {
+  const now = new Date().toISOString();
+  const events = [
+    {
+      id: "s1",
+      agentId: "agent-k",
+      kind: "negative",
+      eventType: "api_key_leak",
+      sourceType: "verified_integration",
+      confidence: 1,
+      createdAt: now,
+    },
+    {
+      id: "s2",
+      agentId: "agent-k",
+      kind: "negative",
+      eventType: "abuse_report",
+      sourceType: "verified_integration",
+      confidence: 1,
+      createdAt: now,
+    },
+  ];
+
+  const result = scoreAgent("agent-k", events);
+  assert.ok(result.behavior.trustInfluencePenalty >= 8);
+  assert.ok(result.behavior.score < 60);
 });

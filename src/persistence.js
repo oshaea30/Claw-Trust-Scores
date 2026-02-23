@@ -57,6 +57,9 @@ export function loadStoreFromDisk() {
     store.webhooksByApiKey = loadObjectMap(parsed.webhooksByApiKey);
     store.webhookDeliveries = loadObjectMap(parsed.webhookDeliveries);
     store.webhookSuppression = loadObjectMap(parsed.webhookSuppression);
+    store.decisionLogsByApiKey = loadObjectMap(parsed.decisionLogsByApiKey);
+    store.inboundSecretsByApiKey = loadObjectMap(parsed.inboundSecretsByApiKey);
+    store.processedInboundEvents = loadObjectMap(parsed.processedInboundEvents);
     store.managedApiKeys = loadObjectMap(parsed.managedApiKeys);
     store.revokedApiKeys = new Set(Array.isArray(parsed.revokedApiKeys) ? parsed.revokedApiKeys : []);
   } catch {
@@ -86,6 +89,9 @@ export function flushStoreToDisk() {
       webhooksByApiKey: toObjectMap(store.webhooksByApiKey),
       webhookDeliveries: toObjectMap(store.webhookDeliveries),
       webhookSuppression: toObjectMap(store.webhookSuppression),
+      decisionLogsByApiKey: toObjectMap(store.decisionLogsByApiKey),
+      inboundSecretsByApiKey: toObjectMap(store.inboundSecretsByApiKey),
+      processedInboundEvents: toObjectMap(store.processedInboundEvents),
       managedApiKeys: toObjectMap(store.managedApiKeys),
       revokedApiKeys: [...store.revokedApiKeys]
     };

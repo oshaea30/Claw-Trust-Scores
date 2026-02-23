@@ -1,6 +1,7 @@
 # Agent Trust Registry
 
 Small service that returns a 0-100 trust score and short history for any AI agent/tool ID.
+It now also returns a separate 0-100 behavior score (reliability/execution quality).
 
 ## Why it exists
 
@@ -45,6 +46,7 @@ Response includes:
 - `score` (0-100)
 - `level` (`Very High` to `Very Low`)
 - `explanation`
+- `behavior` (separate behavior score + explanation)
 - `breakdown` (30-day and lifetime counts)
 - `history` (latest 10 events)
 
@@ -65,10 +67,12 @@ Use this before initiating payment-like actions.
 }
 ```
 
-Decision response:
+Decision response uses a policy layer:
 - `allow`
 - `review`
 - `block`
+
+Trust and behavior remain separate base scores; the policy layer combines both with hard trust floors.
 
 Example response:
 

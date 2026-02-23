@@ -35,6 +35,7 @@ test("clawcredit preflight blocks risky low-trust payment", async () => {
   assert.equal(result.status, 200);
   assert.equal(result.body.integration, "clawcredit");
   assert.equal(result.body.decision, "block");
+  assert.equal(typeof result.body.behavior.score, "number");
 });
 
 test("clawcredit preflight allows low-risk high-trust payment", async () => {
@@ -60,4 +61,6 @@ test("clawcredit preflight allows low-risk high-trust payment", async () => {
 
   assert.equal(result.status, 200);
   assert.equal(result.body.decision, "allow");
+  assert.equal(typeof result.body.policy.behaviorPenalty, "number");
+  assert.equal(typeof result.body.policy.behaviorCredit, "number");
 });

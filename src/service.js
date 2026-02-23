@@ -2,6 +2,7 @@ import crypto from "node:crypto";
 
 import { PLANS, RATE_LIMITS_PER_MINUTE } from "./config.js";
 import { scheduleFlush } from "./persistence.js";
+import { getPolicy } from "./policy.js";
 import { scoreAgent } from "./scoring.js";
 import { appendEvent, getAgentEvents, getMonthKey, getUsage, store } from "./store.js";
 import { emitScoreAlerts } from "./webhooks.js";
@@ -119,6 +120,11 @@ export async function postEvent({ account, payload }) {
     eventType,
     details: typeof payload.details === "string" ? payload.details.trim().slice(0, 300) : undefined,
     sourceApiKey: account.apiKey,
+    source: typeof payload.source === "string" ? payload.source.trim().toLowerCase() : undefined,
+    sourceType: typeof payload.sourceType === "string" ? payload.sourceType.trim().toLowerCase() : undefined,
+    confidence: Number.isFinite(Number(payload.confidence)) ? Number(payload.confidence) : undefined,
+    externalEventId:
+      typeof payload.externalEventId === "string" ? payload.externalEventId.trim().slice(0, 120) : undefined,
     createdAt: createdAt.toISOString()
   };
 
@@ -152,7 +158,7 @@ export async function postEvent({ account, payload }) {
   };
 }
 
-export function getScore({ account, agentId }) {
+export function getScore({ account, agentId, includeTrace = false }) {
   if (rateLimited({ apiKey: account.apiKey, tier: account.tier, action: "scoreReads" })) {
     return { status: 429, body: { error: "Rate limit exceeded for score checks." } };
   }
@@ -185,7 +191,10 @@ export function getScore({ account, agentId }) {
 
   return {
     status: 200,
-    body: scoreAgent(normalizedAgentId, getAgentEvents(agentScope))
+    body: scoreAgent(normalizedAgentId, getAgentEvents(agentScope), {
+      includeTrace,
+      policy: getPolicy(account.apiKey),
+    })
   };
 }
 
@@ -194,5 +203,7 @@ export function scoreForAccountAgent({ account, agentId }) {
   if (!normalizedAgentId) {
     return null;
   }
-  return scoreAgent(normalizedAgentId, getAgentEvents(scopedAgentId(account.apiKey, normalizedAgentId)));
+  return scoreAgent(normalizedAgentId, getAgentEvents(scopedAgentId(account.apiKey, normalizedAgentId)), {
+    policy: getPolicy(account.apiKey),
+  });
 }

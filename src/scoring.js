@@ -1,4 +1,5 @@
 import {
+  BEHAVIOR_EVENT_WEIGHTS,
   DECAY_HALF_LIFE_DAYS,
   EVENT_WEIGHTS,
   SCORE_BASELINE,
@@ -155,6 +156,73 @@ function signalQualityLevel(score) {
   return "Low";
 }
 
+function behaviorLevelFor(score) {
+  if (score >= 85) return "Excellent";
+  if (score >= 70) return "Strong";
+  if (score >= 50) return "Stable";
+  if (score >= 35) return "At Risk";
+  return "Poor";
+}
+
+function behaviorWeightOf(event) {
+  if (typeof BEHAVIOR_EVENT_WEIGHTS[event.eventType] === "number") {
+    return BEHAVIOR_EVENT_WEIGHTS[event.eventType];
+  }
+  if (event.kind === "positive") return 4;
+  if (event.kind === "negative") return -6;
+  return 0;
+}
+
+function calculateBehaviorScore(events, nowMs) {
+  let base = 60;
+  let onTime30d = 0;
+  let missed30d = 0;
+  let abandoned30d = 0;
+  let severeRisk30d = 0;
+
+  const severeTypes = new Set(["api_key_leak", "security_flag", "abuse_report", "impersonation_report"]);
+
+  for (const event of events) {
+    const ageDays = daysSince(event.createdAt, nowMs);
+    const confidence = confidenceFactor(event);
+    const sourceFactor = sourceTrustFactor(event);
+    const contribution = behaviorWeightOf(event) * decay(ageDays) * confidence * sourceFactor;
+    base += contribution;
+
+    if (ageDays <= 30) {
+      if (event.eventType === "completed_task_on_time") onTime30d += 1;
+      if (event.eventType === "missed_deadline") missed30d += 1;
+      if (event.eventType === "task_abandoned") abandoned30d += 1;
+      if (severeTypes.has(String(event.eventType ?? "").trim().toLowerCase())) severeRisk30d += 1;
+    }
+  }
+
+  const trustPenalty = Math.min(12, severeRisk30d * 4);
+  const score = Math.round(clamp(base - trustPenalty, SCORE_MIN, SCORE_MAX));
+  const level = behaviorLevelFor(score);
+  const onTimeRatio30d =
+    onTime30d + missed30d > 0 ? Math.round((onTime30d / (onTime30d + missed30d)) * 100) : null;
+
+  let explanation = `${level}: behavior reliability score based on recent execution outcomes.`;
+  if (onTimeRatio30d !== null) {
+    explanation = `${level}: ${onTimeRatio30d}% on-time rate in last 30 days (${onTime30d} on time / ${missed30d} missed).`;
+  }
+
+  return {
+    score,
+    level,
+    explanation,
+    trustInfluencePenalty: trustPenalty,
+    breakdown: {
+      onTime30d,
+      missedDeadline30d: missed30d,
+      abandoned30d,
+      severeRisk30d,
+      onTimeRate30d: onTimeRatio30d,
+    },
+  };
+}
+
 export function scoreAgent(agentId, events, options = {}) {
   const includeTrace = options.includeTrace === true;
   const traceLimit = clamp(Number(options.traceLimit ?? 5), 1, 20);
@@ -176,6 +244,7 @@ export function scoreAgent(agentId, events, options = {}) {
   let qualityDenominator = 0;
   let qualitySampleSize = 0;
   let qualityVerifiedEvents = 0;
+  let severeNegative30d = 0;
 
   for (const event of events) {
     const ageDays = daysSince(event.createdAt, nowMs);
@@ -219,6 +288,9 @@ export function scoreAgent(agentId, events, options = {}) {
       if (event.kind === "positive") positive30d += 1;
       if (event.kind === "neutral") neutral30d += 1;
       if (event.kind === "negative") negative30d += 1;
+      if (SENSITIVE_EVENT_TYPES.has(String(event.eventType ?? "").trim().toLowerCase()) && event.kind === "negative") {
+        severeNegative30d += 1;
+      }
     }
 
     if (includeTrace) {
@@ -243,7 +315,15 @@ export function scoreAgent(agentId, events, options = {}) {
     }
   }
 
-  const score = Math.round(clamp(scoreValue, SCORE_MIN, SCORE_MAX));
+  const trustScore = Math.round(clamp(scoreValue, SCORE_MIN, SCORE_MAX));
+  const behavior = calculateBehaviorScore(events, nowMs);
+  let behaviorInfluence = 0;
+  if (behavior.score <= 35) behaviorInfluence -= 6;
+  else if (behavior.score <= 50) behaviorInfluence -= 3;
+  else if (behavior.score >= 85) behaviorInfluence += 2;
+  if (behavior.breakdown.abandoned30d >= 2) behaviorInfluence -= 4;
+
+  const score = trustScore;
   const level = levelFor(score);
   const signalQualityScore = qualityDenominator > 0
     ? Math.round(clamp((qualityNumerator / qualityDenominator) * 100, 0, 100))
@@ -279,16 +359,34 @@ export function scoreAgent(agentId, events, options = {}) {
     agentId,
     score,
     level,
-    explanation: explanation(level, positive30d, negative30d),
+    explanation:
+      behaviorInfluence === 0
+        ? explanation(level, positive30d, negative30d)
+        : `${explanation(level, positive30d, negative30d)} Behavior influence ${behaviorInfluence > 0 ? "+" : ""}${behaviorInfluence}.`,
     signalQuality,
     breakdown: {
       positive30d,
       neutral30d,
       negative30d,
+      severeNegative30d,
       lifetimeEvents: events.length,
       policy: policySummary,
     },
-    history
+    history,
+    behavior: {
+      ...behavior,
+      trustInfluence: behaviorInfluence,
+    },
+    trust: {
+      baseScore: trustScore,
+      behaviorInfluence,
+      finalScore: score,
+    },
+    scoreModel: {
+      trustScore: score,
+      behaviorScore: behavior.score,
+      coupling: "separate_base_scores_with_policy_layer",
+    },
   };
 
   if (includeTrace) {
