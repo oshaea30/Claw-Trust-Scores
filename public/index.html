@@ -1217,11 +1217,11 @@
       <div style="overflow:hidden;">
         <div class="marquee-track">
           <div class="marquee-group">
-            <span>REST API</span><span>ClawCredit Preflight</span><span>Webhook Alerts</span>
+            <span>REST API</span><span>Payment Preflight</span><span>Coinbase Wallet Connector</span>
             <span>Usage Endpoint</span><span>Audit Export (JSON/CSV)</span><span>API Key Self-Serve</span>
           </div>
           <div class="marquee-group" aria-hidden="true">
-            <span>REST API</span><span>ClawCredit Preflight</span><span>Webhook Alerts</span>
+            <span>REST API</span><span>Payment Preflight</span><span>Coinbase Wallet Connector</span>
             <span>Usage Endpoint</span><span>Audit Export (JSON/CSV)</span><span>API Key Self-Serve</span>
           </div>
         </div>
@@ -1294,9 +1294,9 @@
       <div class="connector-grid">
         <article class="connector-card">
           <h3>Verified Connector Quickstart</h3>
-          <p>Turn on signed ingest, map provider events, and start feeding trust+behavior without manual event posting.</p>
+          <p>Turn on signed ingest, map provider events, and start feeding trust+behavior without manual event posting. Includes Coinbase-compatible wallet event mapping via <span class="mono">source=wallet</span>.</p>
           <ul class="connector-list">
-            <li>1. Check readiness: <code>GET /v1/integrations/readiness?source=stripe</code></li>
+            <li>1. Check readiness: <code>GET /v1/integrations/readiness?source=wallet</code></li>
             <li>2. Create secret: <code>POST /v1/integrations/ingest/secret</code></li>
             <li>3. Validate mapping: <code>POST /v1/integrations/map-event</code></li>
             <li>4. Send signed events: <code>POST /v1/integrations/ingest/events</code></li>
@@ -1361,7 +1361,7 @@ log_event(agentId, kind, eventType)</code></pre>
           <h3>Wallet + Prediction + Runtime</h3>
           <p>Map live events without manual posting, then feed preflight decisions with verified context.</p>
           <ul class="finance-list">
-            <li><span class="mono">source=wallet</span> for transaction and key-risk events.</li>
+            <li><span class="mono">source=wallet</span> for Coinbase-compatible transaction and key-risk events.</li>
             <li><span class="mono">source=prediction_market</span> for settlement and abuse flags.</li>
             <li><span class="mono">source=runtime</span> for execution and sandbox safety.</li>
           </ul>
@@ -1445,7 +1445,7 @@ log_event(agentId, kind, eventType)</code></pre>
               <div class="line"><span>GET /v1/audit/decisions?format=csv</span></div>
               <div style="margin-top:8px;border-top:1px solid var(--card-border);padding-top:8px;">
                 <div class="line"><span>timestamp</span><span class="val">2026-02-18T14:22:01Z</span></div>
-                <div class="line"><span>action</span><span class="val">clawcredit_preflight</span></div>
+                <div class="line"><span>action</span><span class="val">payment_preflight</span></div>
                 <div class="line"><span>outcome</span><span class="val coral">block</span></div>
                 <div class="line"><span>score</span><span class="val">18</span></div>
                 <div class="line"><span>reason</span><span class="val">"Below hard min 35"</span></div>
@@ -1527,7 +1527,7 @@ log_event(agentId, kind, eventType)</code></pre>
             </svg>
           </div>
           <h3>Integrations</h3>
-          <p>First-class ClawCredit preflight policy. Framework adapters for TypeScript and Python coming soon.</p>
+          <p>First-class payment preflight policy plus wallet/runtime connector templates. Framework adapters for TypeScript and Python coming soon.</p>
         </div>
       </div>
     </section>
@@ -1611,7 +1611,7 @@ log_event(agentId, kind, eventType)</code></pre>
             <span>What's the difference between trust score, behavior score, and preflight?</span>
             <span class="icon">+</span>
           </div>
-          <div class="faq-a">A score check (GET /v1/score) returns both Trust and Behavior scores. Trust tracks safety/compliance risk. Behavior tracks delivery reliability. A preflight call (POST /v1/integrations/clawcredit/preflight) combines both scores with risk context like payment amount and new payees to return allow/review/block.</div>
+          <div class="faq-a">A score check (GET /v1/score) returns both Trust and Behavior scores. Trust tracks safety/compliance risk. Behavior tracks delivery reliability. A preflight call combines both scores with risk context like payment amount and new payees to return allow/review/block.</div>
         </div>
         <div class="faq-item">
           <div class="faq-q" onclick="toggleFaq(this)">
@@ -1632,7 +1632,7 @@ log_event(agentId, kind, eventType)</code></pre>
             <span>What integrations are supported?</span>
             <span class="icon">+</span>
           </div>
-          <div class="faq-a">ClawCredit preflight policy is built-in as a first-class integration. Framework adapters for TypeScript and Python are on the roadmap. The REST API works with any language or platform that can make HTTP requests.</div>
+          <div class="faq-a">Payment preflight policy is built-in, with connector templates for wallet, auth, marketplace, prediction-market, and runtime events. Framework adapters for TypeScript and Python are on the roadmap. The REST API works with any language or platform that can make HTTP requests.</div>
         </div>
       </div>
     </section>
