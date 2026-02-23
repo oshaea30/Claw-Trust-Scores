@@ -941,9 +941,9 @@
       <h1>Don't get pinched.<br /><span class="accent">Know who to trust.</span></h1>
       <div class="hero-sub-wrap">
         <p class="hero-sub">
-          Real-time trust scores for AI agents. Score unknown counterparts before payments,
-          key sharing, or delegated execution — one API call. Works with Stripe, auth providers,
-          and marketplaces.
+          Real-time Trust + Behavior scores for AI agents. Trust measures safety risk.
+          Behavior measures delivery reliability. Run one check before payments,
+          key sharing, or delegated execution.
         </p>
       </div>
       <div class="trust-row">
@@ -966,7 +966,7 @@
           <button id="quickEventBtn" class="hero-quick-btn" type="button">Send Demo Event</button>
         </div>
         <div id="quickResult" class="hero-quick-result">Tip: save your key as CLAWTRUST_API_KEY in your backend/bot server.</div>
-        <div class="hero-quick-help">Common issues: 401 = wrong/missing key · 429 = rate limit · limit exceeded = upgrade plan.</div>
+        <div class="hero-quick-help">Put your key in backend env var <span class="mono">CLAWTRUST_API_KEY</span>. Common issues: 401 = wrong/missing key · 429 = rate limit · limit exceeded = upgrade plan.</div>
       </div>
     </section>
   </div>
@@ -1013,7 +1013,7 @@
       <div class="sec-head">
         <div class="sec-pill"><span class="dot"></span> Features</div>
         <h2>Everything you need to<br />gate risky agent actions</h2>
-        <p>One trust check call. Explainable scores. Full audit trail.</p>
+        <p>One decision call. Dual scoring (trust + behavior). Full audit trail.</p>
       </div>
 
       <div class="bento">
@@ -1043,8 +1043,8 @@
               <path d="M4 20h16"></path>
             </svg>
           </div>
-          <h3>Decayed Trust Scores</h3>
-          <p>0–100 scores with 30-day half-life decay. Recent behavior matters most. Good actors recover over time.</p>
+          <h3>Dual Scores + Decay</h3>
+          <p>Trust score (safety risk) and behavior score (execution quality), both 0–100 with time decay so recent activity matters most.</p>
           <div class="bento-preview">
             <div class="bar-row">
               <div class="bar green active" style="height:36px"></div>
@@ -1121,8 +1121,8 @@
               <path d="M7 14l4-4 3 3 4-4"></path>
             </svg>
           </div>
-          <h3>Check Score</h3>
-          <p>GET a 0–100 trust score for any agent. Includes level, explanation, and recent event history.</p>
+          <h3>Check Scores</h3>
+          <p>GET trust + behavior scores for any agent, plus explanation, signal quality, and event history.</p>
         </div>
         <div class="value-card">
           <div class="value-icon" aria-hidden="true">
@@ -1246,10 +1246,10 @@
         </div>
         <div class="faq-item">
           <div class="faq-q" onclick="toggleFaq(this)">
-            <span>What's the difference between score checks and preflight?</span>
+            <span>What's the difference between trust score, behavior score, and preflight?</span>
             <span class="icon">+</span>
           </div>
-          <div class="faq-a">A score check (GET /v1/score) returns the raw trust score. A preflight call (POST /v1/integrations/clawcredit/preflight) combines the trust score with risk context like payment amount, new payees, and privilege level to return an allow/review/block decision.</div>
+          <div class="faq-a">A score check (GET /v1/score) returns both Trust and Behavior scores. Trust tracks safety/compliance risk. Behavior tracks delivery reliability. A preflight call (POST /v1/integrations/clawcredit/preflight) combines both scores with risk context like payment amount and new payees to return allow/review/block.</div>
         </div>
         <div class="faq-item">
           <div class="faq-q" onclick="toggleFaq(this)">

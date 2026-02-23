@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Claw Trust Scores | API Docs</title>
-  <meta name="description" content="API docs for Claw Trust Scores. Log events, read trust scores, run preflight decisions, and export decision history." />
+  <meta name="description" content="API docs for Claw Trust Scores. Log events, read trust + behavior scores, run preflight decisions, and export decision history." />
   <link rel="canonical" href="https://clawtrustscores.com/api-docs" />
   <meta property="og:title" content="Claw Trust Scores | API Docs" />
   <meta property="og:description" content="Integration-ready endpoints for trust scoring and preflight decisioning." />
@@ -527,7 +527,7 @@
   <main class="wrap">
     <section class="hero">
       <h1>API Docs</h1>
-      <p>Drop-in trust checks for agent workflows. Use one API key and these endpoints to log events, read scores, gate actions, and export audit trails.</p>
+      <p>Drop-in trust checks for agent workflows. Use one API key and these endpoints to log events, read trust + behavior scores, gate actions, and export audit trails.</p>
       <div class="base-url">
         <strong>Base URL</strong>
         <code>https://clawtrustscores.com</code>
@@ -553,8 +553,8 @@
               <pre><code>CLAWTRUST_API_KEY=INSERT_YOUR_API_KEY_HERE</code></pre>
             </div>
             <div class="simple-step">
-              <strong>2. Ask for a trust score</strong>
-              <p>Your backend sends the API call with header <span class="mono">x-api-key</span>. You get back a score from 0 to 100 plus explanation and <span class="mono">signalQuality</span> (how trustworthy the underlying signals are).</p>
+              <strong>2. Ask for trust + behavior scores</strong>
+              <p>Your backend sends the API call with header <span class="mono">x-api-key</span>. You get trust score (risk), behavior score (reliability), explanation, and <span class="mono">signalQuality</span>.</p>
             </div>
             <div class="simple-step">
               <strong>3. Make a decision</strong>
@@ -584,7 +584,7 @@ CLAWTRUST_API_KEY=INSERT_YOUR_API_KEY_HERE</code></pre>
             </div>
             <pre id="tryResult" class="try-result">Result will appear here.</pre>
           </div>
-          <p class="small-note">This calls <span class="mono">GET /v1/score</span> using your key.</p>
+          <p class="small-note">This calls <span class="mono">GET /v1/score</span> using your key and returns both trust and behavior sections.</p>
         </article>
         <article class="card">
           <h2>Set Trust Policy (No Coding)</h2>
@@ -616,7 +616,7 @@ CLAWTRUST_API_KEY=INSERT_YOUR_API_KEY_HERE</code></pre>
           <p class="small-note">You can also set <span class="mono">minSignalQuality</span> (0-100) in <span class="mono">POST /v1/policy</span> to force review when score quality is too weak.</p>
         </article>
         <article class="simple-callout">
-          If you just want to launch fast, use only these endpoints first: <span class="mono">/v1/events</span>, <span class="mono">/v1/score</span>, and <span class="mono">/v1/integrations/clawcredit/preflight</span>.
+          If you just want to launch fast, start with: <span class="mono">/v1/events</span>, <span class="mono">/v1/score</span>, <span class="mono">/v1/integrations/clawcredit/preflight</span>, and <span class="mono">/v1/usage</span>.
         </article>
         <article class="simple-callout">
           Where to add your key: in your app/backend env vars, bot server config, or workflow tool secrets (Zapier/Make/n8n). Do not paste API keys into public frontend code or chat messages.
@@ -627,7 +627,7 @@ CLAWTRUST_API_KEY=INSERT_YOUR_API_KEY_HERE</code></pre>
     <div class="mode-panel hidden" id="developerModePanel">
       <section class="step-row">
         <div class="step"><strong>1. Create key</strong>Call <code>POST /v1/users</code> with your email.</div>
-        <div class="step"><strong>2. Log + score</strong>Use <code>/v1/events</code> then <code>/v1/score</code>.</div>
+        <div class="step"><strong>2. Log + check both scores</strong>Use <code>/v1/events</code> then <code>/v1/score</code>.</div>
         <div class="step"><strong>3. Gate actions</strong>Use preflight to return allow/review/block.</div>
       </section>
 
@@ -656,11 +656,11 @@ CLAWTRUST_API_KEY=INSERT_YOUR_API_KEY_HERE</code></pre>
           </div>
           <div class="endpoint">
             <span class="verb get">GET</span>
-            <div><code>/v1/score?agentId=...&amp;includeTrace=1</code><span>Read trust score + explanation + signal quality (+ optional contribution trace)</span></div>
+            <div><code>/v1/score?agentId=...&amp;includeTrace=1</code><span>Read trust score + behavior score + explanation (+ optional contribution trace)</span></div>
           </div>
           <div class="endpoint">
             <span class="verb post">POST</span>
-            <div><code>/v1/integrations/clawcredit/preflight</code><span>Return allow/review/block decision</span></div>
+            <div><code>/v1/integrations/clawcredit/preflight</code><span>Return allow/review/block using trust + behavior + risk context</span></div>
           </div>
           <div class="endpoint">
             <span class="verb get">GET</span>

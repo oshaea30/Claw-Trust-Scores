@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Getting Started | Claw Trust Scores</title>
-  <meta name="description" content="Get started with Claw Trust Scores in 5 minutes: pick your source, map events, and send trusted ingest payloads." />
+  <meta name="description" content="Get started with Claw Trust Scores in 5 minutes: set your API key, send events, and read trust + behavior scores." />
   <link rel="canonical" href="https://clawtrustscores.com/getting-started" />
   <meta property="og:title" content="Getting Started | Claw Trust Scores" />
   <meta property="og:description" content="A source-first quickstart for Stripe, auth providers, and marketplaces." />
@@ -50,7 +50,7 @@
 
     <div class="card">
       <h1>Getting Started in 5 Minutes</h1>
-      <p class="muted">Pick your source, preview event mapping, then send trusted events. This is the fastest path for Stripe, auth providers, and marketplaces.</p>
+      <p class="muted">Set your API key, send events, and read both trust and behavior scores. Then use preflight before risky actions.</p>
       <div class="pill">Base URL: <code>https://clawtrustscores.com</code></div>
     </div>
 
@@ -70,8 +70,8 @@ CLAWTRUST_API_KEY=claw_paste_your_real_key_here</code></pre>
       <h2>3 quick steps</h2>
       <div class="steps">
         <div class="step"><strong>1. Get an API key</strong><br /><span class="muted">Use the homepage form or create one with <code>POST /v1/users</code>, then store it in your backend env vars.</span></div>
-        <div class="step"><strong>2. Pick your source</strong><br /><span class="muted">Choose Stripe, Auth, or Marketplace and use its event type names.</span></div>
-        <div class="step"><strong>3. Start sending trusted events</strong><br /><span class="muted">Use signed ingest so your score is fed automatically from real systems.</span></div>
+        <div class="step"><strong>2. Send events</strong><br /><span class="muted">Log success/failure signals with <code>POST /v1/events</code> (or use signed ingest connectors).</span></div>
+        <div class="step"><strong>3. Read scores + gate actions</strong><br /><span class="muted">Call <code>GET /v1/score</code> for trust + behavior and <code>POST /v1/integrations/clawcredit/preflight</code> for allow/review/block.</span></div>
       </div>
     </div>
 
