@@ -41,6 +41,7 @@ export function loadStoreFromDisk() {
     const parsed = JSON.parse(fs.readFileSync(statePath, "utf8"));
 
     store.eventsByAgentId = loadObjectMap(parsed.eventsByAgentId);
+    store.attestationsByApiKey = loadObjectMap(parsed.attestationsByApiKey);
 
     const usageMap = loadObjectMap(parsed.usageByMonthAndApiKey);
     store.usageByMonthAndApiKey = new Map(
@@ -85,6 +86,7 @@ export function flushStoreToDisk() {
 
     const payload = {
       eventsByAgentId: toObjectMap(store.eventsByAgentId),
+      attestationsByApiKey: toObjectMap(store.attestationsByApiKey),
       usageByMonthAndApiKey: usage,
       webhooksByApiKey: toObjectMap(store.webhooksByApiKey),
       webhookDeliveries: toObjectMap(store.webhookDeliveries),

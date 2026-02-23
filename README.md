@@ -98,6 +98,32 @@ Example response:
 }
 ```
 
+### 2c) Issue portable attestation (signed credential)
+
+Use this to create a verifiable credential tied to an `agentId`, such as:
+- `connector.stripe.verified`
+- `connector.auth.verified`
+- `operator.kya.completed`
+
+`POST /v1/attestations`
+
+```json
+{
+  "agentId": "agent:openclaw:wallet:0xabc",
+  "type": "connector.stripe.verified",
+  "ttlDays": 90,
+  "claims": {
+    "provider": "stripe",
+    "mode": "live"
+  }
+}
+```
+
+Other attestation endpoints:
+- `GET /v1/attestations?agentId=...`
+- `POST /v1/attestations/verify` with `{ "token": "..." }`
+- `POST /v1/attestations/{attestationId}/revoke` with `{ "reason": "..." }`
+
 ### 3) Webhooks (Starter/Pro)
 
 Register score-drop alerts (fires when score crosses down below threshold).
@@ -277,6 +303,17 @@ curl -X POST "http://localhost:8080/v1/integrations/map-event" \
   -H "Content-Type: application/json" \
   -H "x-api-key: demo_starter_key" \
   -d '{"source":"stripe","providerEventType":"payment_intent.payment_failed"}'
+
+# 4) Issue a portable connector attestation for this agent
+curl -X POST "http://localhost:8080/v1/attestations" \
+  -H "Content-Type: application/json" \
+  -H "x-api-key: demo_starter_key" \
+  -d '{
+    "agentId":"agent:openclaw:wallet:0xabc",
+    "type":"connector.stripe.verified",
+    "ttlDays":90,
+    "claims":{"provider":"stripe","mode":"live"}
+  }'
 ```
 
 ## OpenClaw wrapper install (10 lines)
@@ -321,6 +358,7 @@ Copy `.env.example` and set:
 - `DATA_DIR` (default: `./data`)
 - `TRUST_API_KEYS` format: `api_key:tier,api_key:tier`
 - `DATA_ENCRYPTION_KEY` (required in production; use a long random secret)
+- `ATTESTATION_SIGNING_KEY` (recommended in all environments; use a long random secret)
 - `NODE_ENV=production` in production deployments
 
 Production hard-fail behavior:

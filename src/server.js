@@ -5,6 +5,12 @@ import path from "node:path";
 import { URL } from "node:url";
 
 import { getAdminAgentSnapshot, getAdminOverview, getRecentDecisionFeed } from "./admin.js";
+import {
+  issueAttestation,
+  listAttestations,
+  revokeAttestation,
+  verifyAttestationToken,
+} from "./attestations.js";
 import { authenticate, issueApiKey, listApiKeys, revokeApiKey, rotateApiKey } from "./auth.js";
 import { getDecisionLogs, logDecision } from "./audit.js";
 import { clawCreditPreflight } from "./clawcredit.js";
@@ -640,6 +646,59 @@ const server = http.createServer(async (request, response) => {
   if (request.method === "GET" && url.pathname === "/v1/usage") {
     const result = getUsageSnapshot({ account });
     return sendJson(response, result.status, result.body);
+  }
+
+  if (request.method === "POST" && url.pathname === "/v1/attestations") {
+    try {
+      const payload = await readJsonBody(request);
+      const result = issueAttestation({ account, payload });
+      return sendJson(response, result.status, result.body);
+    } catch (error) {
+      if (error instanceof Error && error.message === "Payload too large") {
+        return sendJson(response, 413, { error: "Payload too large." });
+      }
+      return sendJson(response, 400, { error: "Invalid JSON body." });
+    }
+  }
+
+  if (request.method === "GET" && url.pathname === "/v1/attestations") {
+    const result = listAttestations({
+      account,
+      query: Object.fromEntries(url.searchParams.entries()),
+    });
+    return sendJson(response, result.status, result.body);
+  }
+
+  if (request.method === "POST" && url.pathname === "/v1/attestations/verify") {
+    try {
+      const payload = await readJsonBody(request);
+      const result = verifyAttestationToken({ token: payload.token });
+      return sendJson(response, result.status, result.body);
+    } catch (error) {
+      if (error instanceof Error && error.message === "Payload too large") {
+        return sendJson(response, 413, { error: "Payload too large." });
+      }
+      return sendJson(response, 400, { error: "Invalid JSON body." });
+    }
+  }
+
+  if (request.method === "POST" && url.pathname.startsWith("/v1/attestations/") && url.pathname.endsWith("/revoke")) {
+    const parts = url.pathname.split("/");
+    const attestationId = parts[3] ?? "";
+    try {
+      const payload = await readJsonBody(request);
+      const result = revokeAttestation({
+        account,
+        attestationId,
+        reason: payload.reason,
+      });
+      return sendJson(response, result.status, result.body);
+    } catch (error) {
+      if (error instanceof Error && error.message === "Payload too large") {
+        return sendJson(response, 413, { error: "Payload too large." });
+      }
+      return sendJson(response, 400, { error: "Invalid JSON body." });
+    }
   }
 
   if (request.method === "POST" && url.pathname === "/v1/keys/rotate") {

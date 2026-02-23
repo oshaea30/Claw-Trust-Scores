@@ -1,5 +1,6 @@
 export const store = {
   eventsByAgentId: new Map(),
+  attestationsByApiKey: new Map(),
   usageByMonthAndApiKey: new Map(),
   rateCounterByWindowAndKey: new Map(),
   recentEventHashes: new Map(),
@@ -15,6 +16,7 @@ export const store = {
 
 export function resetStore() {
   store.eventsByAgentId = new Map();
+  store.attestationsByApiKey = new Map();
   store.usageByMonthAndApiKey = new Map();
   store.rateCounterByWindowAndKey = new Map();
   store.recentEventHashes = new Map();
