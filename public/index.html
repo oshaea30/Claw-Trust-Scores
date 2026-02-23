@@ -14,7 +14,7 @@
   <link rel="icon" type="image/png" href="/logo-mark.png" />
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Sora:wght@600;700;800&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
   <style>
     :root {
       --bg: #faf9f7;
@@ -35,6 +35,7 @@
       --green-bg: rgba(45,138,86,0.1);
       --danger: #c43333;
       --mono: "IBM Plex Mono", monospace;
+      --display: "Sora", "Plus Jakarta Sans", system-ui, sans-serif;
       --sans: "Plus Jakarta Sans", system-ui, sans-serif;
       --radius: 16px;
       --radius-sm: 10px;
@@ -46,6 +47,10 @@
     body {
       font-family: var(--sans); color: var(--text); background: var(--bg);
       line-height: 1.55; -webkit-font-smoothing: antialiased;
+    }
+    h1, h2, h3 {
+      font-family: var(--display);
+      letter-spacing: -0.02em;
     }
 
     .wrap { width: min(1160px, 90vw); margin: 0 auto; }
@@ -66,6 +71,7 @@
       gap: 9px;
       font-size: 1.05rem;
       font-weight: 800;
+      font-family: var(--display);
       color: var(--text);
       text-decoration: none;
       letter-spacing: -0.2px;
@@ -201,7 +207,7 @@
     }
     .hero h1 {
       margin-top: 28px;
-      font-size: clamp(2.4rem, 5.8vw, 4.4rem); font-weight: 800;
+      font-size: clamp(2.4rem, 5.8vw, 4.4rem); font-weight: 700;
       line-height: 1.05; letter-spacing: -2px; max-width: 780px;
     }
     .hero h1 .accent { color: var(--coral); }
@@ -553,6 +559,74 @@
       font-size: 1.05rem; font-weight: 700; color: #74695f; white-space: nowrap;
       opacity: 0.6; letter-spacing: -0.2px;
     }
+
+    /* ── SCORE MODEL ── */
+    .section-tight { padding-top: 54px; padding-bottom: 24px; }
+    .model-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 14px;
+      margin-top: 20px;
+    }
+    .model-card {
+      background: rgba(255,255,255,0.86);
+      border: 1px solid var(--card-border);
+      border-radius: var(--radius);
+      padding: 20px;
+      box-shadow: 0 8px 26px rgba(27,20,16,0.05);
+    }
+    .model-kicker {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      color: var(--text-secondary);
+      font-weight: 700;
+      margin-bottom: 10px;
+    }
+    .model-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      display: inline-block;
+    }
+    .model-dot.trust { background: #c9452b; }
+    .model-dot.behavior { background: #148a7b; }
+    .model-dot.decision { background: #9a6510; }
+    .model-card h3 {
+      font-size: 1.1rem;
+      margin-bottom: 8px;
+    }
+    .model-card p {
+      color: var(--text-secondary);
+      font-size: 0.92rem;
+      line-height: 1.6;
+      margin-bottom: 12px;
+    }
+    .model-list {
+      display: grid;
+      gap: 8px;
+      list-style: none;
+    }
+    .model-list li {
+      font-size: 0.85rem;
+      color: #4a4139;
+      line-height: 1.4;
+      padding-left: 16px;
+      position: relative;
+    }
+    .model-list li::before {
+      content: "";
+      position: absolute;
+      left: 0;
+      top: 0.58em;
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: rgba(212,83,42,0.7);
+    }
     @keyframes marquee {
       0% { transform: translateX(0); }
       100% { transform: translateX(-50%); }
@@ -809,6 +883,7 @@
     @media (max-width: 980px) {
       .bento { grid-template-columns: 1fr; }
       .bento-wide-inner { grid-template-columns: 1fr; }
+      .model-grid { grid-template-columns: 1fr; }
       .values-grid, .pricing-grid { grid-template-columns: 1fr 1fr; }
       .float-card { display: none; }
       .footer-grid { grid-template-columns: 1fr; }
@@ -838,7 +913,7 @@
           rgba(224,152,115,0.14) 100%
         );
       }
-      .hero h1 { letter-spacing: -1px; }
+      .hero h1 { letter-spacing: -1px; font-weight: 700; }
       .hero-form-box { flex-direction: column; align-items: center; }
       .hero-form-box input[type="email"] { width: 100%; max-width: 340px; }
       .trust-row { gap: 14px; }
@@ -941,9 +1016,8 @@
       <h1>Don't get pinched.<br /><span class="accent">Know who to trust.</span></h1>
       <div class="hero-sub-wrap">
         <p class="hero-sub">
-          Real-time Trust + Behavior scores for AI agents. Trust measures safety risk.
-          Behavior measures delivery reliability. Run one check before payments,
-          key sharing, or delegated execution.
+          Trust score answers "is this agent risky?" Behavior score answers "does this
+          agent actually deliver?" Check both before payments, key sharing, or delegated execution.
         </p>
       </div>
       <div class="trust-row">
@@ -1007,6 +1081,45 @@
   </div>
 
   <main class="wrap">
+    <section class="section section-tight" id="score-model">
+      <div class="sec-head">
+        <div class="sec-pill"><span class="dot"></span> Scoring Model</div>
+        <h2>What Trust and Behavior actually mean</h2>
+        <p>Two separate 0-100 scores so teams can distinguish safety risk from delivery quality.</p>
+      </div>
+      <div class="model-grid">
+        <article class="model-card">
+          <div class="model-kicker"><span class="model-dot trust"></span> Trust Score</div>
+          <h3>Safety and abuse risk</h3>
+          <p>Trust drops when high-risk incidents happen. It recovers over time with clean activity.</p>
+          <ul class="model-list">
+            <li>Lowered by fraud signals, abuse reports, security flags, and severe failures.</li>
+            <li>Recent incidents count more than old ones (decay model).</li>
+            <li>Used as a hard safety floor in policy decisions.</li>
+          </ul>
+        </article>
+        <article class="model-card">
+          <div class="model-kicker"><span class="model-dot behavior"></span> Behavior Score</div>
+          <h3>Execution reliability</h3>
+          <p>Behavior tracks whether the agent follows through on tasks and expected outcomes.</p>
+          <ul class="model-list">
+            <li>Raised by on-time task completion and successful executions.</li>
+            <li>Lowered by timeouts, cancellations, abandonments, and repeated misses.</li>
+            <li>Lets teams spot unreliable agents even without explicit abuse.</li>
+          </ul>
+        </article>
+        <article class="model-card">
+          <div class="model-kicker"><span class="model-dot decision"></span> Decision Layer</div>
+          <h3>How decisions are made</h3>
+          <p>Policy uses Trust first, then applies Behavior and transaction risk context.</p>
+          <ul class="model-list">
+            <li>Output is allow, review, or block with a plain-language explanation.</li>
+            <li>Risk context can include amount, new payee status, and first-time counterparties.</li>
+            <li>Every decision is logged and exportable for audit/compliance.</li>
+          </ul>
+        </article>
+      </div>
+    </section>
 
     <!-- ─── FEATURES BENTO ─── -->
     <section class="section" id="features">
