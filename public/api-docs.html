@@ -534,8 +534,8 @@
       </div>
     </section>
     <div class="mode-switch" role="tablist" aria-label="Documentation mode">
-      <button class="mode-btn active" id="simpleModeBtn" type="button" role="tab" aria-selected="true">Simple mode</button>
-      <button class="mode-btn" id="developerModeBtn" type="button" role="tab" aria-selected="false">Developer mode</button>
+      <button class="mode-btn active" id="simpleModeBtn" type="button" role="tab" aria-selected="true">Quick Start</button>
+      <button class="mode-btn" id="developerModeBtn" type="button" role="tab" aria-selected="false">Full API Reference</button>
     </div>
 
     <div class="mode-panel" id="simpleModePanel">
@@ -563,10 +563,16 @@
           </div>
         </article>
         <article class="card">
-          <h2>Copy/Paste Example</h2>
-          <pre><code># .env
+          <h2>Exactly Where To Put The Key</h2>
+          <pre><code># backend .env file
 CLAWTRUST_API_KEY=INSERT_YOUR_API_KEY_HERE</code></pre>
-          <p class="small-note">Use this value in your backend/bot server and send it as <span class="mono">x-api-key</span> on API requests.</p>
+          <pre><code># OpenClaw skill config
+{
+  "env": {
+    "CLAWTRUST_API_KEY": "INSERT_YOUR_API_KEY_HERE"
+  }
+}</code></pre>
+          <p class="small-note">Put the key on your agent server/machine. Do not put it in frontend browser code.</p>
         </article>
         <article class="card">
           <h2>Try It Now (No Coding)</h2>
@@ -587,7 +593,8 @@ CLAWTRUST_API_KEY=INSERT_YOUR_API_KEY_HERE</code></pre>
           <p class="small-note">This calls <span class="mono">GET /v1/score</span> using your key and returns both trust and behavior sections.</p>
         </article>
         <article class="card">
-          <h2>Set Trust Policy (No Coding)</h2>
+          <h2>Optional: Policy Controls</h2>
+          <p class="small-note">You can skip this on day one. Default policy works for most teams.</p>
           <div class="try-box">
             <div class="try-field">
               <label for="policyApiKey">Your API key</label>

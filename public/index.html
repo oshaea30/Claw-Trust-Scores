@@ -297,6 +297,67 @@
       border-color: rgba(196,51,51,0.36);
       background: rgba(255,238,238,0.9);
     }
+    .hero-start-card {
+      margin-top: 12px;
+      width: min(760px, 100%);
+      background: rgba(255,255,255,0.86);
+      border: 1px solid rgba(255,255,255,0.72);
+      border-radius: 12px;
+      padding: 12px;
+      box-shadow: 0 8px 24px rgba(30,22,18,0.08);
+      color: #2b251f;
+      text-align: left;
+    }
+    .hero-start-card h3 {
+      margin: 0 0 8px;
+      font-size: 0.95rem;
+      font-weight: 800;
+    }
+    .hero-start-card p {
+      margin: 0 0 8px;
+      font-size: 0.9rem;
+      line-height: 1.45;
+    }
+    .hero-start-card .mono-line {
+      display: block;
+      margin-top: 6px;
+      padding: 8px 10px;
+      border-radius: 8px;
+      border: 1px solid #eadfd4;
+      background: #f8f2ec;
+      font-family: var(--mono);
+      font-size: 0.82rem;
+      color: #2a241f;
+      overflow-x: auto;
+      white-space: nowrap;
+    }
+    .hero-quick-toggle {
+      margin-top: 10px;
+      width: min(760px, 100%);
+      background: rgba(255,255,255,0.74);
+      border: 1px solid rgba(255,255,255,0.72);
+      border-radius: 12px;
+      box-shadow: 0 8px 24px rgba(30,22,18,0.06);
+    }
+    .hero-quick-toggle summary {
+      cursor: pointer;
+      padding: 10px 12px;
+      font-size: 0.88rem;
+      font-weight: 700;
+      color: #2f2822;
+      list-style: none;
+      user-select: none;
+    }
+    .hero-quick-toggle summary::-webkit-details-marker {
+      display: none;
+    }
+    .hero-quick-toggle summary::after {
+      content: " +";
+      font-weight: 800;
+    }
+    .hero-quick-toggle[open] summary::after {
+      content: " -";
+    }
     .key-result-box {
       margin-top: 10px;
       display: inline-flex;
@@ -331,14 +392,12 @@
       font-family: var(--sans);
     }
     .hero-quickstart {
-      margin-top: 14px;
+      margin-top: 0;
       width: min(760px, 100%);
-      background: rgba(255,255,255,0.62);
-      border: 1px solid rgba(255,255,255,0.62);
-      border-radius: 14px;
+      background: transparent;
+      border: none;
+      border-radius: 0;
       padding: 12px;
-      backdrop-filter: blur(4px) saturate(1.02);
-      box-shadow: 0 8px 24px rgba(30,22,18,0.06);
       text-align: left;
     }
     .hero-quickstart h3 {
@@ -1218,17 +1277,27 @@
       </form>
       <div class="hero-note">Free tier · 5 agents · 100 events · No credit card</div>
       <div id="heroResult" class="hero-result"></div>
-      <div class="hero-quickstart">
-        <h3>Already have a key? Run your first check now</h3>
-        <div class="hero-quick-grid">
-          <input id="quickApiKey" type="password" placeholder="CLAWTRUST_API_KEY (claw_xxx)" autocomplete="off" />
-          <input id="quickAgentId" type="text" value="agent:demo:vendor-1" />
-          <button id="quickCheckBtn" class="hero-quick-btn primary" type="button">Run Trust Check</button>
-          <button id="quickEventBtn" class="hero-quick-btn" type="button">Send Demo Event</button>
-        </div>
-        <div id="quickResult" class="hero-quick-result">Tip: save your key as CLAWTRUST_API_KEY in your backend/bot server.</div>
-        <div class="hero-quick-help">Put your key in backend env var <span class="mono">CLAWTRUST_API_KEY</span>. Common issues: 401 = wrong/missing key · 429 = rate limit · limit exceeded = upgrade plan.</div>
+      <div class="hero-start-card">
+        <h3>Where your API key goes (copy this)</h3>
+        <p>Add your key to the machine where your agent runs. Do not put it in public frontend code.</p>
+        <span class="mono-line">CLAWTRUST_API_KEY=claw_your_api_key_here</span>
+        <p>Then download the OpenClaw bundle and reference this same env var in your skill config.</p>
+        <a class="btn btn-primary" href="/claw-trust-scores-skill.zip" download>Download Skill Bundle (.zip)</a>
       </div>
+      <details class="hero-quick-toggle">
+        <summary>Optional: run a quick API test</summary>
+        <div class="hero-quickstart">
+          <h3>Already have a key? Run your first check now</h3>
+          <div class="hero-quick-grid">
+            <input id="quickApiKey" type="password" placeholder="CLAWTRUST_API_KEY (claw_xxx)" autocomplete="off" />
+            <input id="quickAgentId" type="text" value="agent:demo:vendor-1" />
+            <button id="quickCheckBtn" class="hero-quick-btn primary" type="button">Run Trust Check</button>
+            <button id="quickEventBtn" class="hero-quick-btn" type="button">Send Demo Event</button>
+          </div>
+          <div id="quickResult" class="hero-quick-result">Tip: save your key as CLAWTRUST_API_KEY in your backend/bot server.</div>
+          <div class="hero-quick-help">Put your key in backend env var <span class="mono">CLAWTRUST_API_KEY</span>. Common issues: 401 = wrong/missing key · 429 = rate limit · limit exceeded = upgrade plan.</div>
+        </div>
+      </details>
     </section>
   </div>
 
