@@ -178,7 +178,7 @@ export async function handleCreateUser(payload) {
       status: 200,
       body: {
         message:
-          "Email already registered. For security, API keys are only shown once and are not sent by email. Use your existing key or rotate from an authenticated session.",
+          "This email already has an API key. We can’t show it again. Use the key you saved, or create a new one.",
         tier: "free",
       },
     };

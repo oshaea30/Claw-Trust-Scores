@@ -80,8 +80,8 @@ describe("Self-serve signup routes", () => {
     const second = await request("POST", "/v1/users", { email });
     assert.equal(second.status, 200);
     assert.ok(
-      second.body.message.includes("only shown once"),
-      "should indicate one-time display security behavior"
+      second.body.message.includes("already has an API key"),
+      "should clearly indicate the email already has a key"
     );
     assert.equal(second.body.apiKey, undefined, "should not return apiKey for existing email");
   });
