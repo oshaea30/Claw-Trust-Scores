@@ -1758,7 +1758,7 @@ log_event(agentId, kind, eventType)</code></pre>
           showApiKeyResult(heroResult, data.apiKey, "API key created");
         } else {
           heroResult.className = "hero-result ok";
-          heroResult.textContent = data.message || "API key created — check your email.";
+          heroResult.textContent = data.message || "API key created. Copy and store it now; it is shown only once.";
         }
       } catch {
         heroResult.className = "hero-result bad";
@@ -1911,7 +1911,7 @@ log_event(agentId, kind, eventType)</code></pre>
           ctaResult.appendChild(inline);
         } else {
           ctaResult.className = "cta-result ok";
-          ctaResult.textContent = data.message || "API key created — check your email.";
+          ctaResult.textContent = data.message || "API key created. Copy and store it now; it is shown only once.";
         }
       } catch {
         ctaResult.className = "cta-result bad";

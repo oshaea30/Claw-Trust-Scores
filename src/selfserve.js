@@ -1,7 +1,7 @@
 /**
  * Self-Serve Signup Routes
  *
- * POST /v1/users              — create free key, email it
+ * POST /v1/users              — create free key (shown once in response)
  * GET  /v1/upgrade/:apiKey    — return Stripe Checkout URL for upgrade
  * POST /v1/stripe/webhook     — handle Stripe events (upgrade/downgrade)
  *
@@ -66,23 +66,18 @@ async function sendEmail({ to, subject, html }) {
   }
 }
 
-function welcomeEmail(email, apiKey) {
+function welcomeEmail(email) {
   return sendEmail({
     to: email,
-    subject: "Your ClawTrustScores API Key 🦀",
+    subject: "ClawTrustScores key created",
     html: `
       <div style="font-family: system-ui, sans-serif; max-width: 520px; margin: 0 auto;">
         <h2 style="color: #e63946;">Welcome to ClawTrustScores</h2>
-        <p>Here's your free API key:</p>
-        <pre style="background: #1a1a2e; color: #00f5d4; padding: 16px; border-radius: 8px; font-size: 14px; overflow-x: auto;">${apiKey}</pre>
-        <p>Include it as an <code>x-api-key</code> header in every request.</p>
-        <h3>Quick start</h3>
-        <pre style="background: #f4f4f4; padding: 12px; border-radius: 6px; font-size: 13px; overflow-x: auto;">curl -X POST ${env("BASE_URL") || "https://claw-trust-scores-production.up.railway.app"}/v1/events \\
-  -H "x-api-key: ${apiKey}" \\
-  -H "Content-Type: application/json" \\
-  -d '{"agentId":"agent-123","kind":"positive","eventType":"completed_task_on_time"}'</pre>
+        <p>Your API key was created successfully.</p>
+        <p>For security, keys are shown only once in the signup response and are <strong>not sent by email</strong>.</p>
+        <p>If you saved your key, store it in your backend as <code>CLAWTRUST_API_KEY</code>.</p>
         <p><strong>Free tier:</strong> 5 agents, 100 events/mo, 200 score checks/mo.</p>
-        <p>Need more? <a href="${env("BASE_URL") || "https://claw-trust-scores-production.up.railway.app"}/v1/upgrade/${apiKey}">Upgrade anytime →</a></p>
+        <p>Need more? Upgrade anytime from your API key dashboard flow.</p>
         <hr style="border: none; border-top: 1px solid #eee; margin: 24px 0;" />
         <p style="color: #888; font-size: 12px;">ClawTrustScores — Trust scoring for the agentic web.</p>
       </div>
@@ -179,23 +174,22 @@ export async function handleCreateUser(payload) {
   const result = createUser(email);
 
   if (result.exists) {
-    // Re-send the welcome email with existing key
-    await welcomeEmail(email, result.apiKey);
     return {
       status: 200,
       body: {
-        message: "API key re-sent to your email.",
+        message:
+          "Email already registered. For security, API keys are only shown once and are not sent by email. Use your existing key or rotate from an authenticated session.",
         tier: "free",
       },
     };
   }
 
-  await welcomeEmail(email, result.apiKey);
+  await welcomeEmail(email);
 
   return {
     status: 201,
     body: {
-      message: "API key created and sent to your email.",
+      message: "API key created. Copy and store it now; it is shown only once.",
       apiKey: result.apiKey,
       tier: "free",
     },

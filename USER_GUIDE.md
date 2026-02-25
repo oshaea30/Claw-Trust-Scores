@@ -27,7 +27,8 @@ Every protected request needs:
    - `https://claw-trust-scores-production.up.railway.app/`
 2. Enter your email.
 3. Click `Get Free API Key`.
-4. Copy the key from the response/email.
+4. Copy the key from the response immediately.
+5. Save it in your backend as `CLAWTRUST_API_KEY` (keys are shown once and not sent by email).
 
 ### Option B: API signup
 
@@ -41,7 +42,7 @@ Expected response:
 
 ```json
 {
-  "message": "API key created and sent to your email.",
+  "message": "API key created. Copy and store it now; it is shown only once.",
   "apiKey": "claw_...",
   "tier": "free"
 }
