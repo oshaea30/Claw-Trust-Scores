@@ -92,8 +92,16 @@
     .nav-links a.cta-link {
       background: var(--text); color: #fff; padding: 9px 18px;
       border-radius: var(--radius-pill); font-weight: 600; font-size: 0.88rem;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
     }
     .nav-links a.cta-link:hover { background: #333; color: #fff; }
+    .download-icon {
+      font-size: 0.82rem;
+      line-height: 1;
+      transform: translateY(-0.5px);
+    }
     .mobile-nav-toggle {
       display: none;
       width: 42px;
@@ -138,6 +146,10 @@
       padding: 10px 16px;
       text-align: center;
       margin-top: 8px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
     }
     nav.mobile-open .mobile-menu {
       max-height: 320px;
@@ -1194,7 +1206,7 @@
         <a href="#pricing">Pricing</a>
         <a href="#faq">FAQ</a>
         <a href="/api-docs">API Docs</a>
-        <a class="cta-link" href="#signup">Get API Key</a>
+        <a class="cta-link" href="/claw-trust-scores-skill.zip" download>Skill.md <span class="download-icon" aria-hidden="true">↓</span></a>
       </div>
       <button class="mobile-nav-toggle" id="mobileNavToggle" type="button" aria-label="Open navigation menu" aria-expanded="false">
         <span></span><span></span><span></span>
@@ -1207,7 +1219,7 @@
       <a href="#pricing">Pricing</a>
       <a href="#faq">FAQ</a>
       <a href="/api-docs">API Docs</a>
-      <a class="cta-mobile" href="#signup">Get API Key</a>
+      <a class="cta-mobile" href="/claw-trust-scores-skill.zip" download>Skill.md <span class="download-icon" aria-hidden="true">↓</span></a>
     </div>
   </nav>
 
