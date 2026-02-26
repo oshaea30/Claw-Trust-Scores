@@ -116,17 +116,26 @@ assertProductionSecurityConfig();
 loadStoreFromDisk();
 
 function sendJson(response, statusCode, body) {
+  const isApi = response._requestPath?.startsWith("/v1/") === true;
+  const requestId = String(response._requestId ?? "");
+  const payload = normalizeErrorPayload({ statusCode, body, isApi, requestId, path: response._requestPath });
   response.writeHead(statusCode, {
     "content-type": "application/json; charset=utf-8",
+    ...(requestId ? { "x-request-id": requestId } : {}),
     ...SAFE_HEADERS,
     ...CORS_HEADERS
   });
-  response.end(JSON.stringify(body));
+  if (response._requestMethod === "HEAD") {
+    return response.end();
+  }
+  response.end(JSON.stringify(payload));
 }
 
 function sendTyped(response, statusCode, contentType, body, extraHeaders = {}) {
+  const requestId = String(response._requestId ?? "");
   response.writeHead(statusCode, {
     "content-type": contentType,
+    ...(requestId ? { "x-request-id": requestId } : {}),
     "cache-control": statusCode === 200 ? "public, max-age=300" : "no-store",
     "x-content-type-options": "nosniff",
     "x-frame-options": "SAMEORIGIN",
@@ -134,7 +143,49 @@ function sendTyped(response, statusCode, contentType, body, extraHeaders = {}) {
     ...CORS_HEADERS,
     ...extraHeaders
   });
+  if (response._requestMethod === "HEAD") {
+    return response.end();
+  }
   response.end(body);
+}
+
+function normalizeCode(raw) {
+  return String(raw ?? "")
+    .trim()
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "_")
+    .replace(/^_+|_+$/g, "");
+}
+
+function getErrorHint({ statusCode, message, path }) {
+  const text = String(message ?? "").toLowerCase();
+  if (statusCode === 401) return "Provide header: x-api-key: claw_...";
+  if (statusCode === 404 && String(path ?? "").startsWith("/v1/")) return "Check endpoint path and HTTP method.";
+  if (statusCode === 404) return "Check URL path and try / for the homepage.";
+  if (statusCode === 429) return "Retry after a short delay or reduce request rate.";
+  if (statusCode === 413) return "Reduce request payload size.";
+  if (text.includes("payload too large")) return "Reduce request payload size.";
+  if (text.includes("invalid json")) return "Send valid JSON with header Content-Type: application/json.";
+  if (text.includes("unauthorized")) return "Provide a valid x-api-key header.";
+  if (text.includes("api key not found")) return "Create a key with POST /v1/users, then retry.";
+  return "See docs at /api-docs for request examples.";
+}
+
+function normalizeErrorPayload({ statusCode, body, isApi, requestId, path }) {
+  if (!body || typeof body !== "object" || Array.isArray(body)) return body;
+  if (!isApi || statusCode < 400) return body;
+  if (!("error" in body) || typeof body.error !== "string") return body;
+  if ("message" in body && "code" in body && "hint" in body && "requestId" in body) return body;
+  const message = body.error;
+  const code = normalizeCode(body.code || message || `http_${statusCode}`) || `http_${statusCode}`;
+  const hint = body.hint || getErrorHint({ statusCode, message, path });
+  return {
+    ...body,
+    code,
+    message,
+    hint,
+    requestId,
+  };
 }
 
 function readJsonBody(request) {
@@ -289,6 +340,9 @@ function tryServeStatic(response, urlPathname) {
 
 const server = http.createServer(async (request, response) => {
   const url = new URL(request.url ?? "/", `http://${request.headers.host ?? "localhost"}`);
+  response._requestId = crypto.randomUUID();
+  response._requestPath = url.pathname;
+  response._requestMethod = request.method;
 
   if (request.method === "OPTIONS") {
     response.writeHead(204, { ...CORS_HEADERS });
@@ -300,10 +354,11 @@ const server = http.createServer(async (request, response) => {
     return response.end();
   }
 
-  if (request.method === "GET" && url.pathname === "/health") {
+  if ((request.method === "GET" || request.method === "HEAD") && (url.pathname === "/health" || url.pathname === "/healthz")) {
     return sendJson(response, 200, {
       ok: true,
-      service: "agent-trust-registry"
+      service: "agent-trust-registry",
+      requestId: String(response._requestId),
     });
   }
 
@@ -429,7 +484,7 @@ const server = http.createServer(async (request, response) => {
   }
 
   if (!url.pathname.startsWith("/v1/")) {
-    if (request.method === "GET" && tryServeStatic(response, url.pathname)) {
+    if ((request.method === "GET" || request.method === "HEAD") && tryServeStatic(response, url.pathname)) {
       return;
     }
     return sendJson(response, 404, { error: "Not Found" });
