@@ -24,7 +24,7 @@ test("free plan limit errors include upgrade guidance", async () => {
   const freeAccount = { apiKey: "demo_free_key", tier: "free" };
   const usage = getUsage(getMonthKey(), freeAccount.apiKey);
 
-  usage.eventsLogged = 100;
+  usage.eventsLogged = 1000;
   const eventLimit = await postEvent({
     account: freeAccount,
     payload: {
@@ -34,12 +34,12 @@ test("free plan limit errors include upgrade guidance", async () => {
     }
   });
   assert.equal(eventLimit.status, 402);
-  assert.match(eventLimit.body.error, /Free plan limit hit: 100 events\/month exceeded\. Upgrade to Starter\./);
+  assert.match(eventLimit.body.error, /Free plan limit hit: 1000 events\/month exceeded\. Upgrade to Starter\./);
 
-  usage.scoreChecks = 200;
+  usage.scoreChecks = 3000;
   const checkLimit = getScore({ account: freeAccount, agentId: "agent:quota:event" });
   assert.equal(checkLimit.status, 402);
-  assert.match(checkLimit.body.error, /Free plan limit hit: 200 score checks\/month exceeded\. Upgrade to Starter\./);
+  assert.match(checkLimit.body.error, /Free plan limit hit: 3000 score checks\/month exceeded\. Upgrade to Starter\./);
 });
 
 test("state persists across reload and reloads score/history", async () => {

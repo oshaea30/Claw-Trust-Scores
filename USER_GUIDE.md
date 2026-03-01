@@ -108,9 +108,9 @@ curl "https://claw-trust-scores-production.up.railway.app/v1/usage" \
 ## 5) Limits by plan
 
 ### Free
-- 5 tracked agents / month
-- 100 events / month
-- 200 score checks / month
+- 20 tracked agents / month
+- 1,000 events / month
+- 3,000 score checks / month
 
 ### Starter
 - 100 tracked agents / month
@@ -141,7 +141,7 @@ Example (`402`):
 
 ```json
 {
-  "error": "Free plan limit hit: 200 score checks/month exceeded. Upgrade to Starter."
+  "error": "Free plan limit hit: 3000 score checks/month exceeded. Upgrade to Starter."
 }
 ```
 

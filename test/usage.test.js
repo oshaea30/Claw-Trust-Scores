@@ -16,9 +16,9 @@ test("usage snapshot starts at zero with full remaining", () => {
   assert.equal(result.body.usage.eventsLogged, 0);
   assert.equal(result.body.usage.scoreChecks, 0);
 
-  assert.equal(result.body.remaining.trackedAgents, 5);
-  assert.equal(result.body.remaining.eventsLogged, 100);
-  assert.equal(result.body.remaining.scoreChecks, 200);
+  assert.equal(result.body.remaining.trackedAgents, 20);
+  assert.equal(result.body.remaining.eventsLogged, 1000);
+  assert.equal(result.body.remaining.scoreChecks, 3000);
 });
 
 beforeEach(() => {
@@ -43,7 +43,7 @@ test("usage snapshot reflects events and score checks", async () => {
   assert.equal(usage.body.usage.eventsLogged, 1);
   assert.equal(usage.body.usage.scoreChecks, 1);
 
-  assert.equal(usage.body.remaining.trackedAgents, 4);
-  assert.equal(usage.body.remaining.eventsLogged, 99);
-  assert.equal(usage.body.remaining.scoreChecks, 199);
+  assert.equal(usage.body.remaining.trackedAgents, 19);
+  assert.equal(usage.body.remaining.eventsLogged, 999);
+  assert.equal(usage.body.remaining.scoreChecks, 2999);
 });

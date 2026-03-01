@@ -76,7 +76,7 @@ function welcomeEmail(email) {
         <p>Your API key was created successfully.</p>
         <p>For security, keys are shown only once in the signup response and are <strong>not sent by email</strong>.</p>
         <p>If you saved your key, store it in your backend as <code>CLAWTRUST_API_KEY</code>.</p>
-        <p><strong>Free tier:</strong> 5 agents, 100 events/mo, 200 score checks/mo.</p>
+        <p><strong>Free tier:</strong> 20 agents, 1,000 events/mo, 3,000 score checks/mo.</p>
         <p>Need more? Upgrade anytime from your API key dashboard flow.</p>
         <hr style="border: none; border-top: 1px solid #eee; margin: 24px 0;" />
         <p style="color: #888; font-size: 12px;">ClawTrustScores — Trust scoring for the agentic web.</p>

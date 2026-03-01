@@ -227,9 +227,9 @@ Set `ADMIN_TOKEN` and pass it as `x-admin-token`.
 ## Pricing and usage tiers
 
 ### Free (test/hobby)
-- 5 agents tracked/month
-- 100 events/month
-- 200 score checks/month
+- 20 agents tracked/month
+- 1,000 events/month
+- 3,000 score checks/month
 - no webhooks
 - no bulk exports
 - basic support

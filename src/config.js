@@ -1,8 +1,8 @@
 export const PLANS = {
   free: {
-    maxAgents: 5,
-    maxEventsPerMonth: 100,
-    maxChecksPerMonth: 200,
+    maxAgents: 20,
+    maxEventsPerMonth: 1000,
+    maxChecksPerMonth: 3000,
     webhooks: false,
     bulkExports: false,
     support: "basic"
@@ -26,7 +26,7 @@ export const PLANS = {
 };
 
 export const RATE_LIMITS_PER_MINUTE = {
-  free: { eventWrites: 30, scoreReads: 120 },
+  free: { eventWrites: 90, scoreReads: 360 },
   starter: { eventWrites: 300, scoreReads: 1200 },
   pro: { eventWrites: 1200, scoreReads: 5000 }
 };
