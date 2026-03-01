@@ -92,7 +92,7 @@ function hasValidTrustApiKeys(raw) {
     .map((entry) => entry.trim())
     .some((entry) => {
       const [key, tier] = entry.split(":").map((part) => part.trim());
-      return Boolean(key) && (tier === "free" || tier === "starter" || tier === "pro");
+      return Boolean(key) && (tier === "owner" || tier === "free" || tier === "starter" || tier === "pro");
     });
 }
 
@@ -160,6 +160,7 @@ function normalizeCode(raw) {
 function getErrorHint({ statusCode, message, path }) {
   const text = String(message ?? "").toLowerCase();
   if (statusCode === 401) return "Provide header: x-api-key: claw_...";
+  if (statusCode === 402) return "Plan limit reached. Use /v1/upgrade/{apiKey}?tier=starter (or ?tier=pro).";
   if (statusCode === 404 && String(path ?? "").startsWith("/v1/")) return "Check endpoint path and HTTP method.";
   if (statusCode === 404) return "Check URL path and try / for the homepage.";
   if (statusCode === 429) return "Retry after a short delay or reduce request rate.";
@@ -363,7 +364,8 @@ const server = http.createServer(async (request, response) => {
   }
 
   if (request.method === "GET" && url.pathname === "/v1/plans") {
-    return sendJson(response, 200, { plans: PLANS });
+    const { owner, ...publicPlans } = PLANS;
+    return sendJson(response, 200, { plans: publicPlans });
   }
 
   if (request.method === "GET" && url.pathname === "/v1/public/hero-snapshot") {

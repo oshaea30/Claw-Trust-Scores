@@ -32,7 +32,7 @@ function parseEnvKeys() {
     const trimmed = entry.trim();
     if (!trimmed) continue;
     const [key, tier] = trimmed.split(":").map((p) => p.trim());
-    if (key && (tier === "free" || tier === "starter" || tier === "pro")) {
+    if (key && (tier === "owner" || tier === "free" || tier === "starter" || tier === "pro")) {
       parsed[key] = tier;
     }
   }
@@ -77,7 +77,7 @@ function generateApiKey() {
 // Reads
 // ---------------------------------------------------------------------------
 
-/** Returns "free" | "starter" | "pro" or null if key is unknown. */
+/** Returns "owner" | "free" | "starter" | "pro" or null if key is unknown. */
 export function getKeyTier(apiKey) {
   if (!apiKey) return null;
   const staticKeys = currentStaticKeys();

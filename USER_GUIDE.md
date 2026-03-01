@@ -141,7 +141,9 @@ Example (`402`):
 
 ```json
 {
-  "error": "Free plan limit hit: 3000 score checks/month exceeded. Upgrade to Starter."
+  "error": "Free plan limit hit: 3000 score checks/month exceeded. Upgrade to Starter.",
+  "upgradeTier": "starter",
+  "upgradeUrl": "/v1/upgrade/claw_xxx?tier=starter"
 }
 ```
 

@@ -12,7 +12,7 @@ function monthFromIso(iso) {
 export function getAdminOverview() {
   const users = getAllUsers();
 
-  const tiers = { free: 0, starter: 0, pro: 0 };
+  const tiers = { owner: 0, free: 0, starter: 0, pro: 0 };
   for (const user of users) {
     if (tiers[user.tier] !== undefined) {
       tiers[user.tier] += 1;

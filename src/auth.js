@@ -27,7 +27,7 @@ function parseKeys(raw) {
     if (!trimmed) continue;
     const [key, tier] = trimmed.split(":").map((part) => part.trim());
     if (!key || !tier) continue;
-    if (tier === "free" || tier === "starter" || tier === "pro") {
+    if (tier === "owner" || tier === "free" || tier === "starter" || tier === "pro") {
       parsed[key] = tier;
     }
   }
@@ -53,7 +53,7 @@ function mergedApiKeys() {
 }
 
 function tierValid(tier) {
-  return tier === "free" || tier === "starter" || tier === "pro";
+  return tier === "owner" || tier === "free" || tier === "starter" || tier === "pro";
 }
 
 function maskKey(key) {
@@ -85,7 +85,7 @@ export function listApiKeys() {
 
 export function issueApiKey({ tier }) {
   if (!tierValid(tier)) {
-    return { status: 400, body: { error: "tier must be one of: free, starter, pro." } };
+    return { status: 400, body: { error: "tier must be one of: owner, free, starter, pro." } };
   }
   let key = randomApiKey();
   while (mergedApiKeys()[key]) {

@@ -24,15 +24,39 @@ function kindValid(kind) {
 }
 
 function prettyTier(tier) {
+  if (tier === "owner") return "Owner";
   if (tier === "free") return "Free";
   if (tier === "starter") return "Starter";
   return "Pro";
 }
 
 function nextTier(tier) {
+  if (tier === "owner") return null;
   if (tier === "free") return "Starter";
   if (tier === "starter") return "Pro";
   return "Enterprise";
+}
+
+function upgradeMetaFor(account) {
+  const upgradeTier = nextTier(account.tier);
+  if (!upgradeTier || upgradeTier === "Enterprise") {
+    return {
+      upgradeTier: "enterprise",
+      upgradeUrl: "mailto:info@collocatellc.com?subject=Claw%20Trust%20Scores%20Enterprise"
+    };
+  }
+  return {
+    upgradeTier: upgradeTier.toLowerCase(),
+    upgradeUrl: `/v1/upgrade/${encodeURIComponent(account.apiKey)}?tier=${upgradeTier.toLowerCase()}`
+  };
+}
+
+function limitError({ account, message }) {
+  const meta = upgradeMetaFor(account);
+  return {
+    error: message,
+    ...meta
+  };
 }
 
 function rateLimited({ apiKey, tier, action }) {
@@ -63,9 +87,12 @@ function duplicateEvent(event) {
 function enforceAgentCap(usage, plan, normalizedAgentId, tier) {
   const newAgent = !usage.trackedAgents.has(normalizedAgentId);
   if (newAgent && usage.trackedAgents.size >= plan.maxAgents) {
+    const next = nextTier(tier);
     return {
       ok: false,
-      error: `${prettyTier(tier)} plan limit hit: ${plan.maxAgents} tracked agents/month. Upgrade to ${nextTier(tier)}.`
+      error: next
+        ? `${prettyTier(tier)} plan limit hit: ${plan.maxAgents} tracked agents/month. Upgrade to ${next}.`
+        : `${prettyTier(tier)} plan limit hit: ${plan.maxAgents} tracked agents/month.`
     };
   }
   return { ok: true };
@@ -95,14 +122,18 @@ export async function postEvent({ account, payload }) {
   }
 
   const cap = enforceAgentCap(usage, plan, agentId, account.tier);
-  if (!cap.ok) return { status: 402, body: { error: cap.error } };
+  if (!cap.ok) return { status: 402, body: limitError({ account, message: cap.error }) };
 
   if (usage.eventsLogged >= plan.maxEventsPerMonth) {
+    const next = nextTier(account.tier);
     return {
       status: 402,
-      body: {
-        error: `${prettyTier(account.tier)} plan limit hit: ${plan.maxEventsPerMonth} events/month exceeded. Upgrade to ${nextTier(account.tier)}.`
-      }
+      body: limitError({
+        account,
+        message: next
+          ? `${prettyTier(account.tier)} plan limit hit: ${plan.maxEventsPerMonth} events/month exceeded. Upgrade to ${next}.`
+          : `${prettyTier(account.tier)} plan limit hit: ${plan.maxEventsPerMonth} events/month exceeded.`
+      })
     };
   }
 
@@ -174,14 +205,18 @@ export function getScore({ account, agentId, includeTrace = false }) {
   const usage = getUsage(monthKey, account.apiKey);
 
   const cap = enforceAgentCap(usage, plan, normalizedAgentId, account.tier);
-  if (!cap.ok) return { status: 402, body: { error: cap.error } };
+  if (!cap.ok) return { status: 402, body: limitError({ account, message: cap.error }) };
 
   if (usage.scoreChecks >= plan.maxChecksPerMonth) {
+    const next = nextTier(account.tier);
     return {
       status: 402,
-      body: {
-        error: `${prettyTier(account.tier)} plan limit hit: ${plan.maxChecksPerMonth} score checks/month exceeded. Upgrade to ${nextTier(account.tier)}.`
-      }
+      body: limitError({
+        account,
+        message: next
+          ? `${prettyTier(account.tier)} plan limit hit: ${plan.maxChecksPerMonth} score checks/month exceeded. Upgrade to ${next}.`
+          : `${prettyTier(account.tier)} plan limit hit: ${plan.maxChecksPerMonth} score checks/month exceeded.`
+      })
     };
   }
 

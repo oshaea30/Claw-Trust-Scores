@@ -1,4 +1,12 @@
 export const PLANS = {
+  owner: {
+    maxAgents: 1000000,
+    maxEventsPerMonth: 1000000000,
+    maxChecksPerMonth: 1000000000,
+    webhooks: true,
+    bulkExports: true,
+    support: "owner"
+  },
   free: {
     maxAgents: 20,
     maxEventsPerMonth: 1000,
@@ -26,6 +34,7 @@ export const PLANS = {
 };
 
 export const RATE_LIMITS_PER_MINUTE = {
+  owner: { eventWrites: 50000, scoreReads: 100000 },
   free: { eventWrites: 90, scoreReads: 360 },
   starter: { eventWrites: 300, scoreReads: 1200 },
   pro: { eventWrites: 1200, scoreReads: 5000 }

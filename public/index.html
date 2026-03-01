@@ -420,7 +420,7 @@
     }
     .hero-quick-grid {
       display: grid;
-      grid-template-columns: 1fr 1fr auto auto;
+      grid-template-columns: minmax(180px, 1fr) minmax(180px, 1fr) auto auto auto;
       gap: 8px;
       align-items: center;
     }
@@ -1305,9 +1305,10 @@
             <input id="quickAgentId" type="text" value="agent:demo:vendor-1" />
             <button id="quickCheckBtn" class="hero-quick-btn primary" type="button">Run Trust Check</button>
             <button id="quickEventBtn" class="hero-quick-btn" type="button">Send Demo Event</button>
+            <button id="quickUpgradeBtn" class="hero-quick-btn" type="button">Upgrade This Key</button>
           </div>
           <div id="quickResult" class="hero-quick-result">Tip: save your key as CLAWTRUST_API_KEY in your backend/bot server.</div>
-          <div class="hero-quick-help">Put your key in backend env var <span class="mono">CLAWTRUST_API_KEY</span>. Common issues: 401 = wrong/missing key · 429 = rate limit · limit exceeded = upgrade plan.</div>
+          <div class="hero-quick-help">Put your key in backend env var <span class="mono">CLAWTRUST_API_KEY</span>. Common issues: 401 = wrong/missing key · 402 = plan limit (use Upgrade This Key) · 429 = rate limit.</div>
         </div>
       </details>
     </section>
@@ -1807,6 +1808,7 @@ log_event(agentId, kind, eventType)</code></pre>
     const quickAgentId = document.getElementById("quickAgentId");
     const quickCheckBtn = document.getElementById("quickCheckBtn");
     const quickEventBtn = document.getElementById("quickEventBtn");
+    const quickUpgradeBtn = document.getElementById("quickUpgradeBtn");
     const quickResult = document.getElementById("quickResult");
 
     function showApiKeyResult(targetEl, apiKey, label = "API key created") {
@@ -1876,6 +1878,12 @@ log_event(agentId, kind, eventType)</code></pre>
     function renderQuickError(status, data) {
       const message = data?.error || data?.message || "Request failed.";
       if (status === 401) return `401: wrong or missing API key. (${message})`;
+      if (status === 402) {
+        const upgradeUrl = typeof data?.upgradeUrl === "string" ? data.upgradeUrl : "";
+        return upgradeUrl
+          ? `402: plan limit reached. ${message} Upgrade now: ${upgradeUrl}`
+          : `402: plan limit reached. ${message}`;
+      }
       if (status === 429) return `429: rate limit hit. Slow down and retry.`;
       if (typeof message === "string" && message.toLowerCase().includes("limit")) {
         return `${message} Upgrade plan if this is production usage.`;
@@ -1983,6 +1991,16 @@ log_event(agentId, kind, eventType)</code></pre>
       } finally {
         quickEventBtn.disabled = false;
       }
+    });
+
+    quickUpgradeBtn.addEventListener("click", () => {
+      const apiKey = (quickApiKey.value || "").trim();
+      if (!apiKey) {
+        quickResult.className = "hero-quick-result bad";
+        quickResult.textContent = "Enter your API key first.";
+        return;
+      }
+      window.location.href = `/v1/upgrade/${encodeURIComponent(apiKey)}?tier=starter`;
     });
 
     /* ─── Bottom CTA ─── */

@@ -369,6 +369,8 @@ Copy `.env.example` and set:
 - `PORT` (default: `8080`)
 - `DATA_DIR` (default: `./data`)
 - `TRUST_API_KEYS` format: `api_key:tier,api_key:tier`
+  - Valid tiers: `owner`, `free`, `starter`, `pro`
+  - Recommended for internal testing: add one `owner` key (very high limits)
 - `DATA_ENCRYPTION_KEY` (required in production; use a long random secret)
 - `ATTESTATION_SIGNING_KEY` (recommended in all environments; use a long random secret)
 - `NODE_ENV=production` in production deployments
