@@ -692,6 +692,11 @@ const server = http.createServer(async (request, response) => {
         outcome: "scored",
         score: result.body.score,
         reason: result.body.explanation,
+        metadata: {
+          signalSampleSize: Number(result.body?.signalQuality?.sampleSize ?? 0),
+          signalQualityScore: Number(result.body?.signalQuality?.score ?? 0),
+          insufficientData: Number(result.body?.signalQuality?.sampleSize ?? 0) <= 0,
+        },
       });
     }
 

@@ -47,3 +47,12 @@ test("usage snapshot reflects events and score checks", async () => {
   assert.equal(usage.body.remaining.eventsLogged, 999);
   assert.equal(usage.body.remaining.scoreChecks, 2999);
 });
+
+test("ephemeral run agent ids are canonicalized to one tracked agent", () => {
+  getScore({ account: freeAccount, agentId: "agent:main:cron:job-1:run:abc123" });
+  getScore({ account: freeAccount, agentId: "agent:main:cron:job-1:run:def456" });
+
+  const usage = getUsageSnapshot({ account: freeAccount });
+  assert.equal(usage.body.usage.trackedAgents, 1);
+  assert.equal(usage.body.usage.scoreChecks, 2);
+});

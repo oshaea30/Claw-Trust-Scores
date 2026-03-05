@@ -1,3 +1,4 @@
+import { normalizeAgentId } from "./agent-id.js";
 import { scoreForAccountAgent } from "./service.js";
 import { logDecision } from "./audit.js";
 import { getPolicy } from "./policy.js";
@@ -25,7 +26,7 @@ export function riskFromPayload(payload) {
 }
 
 export function clawCreditPreflight({ account, payload }) {
-  const agentId = String(payload.agentId ?? "").trim().toLowerCase();
+  const agentId = normalizeAgentId(payload.agentId);
   if (!agentId) {
     return { status: 400, body: { error: "agentId is required." } };
   }

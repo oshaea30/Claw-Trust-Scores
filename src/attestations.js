@@ -1,14 +1,11 @@
 import crypto from "node:crypto";
 
+import { normalizeAgentId } from "./agent-id.js";
 import { scheduleFlush } from "./persistence.js";
 import { store } from "./store.js";
 
 function nowSeconds() {
   return Math.floor(Date.now() / 1000);
-}
-
-function normalizeAgentId(input) {
-  return String(input ?? "").trim().toLowerCase();
 }
 
 function normalizeType(input) {

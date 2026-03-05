@@ -1,15 +1,12 @@
 import crypto from "node:crypto";
 
+import { normalizeAgentId } from "./agent-id.js";
 import { PLANS, RATE_LIMITS_PER_MINUTE } from "./config.js";
 import { scheduleFlush } from "./persistence.js";
 import { getPolicy } from "./policy.js";
 import { scoreAgent } from "./scoring.js";
 import { appendEvent, getAgentEvents, getMonthKey, getUsage, store } from "./store.js";
 import { emitScoreAlerts } from "./webhooks.js";
-
-function normalizeAgentId(agentId) {
-  return String(agentId).trim().toLowerCase();
-}
 
 function scopedAgentId(apiKey, agentId) {
   return `${apiKey}::${agentId}`;

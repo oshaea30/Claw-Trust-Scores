@@ -27,6 +27,8 @@
     th, td { border-top:1px solid var(--border); padding:8px; text-align:left; }
     .code { background:#120f0d; color:#f5f0eb; border-radius:10px; padding:10px; overflow:auto; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size:.84rem; }
     .ok { color:var(--good); } .bad { color:var(--bad); } .warn { color:var(--warn); }
+    .badge { display:inline-block; margin-left:6px; padding:2px 8px; border-radius:999px; border:1px solid var(--border); font-size:.74rem; font-weight:700; }
+    .badge.warn { color:var(--warn); background:#fff6e8; border-color:#f0d8b2; }
     @media (max-width: 960px){ .cards{grid-template-columns: repeat(2,minmax(0,1fr));} .grid2{grid-template-columns:1fr;} }
     @media (max-width: 620px){ .cards{grid-template-columns: 1fr;} h1{font-size:1.5rem;} }
   </style>
@@ -69,6 +71,12 @@
 
     <section class="panel">
       <h2>Recent decisions</h2>
+      <div class="row" style="margin-bottom:8px;">
+        <label style="display:flex;align-items:center;gap:8px;color:var(--muted);font-size:.9rem;">
+          <input id="includeScoreChecks" type="checkbox" />
+          Include raw score checks
+        </label>
+      </div>
       <table id="decisionTable">
         <thead><tr><th>Time</th><th>Action</th><th>Agent</th><th>Outcome</th><th>Reason</th></tr></thead>
         <tbody></tbody>
@@ -124,6 +132,7 @@
     const state = { key: localStorage.getItem("clawtrust_api_key") || "" };
     byId("apiKey").value = state.key;
     byId("status").textContent = state.key ? "Key loaded from this browser." : "No key saved yet.";
+    byId("includeScoreChecks").checked = false;
 
     function authHeaders() {
       return { "x-api-key": state.key };
@@ -169,11 +178,16 @@
         byId("riskReasons").innerHTML = (report.topRiskReasons || []).map((r) => `<div>${r.name} (${r.count})</div>`).join("") || '<span class="muted">No risky reasons yet</span>';
         byId("riskAgents").innerHTML = (report.topRiskAgents || []).map((r) => `<div>${r.name} (${r.count})</div>`).join("") || '<span class="muted">No risky agents yet</span>';
 
+        const includeScoreChecks = byId("includeScoreChecks").checked;
+        const rows = (logs.logs || []).filter((row) => includeScoreChecks || row.action !== "score_check");
+
         const tbody = byId("decisionTable").querySelector("tbody");
         tbody.innerHTML = "";
-        for (const row of (logs.logs || [])) {
+        for (const row of rows) {
           const tr = document.createElement("tr");
-          tr.innerHTML = `<td>${new Date(row.timestamp).toLocaleString()}</td><td>${row.action}</td><td>${row.agentId}</td><td>${row.outcome}</td><td>${row.reason || ""}</td>`;
+          const needsEvidenceBadge = Boolean(row?.metadata?.insufficientData);
+          const reasonHtml = `${row.reason || ""}${needsEvidenceBadge ? ' <span class="badge warn">insufficient data</span>' : ""}`;
+          tr.innerHTML = `<td>${new Date(row.timestamp).toLocaleString()}</td><td>${row.action}</td><td>${row.agentId}</td><td>${row.outcome}</td><td>${reasonHtml}</td>`;
           tbody.appendChild(tr);
         }
 
@@ -192,6 +206,7 @@
     });
 
     byId("refresh").addEventListener("click", refreshAll);
+    byId("includeScoreChecks").addEventListener("change", refreshAll);
     byId("openUpgrade").addEventListener("click", () => {
       if (!state.key) return byId("status").textContent = "Enter API key first.";
       location.href = `/v1/upgrade/${encodeURIComponent(state.key)}?tier=starter`;
