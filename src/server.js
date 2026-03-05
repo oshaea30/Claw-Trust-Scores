@@ -5,6 +5,7 @@ import path from "node:path";
 import { URL } from "node:url";
 
 import { getAdminAgentSnapshot, getAdminOverview, getRecentDecisionFeed } from "./admin.js";
+import { createDiscordAlert, createTelegramAlert, deleteAlertDestination, listAlertDestinations } from "./alerts.js";
 import {
   issueAttestation,
   listAttestations,
@@ -21,7 +22,7 @@ import { revokeUserApiKey, rotateUserApiKey } from "./key-store.js";
 import { flushStoreToDisk, loadStoreFromDisk } from "./persistence.js";
 import { applyPolicyPreset, getPolicy, listPolicyPresets, resetPolicy, setPolicy } from "./policy.js";
 import { getHeroSnapshot } from "./public-signals.js";
-import { buildWeeklyReport, emailWeeklyReport } from "./reports.js";
+import { buildWeeklyReport, sendDigest } from "./reports.js";
 import { logSecurityEvent } from "./security-log.js";
 import { getScore, postEvent } from "./service.js";
 import { handleCreateUser, handleStripeWebhook, handleUpgrade } from "./selfserve.js";
@@ -722,7 +723,7 @@ const server = http.createServer(async (request, response) => {
   if (request.method === "POST" && url.pathname === "/v1/reports/weekly/email") {
     try {
       const payload = await readJsonBody(request);
-      const result = await emailWeeklyReport({ account, payload });
+      const result = await sendDigest({ account, payload: { ...payload, channel: "email", cadence: "weekly" } });
       return sendJson(response, result.status, result.body);
     } catch (error) {
       if (error instanceof Error && error.message === "Payload too large") {
@@ -730,6 +731,58 @@ const server = http.createServer(async (request, response) => {
       }
       return sendJson(response, 400, { error: "Invalid JSON body." });
     }
+  }
+
+  if (request.method === "POST" && url.pathname === "/v1/reports/digest/send") {
+    try {
+      const payload = await readJsonBody(request);
+      const result = await sendDigest({ account, payload });
+      return sendJson(response, result.status, result.body);
+    } catch (error) {
+      if (error instanceof Error && error.message === "Payload too large") {
+        return sendJson(response, 413, { error: "Payload too large." });
+      }
+      return sendJson(response, 400, { error: "Invalid JSON body." });
+    }
+  }
+
+  if (request.method === "GET" && url.pathname === "/v1/alerts") {
+    const result = listAlertDestinations({ account });
+    return sendJson(response, result.status, result.body);
+  }
+
+  if (request.method === "POST" && url.pathname === "/v1/alerts/telegram") {
+    try {
+      const payload = await readJsonBody(request);
+      const result = createTelegramAlert({ account, payload });
+      return sendJson(response, result.status, result.body);
+    } catch (error) {
+      if (error instanceof Error && error.message === "Payload too large") {
+        return sendJson(response, 413, { error: "Payload too large." });
+      }
+      return sendJson(response, 400, { error: "Invalid JSON body." });
+    }
+  }
+
+  if (request.method === "POST" && url.pathname === "/v1/alerts/discord") {
+    try {
+      const payload = await readJsonBody(request);
+      const result = createDiscordAlert({ account, payload });
+      return sendJson(response, result.status, result.body);
+    } catch (error) {
+      if (error instanceof Error && error.message === "Payload too large") {
+        return sendJson(response, 413, { error: "Payload too large." });
+      }
+      return sendJson(response, 400, { error: "Invalid JSON body." });
+    }
+  }
+
+  if (request.method === "DELETE" && url.pathname.startsWith("/v1/alerts/")) {
+    const parts = url.pathname.split("/");
+    const channel = parts[3] ?? "";
+    const id = parts[4] ?? "";
+    const result = deleteAlertDestination({ account, channel, id });
+    return sendJson(response, result.status, result.body);
   }
 
   if (request.method === "POST" && url.pathname === "/v1/attestations") {

@@ -689,6 +689,22 @@ CLAWTRUST_API_KEY=INSERT_YOUR_API_KEY_HERE</code></pre>
             <span class="verb post">POST</span>
             <div><code>/v1/reports/weekly/email</code><span>Send weekly digest email (if configured)</span></div>
           </div>
+          <div class="endpoint">
+            <span class="verb get">GET</span>
+            <div><code>/v1/alerts</code><span>List configured Telegram/Discord destinations</span></div>
+          </div>
+          <div class="endpoint">
+            <span class="verb post">POST</span>
+            <div><code>/v1/alerts/telegram</code><span>Create Telegram destination alert</span></div>
+          </div>
+          <div class="endpoint">
+            <span class="verb post">POST</span>
+            <div><code>/v1/alerts/discord</code><span>Create Discord destination alert</span></div>
+          </div>
+          <div class="endpoint">
+            <span class="verb post">POST</span>
+            <div><code>/v1/reports/digest/send</code><span>Send digest now with cadence de-dupe (daily/weekly)</span></div>
+          </div>
         </div>
         <details class="advanced">
           <summary>Advanced and account-management endpoints</summary>

@@ -177,6 +177,14 @@ Open `/app` and paste your API key to view:
 
 - `GET /v1/reports/weekly`
 - `POST /v1/reports/weekly/email` with `{ "email": "you@company.com" }`
+- `POST /v1/reports/digest/send` with `{ "channel": "email|telegram|discord", "cadence": "daily|weekly", "email": "..." }`
+
+### 4c) Push alerts for Telegram and Discord
+
+- `GET /v1/alerts`
+- `POST /v1/alerts/telegram` with `{ "botToken": "...", "chatId": "...", "threshold": 50 }`
+- `POST /v1/alerts/discord` with `{ "webhookUrl": "https://discord.com/api/webhooks/...", "threshold": 50 }`
+- `DELETE /v1/alerts/{telegram|discord}/{alertId}`
 
 ### 5) Connector readiness + signed ingest (recommended)
 

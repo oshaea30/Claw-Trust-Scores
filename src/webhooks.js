@@ -2,6 +2,7 @@ import crypto from "node:crypto";
 import dns from "node:dns/promises";
 import net from "node:net";
 
+import { emitChannelScoreAlerts } from "./alerts.js";
 import { appendWebhookDelivery, listWebhooks, putWebhooks, store } from "./store.js";
 import { scheduleFlush } from "./persistence.js";
 import { logSecurityEvent } from "./security-log.js";
@@ -275,4 +276,6 @@ export async function emitScoreAlerts({ account, agentId, score, previousScore }
     store.webhookSuppression.set(suppressionKey, now + WEBHOOK_COOLDOWN_MS);
     scheduleFlush();
   }
+
+  await emitChannelScoreAlerts({ account, agentId, score, previousScore });
 }

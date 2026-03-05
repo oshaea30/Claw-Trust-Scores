@@ -1,4 +1,7 @@
 import { listDecisionLogs } from "./store.js";
+import { scheduleFlush } from "./persistence.js";
+import { sendDigestToChannel } from "./alerts.js";
+import { store } from "./store.js";
 
 const DAY_MS = 24 * 60 * 60 * 1000;
 const WEEK_MS = 7 * DAY_MS;
@@ -141,4 +144,49 @@ export async function emailWeeklyReport({ account, payload }) {
     subject: "Your Claw Trust Scores weekly report",
     html: weeklyHtml(report),
   });
+}
+
+function cadenceWindowMs(cadence) {
+  return cadence === "weekly" ? WEEK_MS : DAY_MS;
+}
+
+function emailDigestStateKey(apiKey, cadence) {
+  return `${apiKey}:email:${cadence === "weekly" ? "weekly" : "daily"}`;
+}
+
+export async function sendDigest({ account, payload }) {
+  const channel = String(payload?.channel ?? "email").trim().toLowerCase();
+  const cadence = payload?.cadence === "weekly" ? "weekly" : "daily";
+  const report = buildWeeklyReport({ account });
+
+  if (channel === "telegram" || channel === "discord") {
+    return sendDigestToChannel({ account, channel, cadence, report });
+  }
+
+  if (channel !== "email") {
+    return { status: 400, body: { error: "channel must be email, telegram, or discord." } };
+  }
+
+  const to = String(payload?.email ?? "").trim().toLowerCase();
+  if (!to || !to.includes("@")) {
+    return { status: 400, body: { error: "Valid email is required for email digests." } };
+  }
+
+  const stateKey = emailDigestStateKey(account.apiKey, cadence);
+  const lastSent = Number(store.digestDispatchByKey.get(stateKey) ?? 0);
+  const now = Date.now();
+  if (lastSent && now - lastSent < cadenceWindowMs(cadence)) {
+    return { status: 200, body: { sent: false, skipped: true, reason: "Digest already sent for current cadence window." } };
+  }
+
+  const result = await sendViaResend({
+    to,
+    subject: `Claw Trust ${cadence} report`,
+    html: weeklyHtml(report),
+  });
+  if (result.status !== 200) return result;
+
+  store.digestDispatchByKey.set(stateKey, now);
+  scheduleFlush();
+  return { status: 200, body: { sent: true, channel: "email", cadence } };
 }

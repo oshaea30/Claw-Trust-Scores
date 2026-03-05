@@ -58,6 +58,9 @@ export function loadStoreFromDisk() {
     store.webhooksByApiKey = loadObjectMap(parsed.webhooksByApiKey);
     store.webhookDeliveries = loadObjectMap(parsed.webhookDeliveries);
     store.webhookSuppression = loadObjectMap(parsed.webhookSuppression);
+    store.telegramAlertsByApiKey = loadObjectMap(parsed.telegramAlertsByApiKey);
+    store.discordAlertsByApiKey = loadObjectMap(parsed.discordAlertsByApiKey);
+    store.digestDispatchByKey = loadObjectMap(parsed.digestDispatchByKey);
     store.decisionLogsByApiKey = loadObjectMap(parsed.decisionLogsByApiKey);
     store.inboundSecretsByApiKey = loadObjectMap(parsed.inboundSecretsByApiKey);
     store.processedInboundEvents = loadObjectMap(parsed.processedInboundEvents);
@@ -91,6 +94,9 @@ export function flushStoreToDisk() {
       webhooksByApiKey: toObjectMap(store.webhooksByApiKey),
       webhookDeliveries: toObjectMap(store.webhookDeliveries),
       webhookSuppression: toObjectMap(store.webhookSuppression),
+      telegramAlertsByApiKey: toObjectMap(store.telegramAlertsByApiKey),
+      discordAlertsByApiKey: toObjectMap(store.discordAlertsByApiKey),
+      digestDispatchByKey: toObjectMap(store.digestDispatchByKey),
       decisionLogsByApiKey: toObjectMap(store.decisionLogsByApiKey),
       inboundSecretsByApiKey: toObjectMap(store.inboundSecretsByApiKey),
       processedInboundEvents: toObjectMap(store.processedInboundEvents),

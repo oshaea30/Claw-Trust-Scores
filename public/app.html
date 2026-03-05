@@ -76,31 +76,45 @@
     </section>
 
     <section class="panel">
-      <h2>Push alerts (webhooks)</h2>
-      <p class="muted">Send alerts to Slack/Discord/Zapier webhook URLs when score crosses threshold.</p>
+      <h2>Push alerts where users already are</h2>
+      <p class="muted">Use Telegram and Discord so teams see risk changes without opening a dashboard.</p>
       <div class="row">
-        <input id="webhookUrl" type="url" placeholder="https://hooks.slack.com/services/..." style="min-width:320px;flex:1" />
-        <input id="webhookSecret" type="text" placeholder="secret (8+ chars)" />
-        <input id="webhookThreshold" type="number" value="50" min="0" max="100" />
-        <button id="createWebhook">Create alert</button>
+        <input id="telegramToken" type="text" placeholder="Telegram bot token (123:abc...)" style="min-width:280px;flex:1" />
+        <input id="telegramChatId" type="text" placeholder="Telegram chat ID" />
+        <input id="telegramThreshold" type="number" value="50" min="0" max="100" />
+        <button id="createTelegramAlert">Connect Telegram</button>
       </div>
-      <div id="webhookStatus" class="muted" style="margin-top:8px;"></div>
+      <div class="row" style="margin-top:8px;">
+        <input id="discordWebhookUrl" type="url" placeholder="Discord webhook URL (https://discord.com/api/webhooks/...)" style="min-width:280px;flex:1" />
+        <input id="discordThreshold" type="number" value="50" min="0" max="100" />
+        <button id="createDiscordAlert">Connect Discord</button>
+      </div>
+      <div id="alertStatus" class="muted" style="margin-top:8px;"></div>
     </section>
 
     <section class="panel">
       <h2>Weekly report</h2>
       <div class="row">
         <button id="refreshReport">Refresh report</button>
+        <select id="digestChannel">
+          <option value="email">Email</option>
+          <option value="telegram">Telegram</option>
+          <option value="discord">Discord</option>
+        </select>
+        <select id="digestCadence">
+          <option value="daily">Daily</option>
+          <option value="weekly">Weekly</option>
+        </select>
         <input id="reportEmail" type="email" placeholder="you@company.com" />
-        <button id="sendReport" class="ghost">Email weekly digest</button>
+        <button id="sendReport" class="ghost">Send digest now</button>
       </div>
       <div id="reportStatus" class="muted" style="margin-top:8px;"></div>
       <div id="reportJson" class="code" style="margin-top:8px;">-</div>
     </section>
 
     <section class="panel">
-      <h2>Embeddable widget</h2>
-      <p class="muted">Use this in an internal dashboard page. Keep API keys private.</p>
+      <h2>Embeddable widget (optional)</h2>
+      <p class="muted">Only for private/internal pages you control. Do not place real API keys in public websites.</p>
       <div class="code" id="widgetSnippet"></div>
     </section>
   </div>
@@ -183,36 +197,57 @@
       location.href = `/v1/upgrade/${encodeURIComponent(state.key)}?tier=starter`;
     });
 
-    byId("createWebhook").addEventListener("click", async () => {
+    byId("createTelegramAlert").addEventListener("click", async () => {
       try {
-        const url = byId("webhookUrl").value.trim();
-        const secret = byId("webhookSecret").value.trim();
-        const threshold = Number(byId("webhookThreshold").value || 50);
-        const res = await fetch("/v1/webhooks", {
+        const botToken = byId("telegramToken").value.trim();
+        const chatId = byId("telegramChatId").value.trim();
+        const threshold = Number(byId("telegramThreshold").value || 50);
+        const res = await fetch("/v1/alerts/telegram", {
           method: "POST",
           headers: { ...authHeaders(), "Content-Type": "application/json" },
-          body: JSON.stringify({ url, secret, threshold })
+          body: JSON.stringify({ botToken, chatId, threshold })
         });
         const data = await res.json().catch(() => ({}));
         if (!res.ok) throw { status: res.status, data };
-        byId("webhookStatus").textContent = `Alert created at threshold ${threshold}.`;
+        byId("alertStatus").textContent = `Telegram connected at threshold ${threshold}.`;
       } catch (error) {
-        byId("webhookStatus").textContent = shortError(error);
+        byId("alertStatus").textContent = shortError(error);
+      }
+    });
+
+    byId("createDiscordAlert").addEventListener("click", async () => {
+      try {
+        const webhookUrl = byId("discordWebhookUrl").value.trim();
+        const threshold = Number(byId("discordThreshold").value || 50);
+        const res = await fetch("/v1/alerts/discord", {
+          method: "POST",
+          headers: { ...authHeaders(), "Content-Type": "application/json" },
+          body: JSON.stringify({ webhookUrl, threshold })
+        });
+        const data = await res.json().catch(() => ({}));
+        if (!res.ok) throw { status: res.status, data };
+        byId("alertStatus").textContent = `Discord connected at threshold ${threshold}.`;
+      } catch (error) {
+        byId("alertStatus").textContent = shortError(error);
       }
     });
 
     byId("refreshReport").addEventListener("click", refreshAll);
     byId("sendReport").addEventListener("click", async () => {
       try {
+        const channel = byId("digestChannel").value;
+        const cadence = byId("digestCadence").value;
         const email = byId("reportEmail").value.trim();
-        const res = await fetch("/v1/reports/weekly/email", {
+        const res = await fetch("/v1/reports/digest/send", {
           method: "POST",
           headers: { ...authHeaders(), "Content-Type": "application/json" },
-          body: JSON.stringify({ email })
+          body: JSON.stringify({ channel, cadence, email })
         });
         const data = await res.json().catch(() => ({}));
         if (!res.ok) throw { status: res.status, data };
-        byId("reportStatus").textContent = "Weekly digest sent.";
+        byId("reportStatus").textContent = data?.skipped
+          ? `Skipped: ${data.reason || "Already sent in this cadence window."}`
+          : `Digest sent to ${channel} (${cadence}).`;
       } catch (error) {
         byId("reportStatus").textContent = shortError(error);
       }

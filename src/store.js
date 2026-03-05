@@ -11,7 +11,10 @@ export const store = {
   processedInboundEvents: new Map(),
   webhooksByApiKey: new Map(),
   webhookDeliveries: new Map(),
-  webhookSuppression: new Map()
+  webhookSuppression: new Map(),
+  telegramAlertsByApiKey: new Map(),
+  discordAlertsByApiKey: new Map(),
+  digestDispatchByKey: new Map()
 };
 
 export function resetStore() {
@@ -28,6 +31,9 @@ export function resetStore() {
   store.webhooksByApiKey = new Map();
   store.webhookDeliveries = new Map();
   store.webhookSuppression = new Map();
+  store.telegramAlertsByApiKey = new Map();
+  store.discordAlertsByApiKey = new Map();
+  store.digestDispatchByKey = new Map();
 }
 
 export function getMonthKey(now = new Date()) {
@@ -90,4 +96,20 @@ export function appendDecisionLog(apiKey, row) {
 
 export function listDecisionLogs(apiKey) {
   return store.decisionLogsByApiKey.get(apiKey) ?? [];
+}
+
+export function listTelegramAlerts(apiKey) {
+  return store.telegramAlertsByApiKey.get(apiKey) ?? [];
+}
+
+export function putTelegramAlerts(apiKey, alerts) {
+  store.telegramAlertsByApiKey.set(apiKey, alerts);
+}
+
+export function listDiscordAlerts(apiKey) {
+  return store.discordAlertsByApiKey.get(apiKey) ?? [];
+}
+
+export function putDiscordAlerts(apiKey, alerts) {
+  store.discordAlertsByApiKey.set(apiKey, alerts);
 }
