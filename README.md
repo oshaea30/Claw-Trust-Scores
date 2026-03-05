@@ -164,6 +164,20 @@ Headers:
 
 `GET /v1/plans`
 
+### 4a) Live dashboard (no-code visibility)
+
+Open `/app` and paste your API key to view:
+- usage + limits
+- shadow mode (`would block/review`)
+- recent decisions
+- webhook alert setup
+- weekly report preview + email send
+
+### 4b) Weekly report API
+
+- `GET /v1/reports/weekly`
+- `POST /v1/reports/weekly/email` with `{ "email": "you@company.com" }`
+
 ### 5) Connector readiness + signed ingest (recommended)
 
 Use this flow so teams do not manually submit events:

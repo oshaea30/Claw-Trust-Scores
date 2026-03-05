@@ -1,0 +1,225 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Claw Trust Scores App</title>
+  <style>
+    :root { --bg:#f7f4f1; --card:#fff; --text:#1f1a16; --muted:#6c6258; --border:#e6ddd5; --accent:#d4532a; --good:#1f8f6d; --warn:#a8731e; --bad:#b33838; }
+    * { box-sizing: border-box; }
+    body { margin:0; font-family: ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; background:var(--bg); color:var(--text); }
+    .wrap { max-width: 1080px; margin: 0 auto; padding: 20px; }
+    h1 { margin: 0 0 8px; font-size: 2rem; }
+    .muted { color:var(--muted); }
+    .row { display:flex; gap:10px; flex-wrap:wrap; }
+    input, button, select { font: inherit; border-radius: 10px; border:1px solid var(--border); padding:10px 12px; }
+    button { cursor:pointer; background:#14110f; color:#fff; border-color:#14110f; }
+    button.ghost { background:#fff; color:var(--text); border-color:var(--border); }
+    .cards { margin-top:16px; display:grid; grid-template-columns: repeat(4,minmax(0,1fr)); gap:10px; }
+    .card { background:var(--card); border:1px solid var(--border); border-radius:14px; padding:14px; }
+    .k { font-size:.8rem; color:var(--muted); text-transform:uppercase; letter-spacing:.05em; }
+    .v { margin-top:6px; font-size:1.6rem; font-weight:700; }
+    .v.good { color:var(--good); } .v.warn { color:var(--warn); } .v.bad { color:var(--bad); }
+    .panel { margin-top:14px; background:var(--card); border:1px solid var(--border); border-radius:14px; padding:14px; }
+    .panel h2 { margin:0 0 8px; font-size:1.2rem; }
+    .grid2 { display:grid; grid-template-columns: 1fr 1fr; gap:10px; }
+    table { width:100%; border-collapse: collapse; font-size:.92rem; }
+    th, td { border-top:1px solid var(--border); padding:8px; text-align:left; }
+    .code { background:#120f0d; color:#f5f0eb; border-radius:10px; padding:10px; overflow:auto; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size:.84rem; }
+    .ok { color:var(--good); } .bad { color:var(--bad); } .warn { color:var(--warn); }
+    @media (max-width: 960px){ .cards{grid-template-columns: repeat(2,minmax(0,1fr));} .grid2{grid-template-columns:1fr;} }
+    @media (max-width: 620px){ .cards{grid-template-columns: 1fr;} h1{font-size:1.5rem;} }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <h1>Claw Trust Scores App</h1>
+    <p class="muted">Visible value surface for one API key: usage, shadow mode, alerts, and weekly report.</p>
+
+    <div class="row">
+      <input id="apiKey" type="password" placeholder="Paste API key (claw_...)" style="min-width:340px;flex:1" />
+      <button id="saveKey">Save key</button>
+      <button id="refresh" class="ghost">Refresh</button>
+      <button id="openUpgrade" class="ghost">Upgrade this key</button>
+    </div>
+    <div id="status" class="muted" style="margin-top:8px;">No key saved yet.</div>
+
+    <section class="cards">
+      <div class="card"><div class="k">Tier</div><div id="tier" class="v">-</div></div>
+      <div class="card"><div class="k">Decisions (7d)</div><div id="decisions7d" class="v">-</div></div>
+      <div class="card"><div class="k">Would block (24h)</div><div id="block24h" class="v bad">-</div></div>
+      <div class="card"><div class="k">Would review (24h)</div><div id="review24h" class="v warn">-</div></div>
+    </section>
+
+    <section class="panel">
+      <h2>Usage and limits</h2>
+      <div id="usageLine" class="muted">-</div>
+    </section>
+
+    <section class="panel grid2">
+      <div>
+        <h2>Top risk reasons (7d)</h2>
+        <div id="riskReasons" class="muted">-</div>
+      </div>
+      <div>
+        <h2>Top risk agents (7d)</h2>
+        <div id="riskAgents" class="muted">-</div>
+      </div>
+    </section>
+
+    <section class="panel">
+      <h2>Recent decisions</h2>
+      <table id="decisionTable">
+        <thead><tr><th>Time</th><th>Action</th><th>Agent</th><th>Outcome</th><th>Reason</th></tr></thead>
+        <tbody></tbody>
+      </table>
+    </section>
+
+    <section class="panel">
+      <h2>Push alerts (webhooks)</h2>
+      <p class="muted">Send alerts to Slack/Discord/Zapier webhook URLs when score crosses threshold.</p>
+      <div class="row">
+        <input id="webhookUrl" type="url" placeholder="https://hooks.slack.com/services/..." style="min-width:320px;flex:1" />
+        <input id="webhookSecret" type="text" placeholder="secret (8+ chars)" />
+        <input id="webhookThreshold" type="number" value="50" min="0" max="100" />
+        <button id="createWebhook">Create alert</button>
+      </div>
+      <div id="webhookStatus" class="muted" style="margin-top:8px;"></div>
+    </section>
+
+    <section class="panel">
+      <h2>Weekly report</h2>
+      <div class="row">
+        <button id="refreshReport">Refresh report</button>
+        <input id="reportEmail" type="email" placeholder="you@company.com" />
+        <button id="sendReport" class="ghost">Email weekly digest</button>
+      </div>
+      <div id="reportStatus" class="muted" style="margin-top:8px;"></div>
+      <div id="reportJson" class="code" style="margin-top:8px;">-</div>
+    </section>
+
+    <section class="panel">
+      <h2>Embeddable widget</h2>
+      <p class="muted">Use this in an internal dashboard page. Keep API keys private.</p>
+      <div class="code" id="widgetSnippet"></div>
+    </section>
+  </div>
+
+  <script>
+    const byId = (id) => document.getElementById(id);
+    const state = { key: localStorage.getItem("clawtrust_api_key") || "" };
+    byId("apiKey").value = state.key;
+    byId("status").textContent = state.key ? "Key loaded from this browser." : "No key saved yet.";
+
+    function authHeaders() {
+      return { "x-api-key": state.key };
+    }
+
+    async function getJson(path) {
+      const res = await fetch(path, { headers: authHeaders(), cache: "no-store" });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) throw { status: res.status, data };
+      return data;
+    }
+
+    function shortError(error) {
+      const msg = error?.data?.message || error?.data?.error || "Request failed";
+      if (error?.status === 401) return "401: API key missing/invalid.";
+      if (error?.status === 402) return `${msg} Use "Upgrade this key".`;
+      return `${error?.status || "error"}: ${msg}`;
+    }
+
+    function setWidgetSnippet() {
+      const endpoint = `${location.origin}/v1/reports/weekly`;
+      byId("widgetSnippet").textContent = `<script src="${location.origin}/widget.js" data-endpoint="${endpoint}" data-api-key="YOUR_KEY"></` + `script>`;
+    }
+
+    async function refreshAll() {
+      if (!state.key) {
+        byId("status").textContent = "Add an API key to load data.";
+        return;
+      }
+      try {
+        const [usage, report, logs] = await Promise.all([
+          getJson("/v1/usage"),
+          getJson("/v1/reports/weekly"),
+          getJson("/v1/audit/decisions?format=json&limit=20")
+        ]);
+
+        byId("tier").textContent = usage.tier;
+        byId("decisions7d").textContent = String(report.totals.decisions);
+        byId("block24h").textContent = String(report.shadowMode.last24h.wouldBlock);
+        byId("review24h").textContent = String(report.shadowMode.last24h.wouldReview);
+        byId("usageLine").textContent = `Agents ${usage.usage.trackedAgents}/${usage.limits.trackedAgents} · Events ${usage.usage.eventsLogged}/${usage.limits.eventsLogged} · Checks ${usage.usage.scoreChecks}/${usage.limits.scoreChecks}`;
+
+        byId("riskReasons").innerHTML = (report.topRiskReasons || []).map((r) => `<div>${r.name} (${r.count})</div>`).join("") || '<span class="muted">No risky reasons yet</span>';
+        byId("riskAgents").innerHTML = (report.topRiskAgents || []).map((r) => `<div>${r.name} (${r.count})</div>`).join("") || '<span class="muted">No risky agents yet</span>';
+
+        const tbody = byId("decisionTable").querySelector("tbody");
+        tbody.innerHTML = "";
+        for (const row of (logs.logs || [])) {
+          const tr = document.createElement("tr");
+          tr.innerHTML = `<td>${new Date(row.timestamp).toLocaleString()}</td><td>${row.action}</td><td>${row.agentId}</td><td>${row.outcome}</td><td>${row.reason || ""}</td>`;
+          tbody.appendChild(tr);
+        }
+
+        byId("reportJson").textContent = JSON.stringify(report, null, 2);
+        byId("status").textContent = "Loaded.";
+      } catch (error) {
+        byId("status").textContent = shortError(error);
+      }
+    }
+
+    byId("saveKey").addEventListener("click", () => {
+      state.key = byId("apiKey").value.trim();
+      localStorage.setItem("clawtrust_api_key", state.key);
+      byId("status").textContent = "Key saved in this browser.";
+      refreshAll();
+    });
+
+    byId("refresh").addEventListener("click", refreshAll);
+    byId("openUpgrade").addEventListener("click", () => {
+      if (!state.key) return byId("status").textContent = "Enter API key first.";
+      location.href = `/v1/upgrade/${encodeURIComponent(state.key)}?tier=starter`;
+    });
+
+    byId("createWebhook").addEventListener("click", async () => {
+      try {
+        const url = byId("webhookUrl").value.trim();
+        const secret = byId("webhookSecret").value.trim();
+        const threshold = Number(byId("webhookThreshold").value || 50);
+        const res = await fetch("/v1/webhooks", {
+          method: "POST",
+          headers: { ...authHeaders(), "Content-Type": "application/json" },
+          body: JSON.stringify({ url, secret, threshold })
+        });
+        const data = await res.json().catch(() => ({}));
+        if (!res.ok) throw { status: res.status, data };
+        byId("webhookStatus").textContent = `Alert created at threshold ${threshold}.`;
+      } catch (error) {
+        byId("webhookStatus").textContent = shortError(error);
+      }
+    });
+
+    byId("refreshReport").addEventListener("click", refreshAll);
+    byId("sendReport").addEventListener("click", async () => {
+      try {
+        const email = byId("reportEmail").value.trim();
+        const res = await fetch("/v1/reports/weekly/email", {
+          method: "POST",
+          headers: { ...authHeaders(), "Content-Type": "application/json" },
+          body: JSON.stringify({ email })
+        });
+        const data = await res.json().catch(() => ({}));
+        if (!res.ok) throw { status: res.status, data };
+        byId("reportStatus").textContent = "Weekly digest sent.";
+      } catch (error) {
+        byId("reportStatus").textContent = shortError(error);
+      }
+    });
+
+    setWidgetSnippet();
+    refreshAll();
+  </script>
+</body>
+</html>

@@ -21,6 +21,7 @@ import { revokeUserApiKey, rotateUserApiKey } from "./key-store.js";
 import { flushStoreToDisk, loadStoreFromDisk } from "./persistence.js";
 import { applyPolicyPreset, getPolicy, listPolicyPresets, resetPolicy, setPolicy } from "./policy.js";
 import { getHeroSnapshot } from "./public-signals.js";
+import { buildWeeklyReport, emailWeeklyReport } from "./reports.js";
 import { logSecurityEvent } from "./security-log.js";
 import { getScore, postEvent } from "./service.js";
 import { handleCreateUser, handleStripeWebhook, handleUpgrade } from "./selfserve.js";
@@ -37,6 +38,7 @@ const PUBLIC_DIR = path.resolve(process.cwd(), "public");
 const STATIC_ROUTES = {
   "/": "index.html",
   "/index.html": "index.html",
+  "/app": "app.html",
   "/api-docs": "api-docs.html",
   "/admin-dashboard": "admin-dashboard.html",
   "/getting-started": "getting-started.html",
@@ -711,6 +713,23 @@ const server = http.createServer(async (request, response) => {
   if (request.method === "GET" && url.pathname === "/v1/usage") {
     const result = getUsageSnapshot({ account });
     return sendJson(response, result.status, result.body);
+  }
+
+  if (request.method === "GET" && url.pathname === "/v1/reports/weekly") {
+    return sendJson(response, 200, buildWeeklyReport({ account }));
+  }
+
+  if (request.method === "POST" && url.pathname === "/v1/reports/weekly/email") {
+    try {
+      const payload = await readJsonBody(request);
+      const result = await emailWeeklyReport({ account, payload });
+      return sendJson(response, result.status, result.body);
+    } catch (error) {
+      if (error instanceof Error && error.message === "Payload too large") {
+        return sendJson(response, 413, { error: "Payload too large." });
+      }
+      return sendJson(response, 400, { error: "Invalid JSON body." });
+    }
   }
 
   if (request.method === "POST" && url.pathname === "/v1/attestations") {

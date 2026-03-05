@@ -516,6 +516,7 @@
       </a>
       <nav class="top-links">
         <a href="/">Home</a>
+        <a href="/app">Dashboard</a>
         <a class="active" href="/api-docs">API Docs</a>
         <a href="/getting-started">Getting Started</a>
         <a href="/changelog">Changelog</a>
@@ -679,6 +680,14 @@ CLAWTRUST_API_KEY=INSERT_YOUR_API_KEY_HERE</code></pre>
           <div class="endpoint">
             <span class="verb get">GET</span>
             <div><code>/v1/audit/decisions?format=json|csv</code><span>Export decision logs</span></div>
+          </div>
+          <div class="endpoint">
+            <span class="verb get">GET</span>
+            <div><code>/v1/reports/weekly</code><span>Weekly summary: totals, shadow-mode would-block/review, top risk agents/reasons</span></div>
+          </div>
+          <div class="endpoint">
+            <span class="verb post">POST</span>
+            <div><code>/v1/reports/weekly/email</code><span>Send weekly digest email (if configured)</span></div>
           </div>
         </div>
         <details class="advanced">

@@ -147,6 +147,21 @@ Example (`402`):
 }
 ```
 
+## 6.1) See value without building your own UI
+
+Open:
+
+```text
+https://clawtrustscores.com/app
+```
+
+This per-key dashboard shows:
+- usage and plan limits
+- shadow mode summary (`wouldBlock` / `wouldReview`)
+- recent decisions
+- webhook alert setup
+- weekly report preview + optional email send
+
 ## 7) Upgrade flow
 
 To start checkout for Starter:
